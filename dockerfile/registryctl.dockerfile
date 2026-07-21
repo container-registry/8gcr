@@ -10,7 +10,7 @@ FROM 8gears.container-registry.com/healthprobe/healthprobe:${HEALTHPROBE_VERSION
 FROM scratch
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=certs /etc/passwd /etc/group /etc/
-COPY --from=certs /harbor-ca-writable /etc/ssl/harbor-custom-ca
+COPY --chown=10000:10000 --from=certs /harbor-ca-writable /etc/ssl/harbor-custom-ca
 ARG TARGETARCH
 COPY --from=healthprobe /healthprobe-notls /healthprobe
 COPY bin/linux-${TARGETARCH}/registryctl /registryctl
