@@ -425,14 +425,26 @@ func (n *webhookAPI) validateTargets(ctx context.Context, policy *policy_model.P
 	defer cancel()
 	validatedHosts := map[string]struct{}{}
 	for i, target := range policy.Targets {
-		url, err := utils.ParseEndpoint(target.Address)
+		var allowedSchemes []string
+		if target.Type == "amqp" {
+			allowedSchemes = []string{"amqp", "amqps"}
+		}
+		url, err := utils.ParseEndpoint(target.Address, allowedSchemes...)
 		if err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
+		}
+		if target.Type == "amqp" && url.Scheme != "amqp" && url.Scheme != "amqps" {
+			return false, errors.New(nil).
+				WithMessagef("amqp target address must be a full amqp:// or amqps:// URI with policy %s", policy.Name).
+				WithCode(errors.BadRequestCode)
 		}
 		// Reject targets the jobservice egress policy would refuse (CWE-918).
 		if err := n.validateTargetHost(validationCtx, url.Hostname(), validatedHosts); err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
 		}
+		// Prevent SSRF security issue #3755
+		target.Address = url.Scheme + "://" + url.Host + url.Path
+
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessagef("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)
 		}
