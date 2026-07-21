@@ -438,6 +438,11 @@ func (n *webhookAPI) validateTargets(ctx context.Context, policy *policy_model.P
 				WithMessagef("amqp target address must be a full amqp:// or amqps:// URI with policy %s", policy.Name).
 				WithCode(errors.BadRequestCode)
 		}
+		if target.Type == "amqp" && strings.Trim(url.EscapedPath(), "/") == "" {
+			return false, errors.New(nil).
+				WithMessagef("amqp target address must include a queue name in its path with policy %s", policy.Name).
+				WithCode(errors.BadRequestCode)
+		}
 		// Reject targets the jobservice egress policy would refuse (CWE-918).
 		if err := n.validateTargetHost(validationCtx, url.Hostname(), validatedHosts); err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
