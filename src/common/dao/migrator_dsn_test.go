@@ -58,3 +58,29 @@ func TestMigratorDSNInvalidURL(t *testing.T) {
 		t.Error("migratorDSN() with an invalid URL returned nil error")
 	}
 }
+
+func TestMigratorDSNRejectsNonURLDSN(t *testing.T) {
+	for name, dsn := range map[string]string{
+		"libpq key-value DSN": "host=db.internal port=5432 user=postgres password=root123 dbname=registry sslmode=disable",
+		"empty-scheme URL":    "//db.internal:5432/registry?sslmode=disable",
+		"non-postgres scheme": "mysql://db.internal:3306/registry",
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got, err := migratorDSN(&models.PostGreSQL{URL: dsn}); err == nil {
+				t.Errorf("migratorDSN() = %q, want an error", got)
+			}
+		})
+	}
+}
+
+func TestMigratorDSNAcceptsQueryHost(t *testing.T) {
+	cfg := &models.PostGreSQL{URL: "postgres:///registry?host=%2Fvar%2Frun%2Fpostgresql&sslmode=disable"}
+	got, err := migratorDSN(cfg)
+	if err != nil {
+		t.Fatalf("migratorDSN() error = %v", err)
+	}
+	want := "pgx5:///registry?host=%2Fvar%2Frun%2Fpostgresql&sslmode=disable"
+	if got != want {
+		t.Errorf("migratorDSN() = %q, want %q", got, want)
+	}
+}
