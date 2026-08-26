@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -32,6 +33,17 @@ const (
 	// authoritativeSchemaLockID is the ASCII encoding of "HNEXTSCH". It
 	// serializes reconciliation when multiple core replicas start together.
 	authoritativeSchemaLockID int64 = 0x484e455854534348
+)
+
+// authoritativeSchemaLockTimeout bounds the wait for a peer holding the advisory
+// lock; the schema apply itself is not bounded. A var so tests can shorten it.
+var authoritativeSchemaLockTimeout = 10 * time.Minute
+
+const (
+	authoritativeSchemaLockQuery = "SELECT pg_advisory_xact_lock($1)"
+	// statement_timeout would cut the lock wait short of authoritativeSchemaLockTimeout
+	disableStatementTimeout = "SET LOCAL statement_timeout = 0"
+	restoreStatementTimeout = "RESET statement_timeout"
 )
 
 type schemaDB interface {
@@ -106,8 +118,16 @@ func applyAuthoritativeSchema(ctx context.Context, db schemaDB, path string) err
 		}
 	}()
 
-	if err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock($1)", authoritativeSchemaLockID); err != nil {
-		return fmt.Errorf("lock authoritative 8gcr schema: %w", err)
+	lockCtx, cancel := context.WithTimeout(ctx, authoritativeSchemaLockTimeout)
+	defer cancel()
+	if err := tx.Exec(ctx, disableStatementTimeout); err != nil {
+		return fmt.Errorf("disable statement timeout for authoritative 8gcr schema lock: %w", err)
+	}
+	if err := tx.Exec(lockCtx, authoritativeSchemaLockQuery, authoritativeSchemaLockID); err != nil {
+		return fmt.Errorf("lock authoritative 8gcr schema (another instance may hold it, waited up to %s): %w", authoritativeSchemaLockTimeout, err)
+	}
+	if err := tx.Exec(ctx, restoreStatementTimeout); err != nil {
+		return fmt.Errorf("restore statement timeout after authoritative 8gcr schema lock: %w", err)
 	}
 	if err := tx.Exec(ctx, string(schema)); err != nil {
 		return fmt.Errorf("apply authoritative 8gcr schema: %w", err)
