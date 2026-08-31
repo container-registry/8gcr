@@ -25,7 +25,7 @@ A single environment doesn't justify a Kustomize base/overlay split yet; when a 
 
 1. **Component image publish** (`.github/workflows/main-images.yml`, runs after `Release Ready` succeeds on `main`, via the reusable `publish-images.yml`):
    - Applies the commercial patches, then builds all Harbor component images for `linux/amd64` and `linux/arm64`.
-   - Moves `latest` for `8gears.container-registry.com/8gcr/harbor-<component>` (`trivy-adapter` keeps its existing `8gcr/trivy-adapter` repository name).
+   - Moves `latest` for `8gears.container-registry.com/8gcr/harbor-<component>`. The Trivy adapter is not built here: `8gcr/harbor-scanner-trivy` is published by container-registry/harbor-scanner-trivy.
    - It does not publish Flux deployment configuration.
 2. **Chart publish** (`.github/workflows/publish-chart.yml`, dispatched for a published `chart-v<semver>` release tag):
    - Packages `deploy/chart/` and pushes to `oci://8gears.container-registry.com/8gcr/charts/harbor:<version>`.
