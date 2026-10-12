@@ -35,7 +35,7 @@ func TestIsGoogleEndpoint(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.authURL, func(t *testing.T) {
-			assert.Equal(t, c.expected, isGoogleEndpoint(c.authURL))
+			assert.Equal(t, c.expected, IsGoogleEndpoint(c.authURL))
 		})
 	}
 }
