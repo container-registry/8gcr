@@ -33,10 +33,12 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 const (
 	authHeader = "Authorization"
+	retryAfter = "5"
 )
 
 type reqChecker struct {
@@ -69,6 +71,9 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 			pn := strings.Split(a.name, "/")[0]
 			pid, err := rc.projectID(req.Context(), pn)
 			if err != nil {
+				if errors.ErrCode(err) == errors.GeneralCode {
+					return "", lookupError(err)
+				}
 				return "", err
 			}
 			resource := rbac_project.NewNamespace(pid).Resource(rbac.ResourceRepository)
@@ -164,6 +169,14 @@ var (
 	checker reqChecker
 )
 
+// lookupError keeps an uncoded project lookup failure from becoming a 401.
+func lookupError(err error) error {
+	if orm.IsConnectionError(err) {
+		return errors.ServiceUnavailableError(err)
+	}
+	return errors.UnknownError(err)
+}
+
 // Middleware checks the permission of the request to access the artifact
 func Middleware() func(http.Handler) http.Handler {
 	once.Do(func() {
@@ -176,6 +189,15 @@ func Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			if challenge, err := checker.check(req); err != nil {
+				if errors.IsErr(err, errors.ServiceUnavailableCode) {
+					rw.Header().Set("Retry-After", retryAfter)
+					lib_http.SendError(rw, err)
+					return
+				}
+				if errors.IsErr(err, errors.GeneralCode) {
+					lib_http.SendError(rw, err)
+					return
+				}
 				// the header is needed for "docker manifest" commands: https://github.com/docker/cli/issues/989
 				rw.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 				rw.Header().Set("Www-Authenticate", challenge)

@@ -26,6 +26,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
@@ -35,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -50,9 +52,15 @@ func TestMain(m *testing.M) {
 	mockGet := func(ctx context.Context,
 		projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
 		name := projectIDOrName.(string)
+		switch name {
+		case "dbdown":
+			return nil, fmt.Errorf("get project: %w", &pgconn.PgError{Code: "57P01"})
+		case "dbbug":
+			return nil, fmt.Errorf("unexpected failure")
+		}
 		id, _ := strconv.Atoi(strings.TrimPrefix(name, "project_"))
 		if id == 0 {
-			return nil, fmt.Errorf("%s not found", name)
+			return nil, errors.NotFoundError(nil).WithMessagef("%s not found", name)
 		}
 		return &proModels.Project{
 			ProjectID: int64(id),
@@ -165,10 +173,15 @@ func TestMiddleware(t *testing.T) {
 	req5, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_3/ubuntu", nil)
 	req6, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_0/ubuntu", nil)
 	req7, _ := http.NewRequest(http.MethodPost, "/v2/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_0/ubuntu", nil)
+	req8, _ := http.NewRequest(http.MethodPost, "/v2/dbdown/ubuntu/blobs/uploads/", nil)
+	ctx8 := lib.WithArtifactInfo(baseCtx, lib.ArtifactInfo{Repository: "dbdown/ubuntu", ProjectName: "dbdown"})
+	req9, _ := http.NewRequest(http.MethodPost, "/v2/dbbug/ubuntu/blobs/uploads/", nil)
+	ctx9 := lib.WithArtifactInfo(baseCtx, lib.ArtifactInfo{Repository: "dbbug/ubuntu", ProjectName: "dbbug"})
 
 	cases := []struct {
-		input  *http.Request
-		status int
+		input      *http.Request
+		status     int
+		retryAfter string
 	}{
 		{
 			input:  req1a.WithContext(ctx1),
@@ -214,12 +227,22 @@ func TestMiddleware(t *testing.T) {
 			input:  req7.WithContext(ctx5),
 			status: http.StatusUnauthorized,
 		},
+		{
+			input:      req8.WithContext(ctx8),
+			status:     http.StatusServiceUnavailable,
+			retryAfter: retryAfter,
+		},
+		{
+			input:  req9.WithContext(ctx9),
+			status: http.StatusInternalServerError,
+		},
 	}
 	for _, c := range cases {
 		rec := httptest.NewRecorder()
 		t.Logf("req : %s, %s", c.input.Method, c.input.URL)
 		Middleware()(next).ServeHTTP(rec, c.input)
 		assert.Equal(t, c.status, rec.Result().StatusCode)
+		assert.Equal(t, c.retryAfter, rec.Result().Header.Get("Retry-After"))
 	}
 }
 

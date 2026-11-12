@@ -15,6 +15,10 @@
 package orm
 
 import (
+	"database/sql/driver"
+	"fmt"
+	"io"
+	"net"
 	"testing"
 
 	"github.com/beego/beego/v2/client/orm"
@@ -119,4 +123,19 @@ func TestIsForeignKeyError(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Equal(t, errors.ViolateForeignKeyConstraintCode, err.Code)
 	assert.Equal(t, message, err.Message)
+}
+
+func TestIsConnectionError(t *testing.T) {
+	assert.False(t, IsConnectionError(nil))
+	assert.False(t, IsConnectionError(errors.New("common error")))
+	assert.False(t, IsConnectionError(&pgconn.PgError{Code: pgUniqueViolation}))
+	assert.True(t, IsConnectionError(fmt.Errorf("query: %w", driver.ErrBadConn)))
+	assert.True(t, IsConnectionError(fmt.Errorf("rollback: %w", pgconn.ErrConnClosed)))
+	assert.True(t, IsConnectionError(io.ErrUnexpectedEOF))
+	assert.True(t, IsConnectionError(fmt.Errorf("query: %w", io.EOF)))
+	assert.True(t, IsConnectionError(&pgconn.ConnectError{}))
+	assert.True(t, IsConnectionError(&net.OpError{Op: "dial", Err: errors.New("connection refused")}))
+	assert.True(t, IsConnectionError(&pgconn.PgError{Code: "08006"}))
+	assert.True(t, IsConnectionError(errors.UnknownError(&pgconn.PgError{Code: "57P01"})))
+	assert.True(t, IsConnectionError(&pgconn.PgError{Code: "57P03"}))
 }

@@ -44,6 +44,7 @@ var (
 		errors.PROJECTPOLICYVIOLATION:          http.StatusPreconditionFailed,
 		errors.GeneralCode:                     http.StatusInternalServerError,
 		errors.RequestEntityTooLargeCode:       http.StatusRequestEntityTooLarge,
+		errors.ServiceUnavailableCode:          http.StatusServiceUnavailable,
 	}
 )
 
@@ -56,7 +57,11 @@ func SendError(w http.ResponseWriter, err error) {
 	// the error detail is logged only, and will not be sent to the client to avoid leaking server information
 	if statusCode >= http.StatusInternalServerError {
 		log.Errorf("%s %s", errPayload, stackTrace)
-		err = errors.New(nil).WithCode(errors.GeneralCode).WithMessage("internal server error")
+		masked := errors.New(nil).WithCode(errors.GeneralCode).WithMessage("internal server error")
+		if errors.IsErr(err, errors.ServiceUnavailableCode) {
+			masked = errors.New(nil).WithCode(errors.ServiceUnavailableCode).WithMessage("service unavailable")
+		}
+		err = masked
 		errPayload = errors.NewErrs(err).Error()
 	} else {
 		// only log the error whose status code < 500 when debugging to avoid log flooding

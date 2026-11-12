@@ -49,6 +49,8 @@ const (
 	UNSUPPORTED = "UNSUPPORTED"
 	// RequestEntityTooLargeCode is the error code for request entity too large error.
 	RequestEntityTooLargeCode = "REQUEST_ENTITY_TOO_LARGE"
+	// ServiceUnavailableCode is the error code for a dependency, such as the database, being unreachable
+	ServiceUnavailableCode = "SERVICE_UNAVAILABLE"
 )
 
 // NotFoundError is error for the case of object not found
@@ -118,4 +120,9 @@ func IsChallengesUnsupportedErr(err error) bool {
 // IsRateLimitError checks whether the err chains contains rate limit error
 func IsRateLimitError(err error) bool {
 	return IsErr(err, RateLimitCode)
+}
+
+// ServiceUnavailableError is error for the case of a dependency being unreachable
+func ServiceUnavailableError(err error) *Error {
+	return New("service unavailable").WithCode(ServiceUnavailableCode).WithCause(err)
 }
