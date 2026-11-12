@@ -369,3 +369,15 @@ BEGIN
     END IF;
 END
 $$;
+
+-- Lets the periodic recovery of lost execution status refreshes read only active executions
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_class
+        WHERE oid = to_regclass('execution') AND relkind IN ('r', 'p')
+    ) THEN
+        CREATE INDEX IF NOT EXISTS idx_execution_active ON execution (id) WHERE status IN ('Pending', 'Running');
+    END IF;
+END
+$$;
