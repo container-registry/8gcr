@@ -297,8 +297,8 @@ http:
 {{- end }}
 
 {{/*
-Filesystem rootdirectory honored by the storage volumeMount on the
-registry/registryctl containers. Reads from .Values.registry.config.storage.filesystem.rootdirectory
+Filesystem rootdirectory honored by the storage volumeMount on
+the registry container. Reads from .Values.registry.config.storage.filesystem.rootdirectory
 with fallback to /storage.
 */}}
 {{- define "harbor.registry.storageMountPath" -}}
@@ -599,6 +599,9 @@ Validate required values
 {{- $legacyEgress := (.Values.network | default dict).allowPrivateNetworkAccess }}
 {{- if and (not (kindIs "invalid" $legacyEgress)) (ne (toString $legacyEgress) "") }}
 {{- fail (printf "network.allowPrivateNetworkAccess (%v) was removed: set network.webhookEgress.policy instead (true: allow_all, false: public_only, unset: block_restricted) and remove network.allowPrivateNetworkAccess." $legacyEgress) }}
+{{- end }}
+{{- if and (eq (.Values.image.source | default "8gcr") "upstream") (eq (toString (.Values.registry.controller | default dict).enabled) "false") }}
+{{- fail "registry.controller.enabled=false with image.source=upstream: the goharbor registry has no GC deletion API, so GC would drop database rows and keep the blobs. Remove registry.controller.enabled." }}
 {{- end }}
 {{- if not .Values.externalURL }}
 {{- fail "externalURL is required. Please set externalURL in your values." }}

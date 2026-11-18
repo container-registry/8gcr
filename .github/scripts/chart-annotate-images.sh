@@ -46,7 +46,7 @@ fi
 
 {
   echo "  artifacthub.io/images: |"
-  for component in core jobservice registryctl exporter portal registry; do
+  for component in core jobservice exporter portal registry; do
     image_name="harbor-${component}"
     echo "    - name: ${image_name}"
     echo "      image: ${registry_address}/${registry_project}/${image_name}:${app_version}"
