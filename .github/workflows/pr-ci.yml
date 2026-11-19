@@ -22,6 +22,26 @@ env:
   PREVIEW_TAG: pr-${{ github.event.pull_request.number }}
 
 jobs:
+  release-notes-scripts:
+    name: Test release notes scripts
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - uses: $/.github/actions/setup-task
+
+      - run: task release-notes:test:scripts
+
   changes:
     name: Check image inputs
     # Forked PRs have no registry credentials and bot PRs need no preview. In

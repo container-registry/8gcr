@@ -184,6 +184,7 @@ jobs:
     if: ${{ needs.release.outputs.release_sha != '' }}
     permissions:
       contents: write
+      pull-requests: read
     uses: $/.github/workflows/release-notes-engine.yml
     with:
       tag_name: ${{ needs.channel.outputs.beta_tag }}

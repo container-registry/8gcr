@@ -11,6 +11,11 @@ tasks:
     cmds:
       - node .github/scripts/update-release-notes.mjs
 
+  test:scripts:
+    desc: "Test the release notes scripts in .github/scripts"
+    cmds:
+      - node --test .github/scripts/*.test.mjs
+
   previous-stable-tag:
     desc: "Print the greatest stable release tag below PREDECESSOR_FOR (empty when there is none)"
     silent: true

@@ -122,13 +122,6 @@ Use the following template for your PR description:
 - [ ] Dependencies update (`chore:`)
 - [ ] Tests (`test:`)
 
-## Release Notes
-<!--
-Required for new features (feat:); recommended for user-facing fixes (fix:).
-Also fill in for breaking changes and deprecations.
-Leave blank for ci:/chore:/refactor:/docs:/test: PRs.
--->
-
 ## Testing
 - [ ] Unit tests added/updated
 - [ ] Manual testing performed
@@ -137,6 +130,12 @@ Leave blank for ci:/chore:/refactor:/docs:/test: PRs.
 - [ ] PR title follows [Conventional Commits](https://www.conventionalcommits.org/) format
 - [ ] Commits are signed off (`git commit -s`)
 - [ ] No new warnings introduced
+
+## Release Notes
+<!--
+Required for feat: and fix: PRs: notes when users are affected, otherwise N/A.
+Keep this the last section. See "Adding Release Notes to Your PR".
+-->
 ```
 
 ### 6. Breaking Changes
@@ -272,26 +271,32 @@ This renders in the release notes as:
 
 ## Adding Release Notes to Your PR
 
-**New features (`feat:`) must add a `## Release Notes` section to the PR description.** It is also expected for other user-facing changes (breaking changes, deprecations). The content appears on the GitHub Release page under a `## Summary` section — verbatim, so screenshots and links carry over.
-
-Fill in the `## Release Notes` section in the PR description:
+`feat:` and `fix:` PRs end their description with a `## Release Notes` section. The release pipeline puts its text under the PR's entry in the GitHub Release changelog, so readers see the note in Features, Fixes or Upstream, next to the PR it belongs to. It does not affect `CHANGELOG.md`.
 
 ```markdown
 ## Release Notes
 
-Adds federated OIDC support. Configure via the new `federated_oidc` key in `harbor.yml`.
-See the [OIDC documentation](https://docs.example.com/oidc) for configuration details.
+Adds federated OIDC support. Configure it with the new `federated_oidc` key in `harbor.yml`;
+see the [OIDC documentation](https://docs.example.com/oidc).
 ```
 
-**Rules:**
+**Write notes when, without them, someone running Harbor would act differently after upgrading or be surprised by what changed.** For `feat:` that is almost always the case. A `fix:` qualifies when at least one of these holds:
 
-- Required for `feat:` PRs; recommended for any user-facing `fix:` PRs
-- Leave it blank for `ci:`, `chore:`, `refactor:`, `docs:` PRs
-- Write for your users, not for developers (explain what changed and why it matters)
-- Links are fine and encouraged
-- HTML comments in the section are stripped automatically
+- **Action needed**: users change config, migrate, clean up or re-check something
+- **Behaviour change**: something works differently or stops working, or a default or permission changes
+- **New decision**: the fix adds a setting users may want to set
+- **Security fix** with an advisory (GHSA or CVE)
+- **Visible failure gone**: an outage, data loss or regression users noticed and may have worked around
 
-The `## Release Notes` section is extracted by the release pipeline and injected into the GitHub Release body. It does not affect `CHANGELOG.md`.
+Otherwise write `N/A`: internal fixes without a visible symptom, refactors, schema plumbing, dependency bumps without a CVE, and bugs that never shipped in a release.
+
+**Rules** (the `release-notes` PR check enforces them):
+
+- `feat:` and `fix:` PRs need the section; its content is the notes or `N/A`. Breaking changes (any type with `!`, such as `feat!:`) need notes
+- At most 550 characters as rendered; link targets, images and Markdown markers do not count. Put details in the docs and link to them
+- Last section of the description, with no headings inside. Any heading ends the section, so `### Tests` or `### Backport` placed below it are not published
+- No alert boxes such as `> [!NOTE]`; they do not render inside the changelog list. Use plain text or **bold**
+- Write for users: what changed and what they need to do. HTML comments are stripped
 
 ---
 

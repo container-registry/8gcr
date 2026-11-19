@@ -18,13 +18,6 @@
 - [ ] Dependencies update (`chore:`)
 - [ ] Tests (`test:`)
 
-## Release Notes
-
-<!--
-Optional. Fill in for user-facing changes (new features, breaking changes, deprecations).
-Leave blank for ci:/chore:/refactor:/docs:/test: PRs.
--->
-
 ## Testing
 
 - [ ] Unit tests added/updated
@@ -35,3 +28,12 @@ Leave blank for ci:/chore:/refactor:/docs:/test: PRs.
 - [ ] PR title follows [Conventional Commits](https://www.conventionalcommits.org/) format
 - [ ] Commits are signed off (`git commit -s`)
 - [ ] No new warnings introduced
+
+## Release Notes
+
+<!--
+Required for feat: and fix: PRs: notes when users are affected, otherwise N/A.
+Shown under this PR's entry on the GitHub Release. At most 550 characters,
+no headings, no alert boxes, and keep this the last section.
+See CONTRIBUTING.md, "Adding Release Notes to Your PR".
+-->

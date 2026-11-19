@@ -28,7 +28,7 @@ builds both `linux/amd64` and `linux/arm64`.
 - DCO sign-off required: `git commit -s`.
 - **Squash and merge only** — other merge types break release-please.
 - No `Co-Authored-By` / AI attribution trailers.
-- **New features (`feat:`) must add a `## Release Notes` section to the PR description.** Its content is extracted and rendered under `## Summary` on the GitHub Release. See CONTRIBUTING.md → "Adding Release Notes to Your PR".
+- **`feat:` and `fix:` PRs end the description with a `## Release Notes` section**: notes when users are affected, otherwise `N/A`; a breaking (`!`) PR always needs notes. At most 550 rendered characters, no headings, no alert boxes. It is shown under the PR's entry on the GitHub Release; criteria in CONTRIBUTING.md → "Adding Release Notes to Your PR".
 
 ## Release-please
 
