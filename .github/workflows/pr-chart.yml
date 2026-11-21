@@ -158,21 +158,22 @@ jobs:
           .github/scripts/chart-annotate-images.sh \
             deploy/chart "${REGISTRY_ADDRESS}" "${RELEASE_PROJECT}"
 
-      - name: Log in to registry
-        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
-        with:
-          registry: ${{ env.REGISTRY_ADDRESS }}
-          username: ${{ vars.PR_REGISTRY_USERNAME }}
-          password: ${{ secrets.PR_REGISTRY_PASSWORD }}
-
       - name: Build chart dependencies
         # deploy/chart/charts/ is gitignored; Chart.lock pins the subcharts.
         run: helm dependency build deploy/chart
 
       - name: Package chart
         # appVersion stays as committed, so default image tags resolve to a
-        # published Harbor release.
+        # published Harbor release. Packaging reads the pull request's chart, so
+        # like the annotation step it runs before the login.
         run: helm package deploy/chart --version "${PREVIEW_VERSION}" --destination dist
+
+      - name: Log in to registry
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ${{ env.REGISTRY_ADDRESS }}
+          username: ${{ vars.PR_REGISTRY_USERNAME }}
+          password: ${{ secrets.PR_REGISTRY_PASSWORD }}
 
       - name: Push chart
         id: push
@@ -183,7 +184,7 @@ jobs:
           set -euo pipefail
           helm push "dist/harbor-${PREVIEW_VERSION}.tgz" \
             "oci://${REGISTRY_ADDRESS}/${PR_REGISTRY_PROJECT}/charts" 2>&1 | tee push.log
-          digest=$(grep -o 'sha256:[a-f0-9]\{64\}' push.log | head -1)
+          digest=$(grep -o 'sha256:[a-f0-9]\{64\}' push.log | head -1 || true)
           if [ -z "$digest" ]; then
             echo "::error::Failed to capture the chart digest from helm push output"
             exit 1
@@ -344,7 +345,7 @@ jobs:
               `A preview chart for this PR is available, packaged from \`${short}\`:`,
               '',
               '```',
-              'helm install harbor-next \\',
+              'helm install harbor \\',
               `  oci://${chart} \\`,
               `  --version ${previewVersion}`,
               '```',

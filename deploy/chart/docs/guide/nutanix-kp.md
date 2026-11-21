@@ -138,6 +138,7 @@ Decompress the downloaded chart:
 
 ```bash
 tar xzvf harbor-*.tgz
+cd harbor
 ```
 
 ### Edit Values

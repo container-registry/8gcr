@@ -1,4 +1,4 @@
-# Ordered commercial patches for Harbor Next release-2.16.
+# Ordered commercial patches for 8gcr release-2.16.
 release-2.16/0002-branding
 release-2.16/0003-sftp-replication
 release-2.16/0004-federated-robot-accounts

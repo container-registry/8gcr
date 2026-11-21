@@ -79,7 +79,7 @@ CREATE DATABASE
 postgres=# exit
 ```
 
-## Deploy Harbor next
+## Deploy 8gcr
 
 We pull the Helm chart from the OCI repository. First, log in to the registry if authentication is required:
 

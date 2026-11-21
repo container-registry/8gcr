@@ -6,7 +6,8 @@ Expand the name of the chart.
 {{- end }}
 
 {{- define "harbor.name" -}}
-{{- include "harbor.dnsSafeName" (default .Chart.Name .Values.nameOverride) | trunc 63 | trimSuffix "-" }}
+{{- /* Not .Chart.Name: resource names and the immutable selectors must not follow a package rename. */ -}}
+{{- include "harbor.dnsSafeName" (default "harbor" .Values.nameOverride) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -187,6 +188,30 @@ tolerations:
 hostAliases:
   {{- toYaml . | nindent 2 }}
 {{- end }}
+{{- end }}
+
+{{/*
+Deployment strategy, always rendered with the K8s rollingUpdate defaults so
+helm owns those fields and server-side apply can drop them on Recreate.
+*/}}
+{{- define "harbor.deploymentStrategy" -}}
+{{- $type := .type | default "RollingUpdate" -}}
+{{- if eq $type "Recreate" -}}
+{{- if .rollingUpdate -}}
+{{- fail "deploymentStrategy.rollingUpdate may not be set when type is Recreate" -}}
+{{- end -}}
+strategy:
+  type: Recreate
+{{- else -}}
+{{- $ru := dict "maxSurge" "25%" "maxUnavailable" "25%" -}}
+{{- range $k, $v := .rollingUpdate | default dict }}
+{{- $_ := set $ru $k $v -}}
+{{- end -}}
+strategy:
+  type: {{ $type }}
+  rollingUpdate:
+    {{- toYaml $ru | nindent 4 }}
+{{- end -}}
 {{- end }}
 
 {{/*

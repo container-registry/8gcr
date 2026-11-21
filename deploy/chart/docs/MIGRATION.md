@@ -80,7 +80,7 @@ to them (`values*-next.yaml`, `report*.txt`).
 | Trivy | `trivy.enabled: true` | Default `false` | Set `trivy.enabled: true` if you scan images |
 | TLS | `expose.tls.enabled: true` | `tls.enabled: false` (terminate at ingress) | Revisit the [TLS section](MIGRATION-REFERENCE.md#tls) |
 | Internal TLS | `internalTLS.*` | **Not supported** | Use a service mesh for pod-to-pod TLS |
-| Images | `docker.io/goharbor/*` | `8gears.container-registry.com/8gcr/harbor-*` (Harbor Next builds) | Nothing, unless you mirror images |
+| Images | `docker.io/goharbor/*` | `8gears.container-registry.com/8gcr/harbor-*` (8gcr builds) | Nothing, unless you mirror images |
 | Probes | Fully configurable per component | Fully configurable via `<component>.probes.{startup,liveness,readiness}` (full K8s probe specs) | Move probe overrides into `<component>.probes` |
 | Notary / ChartMuseum | Removed in later 2.x releases too | Not supported | Use cosign/OCI artifacts |
 

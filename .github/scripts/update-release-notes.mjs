@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 const IMAGES = ['core', 'jobservice', 'registryctl', 'exporter', 'portal', 'registry', 'trivy-adapter'];
 const SERIES = 'taskfile/commercial-patches';
-const PATCHES_REMOTE = 'https://x-access-token@github.com/container-registry/8gcr';
+const PATCHES_REMOTE = 'https://x-access-token@github.com/container-registry/8gcr-ee';
 const FENCE = '```';
 const OIDC_ISSUER = '  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \\';
 // The token stays in the environment: never in a URL, argument or Git config.
@@ -278,7 +278,7 @@ export function releaseEntries(changelog, tag) {
 }
 
 // Notes per commercial patch branch listed in the series. The Harbor branch
-// owns the ordered list; 8gcr only stores the branch commits. Nothing here
+// owns the ordered list; 8gcr-ee only stores the branch commits. Nothing here
 // reads a commit subject: under merge-sync every patch branch tip is a
 // "sync: merge ..." commit, never a feature name.
 function commercialNotes(tag, tmp, token) {
@@ -437,7 +437,7 @@ async function main() {
       summary: optional('summary.md'),
       formatted: read(file('formatted-notes.md')),
       contributors: optional('contributors.md'),
-      chartName: chartField(chartYaml, 'name') || 'harbor-next',
+      chartName: chartField(chartYaml, 'name') || 'harbor',
       chartVersion: chartMode ? version : chartField(chartYaml, 'version'),
     });
     const notesPath = file('release-notes.md');

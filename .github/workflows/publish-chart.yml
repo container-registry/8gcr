@@ -172,7 +172,7 @@ jobs:
           set -euo pipefail
           helm push "dist/harbor-${VERSION}.tgz" \
             "oci://${REGISTRY_ADDRESS}/${REGISTRY_PROJECT}/charts" 2>&1 | tee push.log
-          digest=$(grep -o 'sha256:[a-f0-9]\{64\}' push.log | head -1)
+          digest=$(grep -o 'sha256:[a-f0-9]\{64\}' push.log | head -1 || true)
           if [ -z "$digest" ]; then
             echo "Failed to capture chart digest from helm push output" >&2
             exit 1

@@ -198,3 +198,4 @@ jobs:
           helm dependency build "${work}/chart"
           helm package "${work}/chart" --version 0.0.0-ci --destination "${work}/dist"
           ls -l "${work}/dist"
+          test -f "${work}/dist/harbor-0.0.0-ci.tgz"
