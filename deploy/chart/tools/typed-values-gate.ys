@@ -1,0 +1,78 @@
+#!/usr/bin/env ys-0
+
+# typed-values-gate.ys: fail when the values.yaml key paths differ from the
+# .values-keys baseline.
+#
+# Usage (from the chart directory):
+#   ys tools/typed-values-gate.ys [values.yaml] [.values-keys] [write]
+#
+# The chart reaches Harbor settings through the passthrough
+# (<component>.config / .secret / .env, global.env), so a new typed value is
+# usually redundant (CONTRIBUTING.md, "Passthrough, not typed values"), and
+# removing one breaks upgrades. Both show up as a reviewed baseline edit.
+# Subcharts (from Chart.yaml) and the passthrough maps directly under a
+# top-level key are open by design and count as one path.
+
+passthrough =:: ['config', 'secret', 'env']
+
+defn subcharts():
+  deps =: yaml/load(read('Chart.yaml')).dependencies
+  set: deps.map(\(_.alias ||| _.name))
+
+defn open?(subs path):
+  parts =: path.split(/\./)
+  if parts.# == 1:
+    path.in?(subs)
+    and(parts.# == 2 parts:second.in?(passthrough))
+
+defn join-path(prefix k):
+  if empty?(prefix):
+    str(k)
+    str(prefix '.' k)
+
+# walk is passed in because paths and entry-paths recurse into each other
+defn entry-paths(walk subs prefix entry):
+  path =: join-path(prefix entry:first)
+  if open?(subs path):
+    list(path)
+    cons(path walk(subs path entry:second))
+
+defn paths(subs prefix v):
+  if map?(v) && not(empty?(v)):
+    mapcat(\(entry-paths(paths subs prefix _)) v)
+    list()
+
+defn report(title paths):
+  when not(empty?(paths)):
+    warn: title
+    each p paths:
+      warn: "  $p"
+
+defn check(found baseline-file):
+  baseline =: set(baseline-file:read:lines.map(trim).remove(empty?))
+  found-set =: set(found)
+  new =: found.remove(\(baseline _)):V
+  gone =: baseline.remove(\(found-set _)):sort:V
+  when not(empty?(new)) || not(empty?(gone)):
+    report "New values.yaml paths not in $baseline-file:": new
+    when not(empty?(new)):
+      warn: |-
+        Harbor settings belong in the passthrough (<component>.config,
+        .secret, jobservice.env, global.env), not in typed values.
+    report "Paths in $baseline-file that values.yaml no longer has:": gone
+    when not(empty?(gone)):
+      warn: |-
+        Removing or renaming a value breaks upgrades outside a chart major
+        (CONTRIBUTING.md, compatibility contract). Deprecate it instead.
+    warn: |-
+      If the change is intended, regenerate the baseline:
+        ys tools/typed-values-gate.ys values.yaml .values-keys write
+    exit: 1
+  n =: found.#
+  say: "typed-values gate: $n paths, none new or removed"
+
+defn main(values-file='values.yaml' baseline-file='.values-keys' mode=''):
+  found =: paths(subcharts() '' values-file:read:yaml/load):distinct:sort
+  if mode == 'write':
+    spit baseline-file: str(found.join("\n") "\n")
+    check found: baseline-file

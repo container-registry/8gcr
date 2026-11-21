@@ -75,9 +75,9 @@ tests:
           path: data.DEFAULT_PROJECT_NAME
           value: ""
 
-  # Pins: core.defaultProjectName and a DEFAULT_PROJECT_NAME in core.config cannot both render.
-  - it: should fail when core.config also sets DEFAULT_PROJECT_NAME
-    template: templates/core.deployment.yaml
+  # Pins: core.config wins over the deprecated typed value instead of failing.
+  - it: should let core.config DEFAULT_PROJECT_NAME win over core.defaultProjectName
+    template: templates/core.configmap.yaml
     set:
       externalURL: https://harbor.example.com
       database.host: postgres.example.com
@@ -85,36 +85,86 @@ tests:
       core.defaultProjectName: catchall
       core.config.default_project_name: other
     asserts:
-      - failedTemplate:
-          errorMessage: set core.defaultProjectName or DEFAULT_PROJECT_NAME in core.config/core.secret/core.extraEnv, not both
-
-  # Pins: core.defaultProjectName and a DEFAULT_PROJECT_NAME in core.extraEnv cannot both render.
-  - it: should fail when core.extraEnv also sets DEFAULT_PROJECT_NAME
-    template: templates/core.deployment.yaml
-    set:
-      externalURL: https://harbor.example.com
-      database.host: postgres.example.com
-      harborAdminPassword: Harbor12345
-      core.defaultProjectName: catchall
-      core.extraEnv:
-        - name: DEFAULT_PROJECT_NAME
+      - equal:
+          path: data.DEFAULT_PROJECT_NAME
           value: other
-    asserts:
-      - failedTemplate:
-          errorMessage: set core.defaultProjectName or DEFAULT_PROJECT_NAME in core.config/core.secret/core.extraEnv, not both
 
-  # Pins: a DEFAULT_PROJECT_NAME in core.secret conflicts too, whatever the key case.
-  - it: should fail when core.secret also sets DEFAULT_PROJECT_NAME
+  # Pins: core.config overrides a chart-managed default for the same env key.
+  - it: should let core.config override a chart-managed core env key
+    template: templates/core.configmap.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      core.config.REPLICATION_ADAPTER_WHITELIST: harbor,docker-hub
+    asserts:
+      - equal:
+          path: data.REPLICATION_ADAPTER_WHITELIST
+          value: harbor,docker-hub
+
+  # Pins: precedence chart default < global.env < core.config.
+  - it: should apply global.env to core below core.config
+    template: templates/core.configmap.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      global.env.HARBOR_WEBHOOK_EGRESS_POLICY: public_only
+      global.env.LOG_LEVEL: warning
+      core.config.LOG_LEVEL: debug
+    asserts:
+      - equal:
+          path: data.HARBOR_WEBHOOK_EGRESS_POLICY
+          value: public_only
+      - equal:
+          path: data.LOG_LEVEL
+          value: debug
+
+  # Pins main's behavior: toEnvVars uppercases keys and renders sorted, so the
+  # lowercase spelling comes last and wins, now as a single key.
+  - it: should keep the last spelling when one block sets the same env key twice
+    template: templates/core.configmap.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      core.config.log_level: debug
+      core.config.LOG_LEVEL: info
+    asserts:
+      - equal:
+          path: data.LOG_LEVEL
+          value: debug
+
+  # Pins: core exits on start with an invalid DEFAULT_PROJECT_NAME.
+  - it: should reject an invalid DEFAULT_PROJECT_NAME from core.config
     template: templates/core.deployment.yaml
     set:
       externalURL: https://harbor.example.com
       database.host: postgres.example.com
       harborAdminPassword: Harbor12345
-      core.defaultProjectName: catchall
-      core.secret.default_project_name: other
+      core.config.DEFAULT_PROJECT_NAME: My_Project
     asserts:
       - failedTemplate:
-          errorMessage: set core.defaultProjectName or DEFAULT_PROJECT_NAME in core.config/core.secret/core.extraEnv, not both
+          errorMessage: 'DEFAULT_PROJECT_NAME "My_Project" is not a valid project name: lowercase letters, digits and single . _ - between them, at most 255 characters'
+
+  # Pins: app.conf is a mounted file, not env, and keeps its exact body.
+  - it: should keep app.conf unchanged next to merged env
+    template: templates/core.configmap.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      core.config.LOG_LEVEL: debug
+    asserts:
+      - equal:
+          path: data["app.conf"]
+          value: |
+            appname = Harbor
+            runmode = prod
+            enablegzip = true
+
+            [prod]
+            httpport = 8080
 
   # Pins: DEFAULT_PROJECT_NAME from core.config alone still renders.
   - it: should keep DEFAULT_PROJECT_NAME from core.config when core.defaultProjectName is unset
@@ -128,6 +178,75 @@ tests:
       - equal:
           path: data.DEFAULT_PROJECT_NAME
           value: other
+
+  # Pins the documented precedence: the core Secret is the later envFrom
+  # source, so its keys beat the ConfigMap, including the deprecated value.
+  - it: should let core.secret DEFAULT_PROJECT_NAME win over core.defaultProjectName
+    template: templates/core.deployment.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      core.defaultProjectName: library
+      core.secret.DEFAULT_PROJECT_NAME: other
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].envFrom[0].configMapRef.name
+          value: RELEASE-NAME-harbor-core
+      - equal:
+          path: spec.template.spec.containers[0].envFrom[1].secretRef.name
+          value: RELEASE-NAME-harbor-core
+
+  - it: should render core.secret DEFAULT_PROJECT_NAME into the core Secret
+    template: templates/core.secret.yaml
+    documentIndex: 0
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      core.defaultProjectName: library
+      core.secret.DEFAULT_PROJECT_NAME: other
+    asserts:
+      - equal:
+          path: data.DEFAULT_PROJECT_NAME
+          value: b3RoZXI=
+
+  - it: should let core.extraEnv DEFAULT_PROJECT_NAME win as explicit env
+    template: templates/core.deployment.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      core.defaultProjectName: library
+      core.extraEnv:
+        - name: DEFAULT_PROJECT_NAME
+          value: other
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DEFAULT_PROJECT_NAME
+            value: other
+
+  # Pins main's layering: core.secret replaces HARBOR_ADMIN_PASSWORD and
+  # SECRET_KEY, while CSRF_KEY and the registry credential stay pinned.
+  - it: should merge core.secret over replaceable keys and keep pinned credentials
+    template: templates/core.secret.yaml
+    documentIndex: 0
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      core.xsrfKey: 0123456789abcdef0123456789abcdef
+      core.secret.SECRET_KEY: abcdefabcdefabcd
+      core.secret.csrf_key: userkey
+    asserts:
+      - equal:
+          path: data.SECRET_KEY
+          value: YWJjZGVmYWJjZGVmYWJjZA==
+      - equal:
+          path: data.CSRF_KEY
+          value: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
 
   # Pins: CORE_URL carries the core Service port, so the SBOM push path never
   # sees a portless single-label host (#790).

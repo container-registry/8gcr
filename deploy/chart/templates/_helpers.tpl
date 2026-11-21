@@ -156,6 +156,55 @@ Example output (Secret):
 {{- end }}
 {{- end }}
 
+{{/*
+Merge env blocks (each `KEY: value` YAML text) into one block with unique
+keys; a later layer wins. Appending blocks instead renders duplicate keys:
+Helm keeps the last one, strict YAML parsers reject the manifest.
+Usage: include "harbor.mergedEnv" (list $chartEnv $globalEnv $userEnv)
+*/}}
+{{- define "harbor.mergedEnv" -}}
+{{- $out := dict }}
+{{- range . }}
+{{- $layer := fromYaml . }}
+{{- if hasKey $layer "Error" }}
+{{- fail (printf "harbor.mergedEnv: cannot parse env block: %s" (get $layer "Error")) }}
+{{- end }}
+{{- $out = mergeOverwrite $out $layer }}
+{{- end }}
+{{- range $key, $value := $out }}
+{{ $key }}: {{ if kindIs "invalid" $value }}""{{ else if and (kindIs "float64" $value) (eq ($value | int64 | float64) $value) }}{{ $value | int64 | toString | quote }}{{ else }}{{ $value | toString | quote }}{{ end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Secret data with one copy of each key. Layers as on main, where a later
+duplicate won: `under` (chart keys <component>.secret may replace), the
+user's <component>.secret, then `over` (chart credentials that must match
+other components, so they stay pinned).
+Usage: include "harbor.secretEnvMerged" (dict "under" $text "user" .Values.core.secret "over" $text)
+*/}}
+{{- define "harbor.secretEnvMerged" -}}
+{{- $user := include "harbor.toEnvVars" (dict "values" (.user | default dict) "prefix" "" "isSecret" true) }}
+{{- $out := dict }}
+{{- range (list (.under | default "") $user .over) }}
+{{- $layer := fromYaml . }}
+{{- if hasKey $layer "Error" }}
+{{- fail (printf "harbor.secretEnvMerged: cannot parse secret data: %s" (get $layer "Error")) }}
+{{- end }}
+{{- $out = mergeOverwrite $out $layer }}
+{{- end }}
+{{- range $key, $value := $out }}
+  {{ $key }}: {{ $value | toString | quote }}
+{{- end }}
+{{- end }}
+
+{{/* global.env flattened like <component>.config; shared by core and jobservice. */}}
+{{- define "harbor.globalEnv" -}}
+{{- with (.Values.global | default dict).env }}
+{{- include "harbor.toEnvVars" (dict "values" . "prefix" "" "isSecret" false) }}
+{{- end }}
+{{- end }}
+
 
 {{/*
 =============================================================================
