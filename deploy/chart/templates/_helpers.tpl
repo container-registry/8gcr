@@ -610,11 +610,24 @@ Validate required values
 {{- $p := .Values.postgresql.persistence | default dict }}
 {{- $vol := $p.volumeName | default "data" }}
 {{- $sub := $p.subPath | default "" }}
+{{- $inits := list }}
 {{- range .Values.postgresql.initContainers }}
+{{- $inits = append $inits .name }}
 {{- range .volumeMounts }}
 {{- if and (eq .mountPath "/var/lib/postgresql") (or (ne .name $vol) (ne (.subPath | default "") $sub)) }}
 {{- fail "postgresql.initContainers must mount the data volume like the subchart: match postgresql.persistence.volumeName and subPath, or set postgresql.initContainers: []" }}
 {{- end }}
+{{- end }}
+{{- end }}
+{{- $vols := list }}
+{{- range .Values.postgresql.extraVolumes }}{{ $vols = append $vols .name }}{{ end }}
+{{- if has "pgdata-upgrade" $inits }}
+{{- /* The init container renames 18's pg_control, so PostgreSQL 18 would then crash-loop on it. */}}
+{{- if ne (regexFind "^[0-9]+" (toString .Values.postgresql.image.tag)) "19" }}
+{{- fail (printf "postgresql.image.tag %q is not PostgreSQL 19, but the pgdata-upgrade init container upgrades the data to 19: use the chart's tag, or replace postgresql.initContainers to stay on 18 (see docs/postgresql.md)" (toString .Values.postgresql.image.tag)) }}
+{{- end }}
+{{- if not (has "pg-upgrade" $vols) }}
+{{- fail "postgresql.extraVolumes must keep the pg-upgrade volume that the pgdata-upgrade init container runs its script from" }}
 {{- end }}
 {{- end }}
 {{- end }}

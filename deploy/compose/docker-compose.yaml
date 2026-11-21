@@ -220,12 +220,12 @@ services:
 
   postgresql-upgrade:
     # Upgrades PostgreSQL 18 data to 19 before the database starts. See README.
-    image: docker.io/tianon/postgres-upgrade:18-to-19@sha256:8cadd7229702c1b636775b575f733740a09ffae6ebbf6f16944c0844ffc1de6f
-    entrypoint: ["/upgrade.sh"]
+    image: docker.io/tianon/postgres-upgrade:18-to-19@sha256:39bd101fb28dd337c5760558b643089a82d508dc947836775662e2edf54461c3
+    entrypoint: ["sh", "/upgrade.sh"]
     working_dir: /var/lib/postgresql
     volumes:
       - postgres-data:/var/lib/postgresql
-      - ../../config/postgresql/upgrade.sh:/upgrade.sh:ro
+      - ../chart/files/pg-upgrade.sh:/upgrade.sh:ro
     restart: "no"
 
   postgresql:
