@@ -15,13 +15,18 @@
 package registry
 
 import (
+	"mime"
 	"net/http"
 	"time"
 
+	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/opencontainers/go-digest"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/event/operator"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/auditext/collapse"
 	securitymiddleware "github.com/goharbor/harbor/src/server/middleware/security"
@@ -74,4 +79,20 @@ func auditPull(req *http.Request, art *artifact.Artifact, reference string, body
 		}
 	}
 	return tag, true
+}
+
+// readIndexBody buffers the body of an index push, so the platform manifests
+// it lists can be audited as part of it; other manifests stream untouched.
+func readIndexBody(req *http.Request) ([]byte, error) {
+	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Type"))
+	if mediaType != v1.MediaTypeImageIndex && mediaType != manifestlist.MediaTypeManifestList {
+		return nil, nil
+	}
+	return lib.ReadRequestBody(req, common.MaxManifestBodySize)
+}
+
+// markIndexMembers records the index's manifests once the push is committed.
+func markIndexMembers(req *http.Request, repo string, index []byte) {
+	operatorName := operator.FromContext(req.Context())
+	orm.AfterCommit(req.Context(), func() { collapse.MarkIndexMembers(repo, operatorName, index) })
 }

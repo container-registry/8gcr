@@ -15,11 +15,14 @@
 package registry
 
 import (
+	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -99,4 +102,21 @@ func TestAuditPullByTagConsumesTheHint(t *testing.T) {
 	tag, audit := auditPull(manifestRequest(http.MethodGet, "lib/bytag", otherDigest, "10.0.0.4:4002"), art, otherDigest, nil)
 	assert.True(t, audit)
 	assert.Empty(t, tag, "the HEAD hint went with the GET by tag")
+}
+
+func TestReadIndexBody(t *testing.T) {
+	body := `{"manifests":[{"digest":"` + amd64Digest + `"}]}`
+	req := httptest.NewRequest(http.MethodPut, "/v2/lib/app/manifests/1.0", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/vnd.oci.image.index.v1+json")
+	got, err := readIndexBody(req)
+	require.NoError(t, err)
+	assert.Equal(t, body, string(got))
+	rest, _ := io.ReadAll(req.Body)
+	assert.Equal(t, body, string(rest), "the body is still there for the registry")
+
+	req = httptest.NewRequest(http.MethodPut, "/v2/lib/app/manifests/1.0", bytes.NewBufferString("{}"))
+	req.Header.Set("Content-Type", "application/vnd.oci.image.manifest.v1+json")
+	got, err = readIndexBody(req)
+	require.NoError(t, err)
+	assert.Nil(t, got)
 }

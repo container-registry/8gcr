@@ -17,6 +17,7 @@ package collapse
 import (
 	"context"
 	"sync/atomic"
+	"time"
 )
 
 type requestMarksKey struct{}
@@ -24,12 +25,24 @@ type requestMarksKey struct{}
 // RequestMarks carries audit decisions made while serving a request to the
 // audit handler, which sees the events after the response is written.
 type RequestMarks struct {
+	started  time.Time
 	skipPull atomic.Bool
 }
 
-// NewRequestMarks returns empty marks for a request.
+// NewRequestMarks returns empty marks for a request starting now.
 func NewRequestMarks() *RequestMarks {
-	return &RequestMarks{}
+	return &RequestMarks{started: time.Now()}
+}
+
+// RequestStarted returns when the request behind ctx started. Event times are
+// stamped later, when the events are published, so they cannot order a push
+// against the index that lists it.
+func RequestStarted(ctx context.Context) (time.Time, bool) {
+	m, ok := ctx.Value(requestMarksKey{}).(*RequestMarks)
+	if !ok || m.started.IsZero() {
+		return time.Time{}, false
+	}
+	return m.started, true
 }
 
 // Into returns ctx carrying the marks.

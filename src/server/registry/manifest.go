@@ -195,6 +195,12 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 
 	buffer := lib.NewResponseBuffer(w)
 
+	index, err := readIndexBody(req)
+	if err != nil {
+		lib_http.SendError(w, err)
+		return
+	}
+
 	// proxy the req to the backend docker registry
 	// If reference is a tag (not a digest), replace it with the computed digest
 	// before proxying to the backend. This prevents tags from being stored in the
@@ -241,6 +247,9 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	}); err != nil {
 		lib_http.SendError(w, err)
 		return
+	}
+	if index != nil {
+		markIndexMembers(req, repo, index)
 	}
 
 	// flush the origin response from the docker registry to the underlying response writer
