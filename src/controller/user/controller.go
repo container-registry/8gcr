@@ -76,6 +76,8 @@ type Controller interface {
 	OnboardOIDCUser(ctx context.Context, u *commonmodels.User) error
 	// LinkExistingUserToOIDC links an existing user to OIDC by creating the OIDC metadata record
 	LinkExistingUserToOIDC(ctx context.Context, userID int, sub, iss, secret, token string) error
+	// HasOIDCIdentity reports whether the user already has an OIDC identity linked
+	HasOIDCIdentity(ctx context.Context, userID int) (bool, error)
 	// SearchByName search user by name with fuzzy search
 	SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error)
 }
@@ -143,8 +145,8 @@ func (c *controller) OnboardOIDCUser(ctx context.Context, u *commonmodels.User) 
 // LinkExistingUserToOIDC links an existing user to OIDC by creating the OIDC metadata record.
 // This handles the case where a user exists in harbor_user but not in oidc_user.
 // The caller is expected to have already verified that no user is linked to this sub/iss
-// identity, so a conflict here means the target user already has a *different* OIDC
-// identity linked; in that case the link is rejected rather than overwritten.
+// identity (a conflict here means that sub/iss is already linked) and that the target
+// user has no OIDC identity yet (see HasOIDCIdentity); this function does not check the latter.
 func (c *controller) LinkExistingUserToOIDC(ctx context.Context, userID int, sub, iss, secret, token string) error {
 	subIss := sub + iss
 	oidcUser := &commonmodels.OIDCUser{
@@ -161,6 +163,20 @@ func (c *controller) LinkExistingUserToOIDC(ctx context.Context, userID int, sub
 		return errors.Wrap(err, "failed to create OIDC metadata record")
 	}
 	return nil
+}
+
+// HasOIDCIdentity reports whether the user already has an OIDC identity linked.
+// The oidc_user table only enforces uniqueness on sub/iss, so LinkExistingUserToOIDC
+// does not reject a second identity for the same user; callers must check this first.
+func (c *controller) HasOIDCIdentity(ctx context.Context, userID int) (bool, error) {
+	_, err := c.oidcMetaMgr.GetByUserID(ctx, userID)
+	if err == nil {
+		return true, nil
+	}
+	if errors.IsNotFoundErr(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func (c *controller) GetBySubIss(ctx context.Context, sub, iss string) (*commonmodels.User, error) {

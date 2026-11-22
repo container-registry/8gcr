@@ -308,13 +308,20 @@ func resolveOIDCUser(ctx context.Context, info *oidc.UserInfo, tokenBytes []byte
 		return nil, err
 	}
 
-	// User not found by sub/iss; try to find an existing local user by email
-	existingUser, err := ctluser.Ctl.GetByEmail(ctx, info.Email)
-	if err != nil && !errors.IsNotFoundErr(err) {
+	// User not found by sub/iss; try to find an existing local account by email or login name
+	existingUser, err := findLocalAccountForIdentity(ctx, info)
+	if err != nil {
 		return nil, err
 	}
 	if existingUser != nil {
-		// Found an existing local user with matching email; link them
+		// An account can carry only one OIDC identity; the oidc_user table does not enforce this
+		linked, err := ctluser.Ctl.HasOIDCIdentity(ctx, existingUser.UserID)
+		if err != nil {
+			return nil, err
+		}
+		if linked {
+			return nil, errors.ForbiddenError(nil).WithMessage("the matching account is already linked to a different OIDC identity; contact your administrator")
+		}
 		s, t, err := secretAndToken(tokenBytes)
 		if err != nil {
 			return nil, err
@@ -323,11 +330,7 @@ func resolveOIDCUser(ctx context.Context, info *oidc.UserInfo, tokenBytes []byte
 			return nil, err
 		}
 		// Retrieve the full user record with OIDC metadata
-		um, err := ctluser.Ctl.Get(ctx, existingUser.UserID, &ctluser.Option{WithOIDCInfo: true})
-		if err != nil {
-			return nil, err
-		}
-		return um, nil
+		return ctluser.Ctl.Get(ctx, existingUser.UserID, &ctluser.Option{WithOIDCInfo: true})
 	}
 
 	// No existing local user found; check AutoOnboard setting
@@ -373,6 +376,45 @@ func resolveOIDCUser(ctx context.Context, info *oidc.UserInfo, tokenBytes []byte
 		return nil, err
 	}
 	return user, nil
+}
+
+// findLocalAccountForIdentity returns the local account whose email or login name exactly
+// matches the IdP identity, or nil if none does. Lookups are exact matches (the user
+// controller's keyword filters are not fuzzy). If the email and login name resolve to
+// two different accounts the identity cannot be attributed safely, so that is an error.
+func findLocalAccountForIdentity(ctx context.Context, info *oidc.UserInfo) (*models.User, error) {
+	var matches []*models.User
+	seen := map[int]bool{}
+	add := func(u *models.User) {
+		if u != nil && !seen[u.UserID] {
+			seen[u.UserID] = true
+			matches = append(matches, u)
+		}
+	}
+	// The email is only trusted for matching when the IdP asserts it is verified; otherwise
+	// anyone able to register that address at the IdP could claim the local account.
+	if info.Email != "" && info.EmailVerified {
+		u, err := ctluser.Ctl.GetByEmail(ctx, info.Email)
+		if err != nil && !errors.IsNotFoundErr(err) {
+			return nil, err
+		}
+		add(u)
+	}
+	if info.Username != "" {
+		u, err := ctluser.Ctl.GetByName(ctx, info.Username)
+		if err != nil && !errors.IsNotFoundErr(err) {
+			return nil, err
+		}
+		add(u)
+	}
+	switch len(matches) {
+	case 0:
+		return nil, nil
+	case 1:
+		return matches[0], nil
+	default:
+		return nil, errors.ForbiddenError(nil).WithMessage("the email and login name match different accounts; contact your administrator")
+	}
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {
