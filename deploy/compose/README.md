@@ -101,17 +101,17 @@ docker compose exec postgresql rm -rf /var/lib/postgresql/18
 
 Keep `harbor.sql` and `config/secret_key` together until the upgraded Harbor
 works. If the upgrade fails, fix the cause shown in its log and run
-`docker compose up -d` again: it retries from the start, and `18/docker` stays
-usable until the new cluster is renamed to `19/docker`. Once PostgreSQL 19 has
-started, the dump is the only way back. Restore it into an empty volume,
-`<COMPOSE_PROJECT_NAME>_postgres-data` (`harbor` in `.env.example`):
+`docker compose up -d` again: it retries from the start. Until the new cluster
+is renamed to `19/docker`, the old compose file can still start `18/docker`. Once PostgreSQL 19 has
+started, the dump is the only way back. Empty the database volume and restore
+it; Harbor starts only when the restore succeeded:
 
 ```bash
-docker compose down
-docker volume rm harbor_postgres-data
-docker compose up -d --wait postgresql
+docker compose down &&
+docker compose run --rm --no-deps --entrypoint sh postgresql -c 'rm -rf /var/lib/postgresql/*' &&
+docker compose up -d --wait postgresql &&
 docker compose exec -T postgresql \
-  sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q -v ON_ERROR_STOP=1' < harbor.sql
+  sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q -v ON_ERROR_STOP=1' < harbor.sql &&
 docker compose up -d
 ```
 

@@ -106,8 +106,10 @@ data or its script:
 ### If the upgrade fails
 
 The pod stays in `Init`. Until the new cluster is renamed to `19/docker`,
-the only change to `18/docker` is pg_upgrade's rename of `global/pg_control`
-to `pg_control.old`, which the next run undoes. Fix the cause shown in
+`18/docker` stays usable by PostgreSQL 18. The script reads it in single-user
+mode, which recovers and checkpoints it like a normal start, removes a stale
+`postmaster.pid`, and pg_upgrade renames `global/pg_control` to
+`pg_control.old`, which the next run, or the command below, undoes. Fix the cause shown in
 `kubectl -n harbor logs postgresql-0 -c pgdata-upgrade` and the next pod start
 retries. To go back to the 2.16 chart instead, for example after
 `helm upgrade --atomic` rolled back in the middle of the upgrade, first put the
@@ -121,17 +123,21 @@ kubectl -n harbor exec postgresql-0 -c postgresql -- sh -c \
 
 Run it from a debug pod on the PVC if `postgresql-0` does not start. This
 only works while there is no `19/docker`. Once PostgreSQL 19 has started,
-restore the dump into an empty volume. With `persistence.existingClaim`, point it at a
-new, empty claim instead of deleting the PVC:
+restore the dump into an empty volume. The claim is
+`<postgresql.persistence.volumeName>-postgresql-0`, `data-postgresql-0` by
+default. With `persistence.existingClaim`, point it at a new, empty claim
+instead of deleting one. Harbor starts only when the restore succeeded:
 
 ```sh
-kubectl -n harbor scale deploy harbor-core harbor-jobservice --replicas=0
-kubectl -n harbor scale statefulset postgresql --replicas=0
-kubectl -n harbor delete pvc data-postgresql-0
-kubectl -n harbor scale statefulset postgresql --replicas=1
-kubectl -n harbor wait --for=condition=Ready pod/postgresql-0 --timeout=5m
+pvc=data-postgresql-0
+kubectl -n harbor scale deploy harbor-core harbor-jobservice --replicas=0 &&
+kubectl -n harbor scale statefulset postgresql --replicas=0 &&
+kubectl -n harbor wait --for=delete pod/postgresql-0 --timeout=5m &&
+kubectl -n harbor delete pvc "$pvc" &&
+kubectl -n harbor scale statefulset postgresql --replicas=1 &&
+kubectl -n harbor rollout status statefulset/postgresql --timeout=5m &&
 kubectl -n harbor exec -i postgresql-0 -c postgresql -- \
-  sh -c 'psql -U "${POSTGRES_USER:-postgres}" -d "$POSTGRES_DB" -q -v ON_ERROR_STOP=1' < harbor.sql
+  sh -c 'psql -U "${POSTGRES_USER:-postgres}" -d "$POSTGRES_DB" -q -v ON_ERROR_STOP=1' < harbor.sql &&
 kubectl -n harbor scale deploy harbor-core harbor-jobservice --replicas=1
 ```
 
