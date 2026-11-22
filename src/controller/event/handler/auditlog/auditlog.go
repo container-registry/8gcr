@@ -30,6 +30,8 @@ import (
 
 // Handler - audit log handler
 type Handler struct {
+	// eventEnabled defaults to the audit log event settings
+	eventEnabled func(ctx context.Context, event string) bool
 }
 
 // AuditResolver - interface to resolve to AuditLog
@@ -46,8 +48,10 @@ func (h *Handler) Name() string {
 func (h *Handler) Handle(ctx context.Context, value any) error {
 	var addAuditLog bool
 	switch v := value.(type) {
-	case *event.PushArtifactEvent, *event.DeleteArtifactEvent,
-		*event.DeleteRepositoryEvent, *event.CreateProjectEvent, *event.DeleteProjectEvent,
+	case *event.DeleteArtifactEvent:
+		addAuditLog = v.Artifact == nil || !collapse.RepositoryDeleted(ctx, v.Artifact.RepositoryName) ||
+			!h.enabled(ctx, "delete_repository")
+	case *event.PushArtifactEvent, *event.DeleteRepositoryEvent, *event.CreateProjectEvent, *event.DeleteProjectEvent,
 		*event.DeleteTagEvent, *event.CreateTagEvent,
 		*event.CreateRobotEvent, *event.DeleteRobotEvent, *evtModel.CommonEvent:
 		addAuditLog = true
@@ -64,7 +68,7 @@ func (h *Handler) Handle(ctx context.Context, value any) error {
 			log.Errorf("failed to handler event %v", err)
 			return err
 		}
-		if auditLog != nil && config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", auditLog.Operation, auditLog.ResourceType)) {
+		if auditLog != nil && h.enabled(ctx, fmt.Sprintf("%v_%v", auditLog.Operation, auditLog.ResourceType)) {
 			auditLog.OperationDescription = summary.Describe(auditLog)
 			_, err := auditext.Mgr.Create(ctx, auditLog)
 			if err != nil {
@@ -73,6 +77,13 @@ func (h *Handler) Handle(ctx context.Context, value any) error {
 		}
 	}
 	return nil
+}
+
+func (h *Handler) enabled(ctx context.Context, event string) bool {
+	if h.eventEnabled != nil {
+		return h.eventEnabled(ctx, event)
+	}
+	return config.AuditLogEventEnabled(ctx, event)
 }
 
 // IsStateful ...

@@ -17,12 +17,16 @@ package notification
 import (
 	"net/http"
 
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/auditext/collapse"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
+
+// publish is event.BuildAndPublish, swapped in tests.
+var publish = event.BuildAndPublish
 
 // Middleware sends the notification after transaction success
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
@@ -32,10 +36,20 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		marks := collapse.NewRequestMarks()
 		next.ServeHTTP(res, r.WithContext(marks.Into(notification.NewContext(r.Context(), evc))))
 		if res.Success() || evc.MustNotify {
-			ctx := marks.Into(r.Context())
+			ctx := collapse.WithDeletedRepositories(marks.Into(r.Context()), deletedRepositories(evc))
 			for e := evc.Events.Front(); e != nil; e = e.Next() {
-				event.BuildAndPublish(ctx, e.Value.(event.Metadata))
+				publish(ctx, e.Value.(event.Metadata))
 			}
 		}
 	}, skippers...)
+}
+
+func deletedRepositories(evc *notification.EventCtx) []string {
+	var repositories []string
+	for e := evc.Events.Front(); e != nil; e = e.Next() {
+		if d, ok := e.Value.(*metadata.DeleteRepositoryEventMetadata); ok {
+			repositories = append(repositories, d.Repository)
+		}
+	}
+	return repositories
 }
