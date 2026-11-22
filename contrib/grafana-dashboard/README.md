@@ -11,7 +11,7 @@ and jobservice. It also includes PostgreSQL/pgx monitoring available in the
 feature note and panel tooltips explaining empty results on standard Harbor.
 
 For vulnerability data per CVE, project and repository, see the
-[Security Hub dashboards](security-hub.md). They use the Infinity datasource
+[Security Hub dashboard](security-hub.md). It uses the Infinity datasource
 instead of Prometheus.
 
 ## Preview

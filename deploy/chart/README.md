@@ -661,13 +661,13 @@ metrics:
       grafana_folder: Harbor  # Optional, sidecar folder annotation
 ```
 
-#### Security Hub dashboards
+#### Security Hub dashboard
 
-`metrics.grafanaDashboard.securityHub.enabled: true` ships three linked vulnerability
-dashboards (`dashboards/harbor-security-hub*.json`) in a second ConfigMap with the same
-namespace, labels and annotations. They query the Harbor Security Hub API through the
-Infinity datasource plugin instead of Prometheus, so they need neither `metrics.enabled`
-nor a ServiceMonitor. They do need the plugin installed in Grafana and an Infinity
+`metrics.grafanaDashboard.securityHub.enabled: true` ships the vulnerability dashboard
+(`dashboards/harbor-security-hub.json`) in a second ConfigMap with the same
+namespace, labels and annotations. It queries the Harbor Security Hub API through the
+Infinity datasource plugin instead of Prometheus, so it needs neither `metrics.enabled`
+nor a ServiceMonitor. It does need the plugin installed in Grafana and an Infinity
 datasource that authenticates as a robot account with Security Hub read access; the chart
 creates neither. See the [Security Hub dashboard guide](../../contrib/grafana-dashboard/security-hub.md).
 
@@ -1001,8 +1001,8 @@ Kubernetes: `>=1.28.0-0`
 | metrics.grafanaDashboard.enabled | bool | `false` | Create the dashboard ConfigMap |
 | metrics.grafanaDashboard.labels | object | `{"grafana_dashboard":"1"}` | Labels the Grafana sidecar selects on |
 | metrics.grafanaDashboard.namespace | string | `""` | ConfigMap namespace (defaults to release namespace) |
-| metrics.grafanaDashboard.securityHub | object | `{"enabled":false}` | Also ship the Harbor Security Hub dashboards (dashboards/harbor-security-hub*.json) in a second ConfigMap with the same namespace, labels and annotations. They need the Infinity datasource plugin and a robot account with Security Hub read access, not Prometheus. |
-| metrics.grafanaDashboard.securityHub.enabled | bool | `false` | Create the Security Hub dashboards ConfigMap |
+| metrics.grafanaDashboard.securityHub | object | `{"enabled":false}` | Also ship the Harbor Security Hub dashboard (dashboards/harbor-security-hub.json) in a second ConfigMap with the same namespace, labels and annotations. It needs the Infinity datasource plugin and a robot account with Security Hub read access, not Prometheus. |
+| metrics.grafanaDashboard.securityHub.enabled | bool | `false` | Create the Security Hub dashboard ConfigMap |
 | metrics.serviceMonitor | object | `{"enabled":false,"honorLabels":true,"interval":"30s","labels":{},"namespace":"","scrapeTimeout":"10s"}` | Enable Prometheus ServiceMonitor |
 | metrics.serviceMonitor.enabled | bool | `false` | Create ServiceMonitor resource |
 | metrics.serviceMonitor.honorLabels | bool | `true` | Honor labels |

@@ -974,7 +974,7 @@
             "annotations": {"type": "object", "additionalProperties": {"type": "string"}},
             "securityHub": {
               "type": "object",
-              "description": "Ship the Harbor Security Hub dashboards (Infinity datasource) as a second ConfigMap",
+              "description": "Ship the Harbor Security Hub dashboard (Infinity datasource) as a second ConfigMap",
               "additionalProperties": false,
               "properties": {
                 "enabled": {"type": "boolean", "default": false}

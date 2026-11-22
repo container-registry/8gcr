@@ -71,7 +71,7 @@ tests:
       - hasDocuments:
           count: 0
 
-  - it: should ship all three Security Hub dashboards with the shared sidecar settings
+  - it: should ship the Security Hub dashboard with the shared sidecar settings
     template: templates/grafana-security-hub-dashboards.configmap.yaml
     set:
       externalURL: https://harbor.example.com
@@ -99,10 +99,14 @@ tests:
           path: data["harbor-security-hub.json"]
           pattern: '"uid": "harbor-security-hub"'
       - matchRegex:
-          path: data["harbor-security-hub-cve.json"]
-          pattern: '"uid": "harbor-security-hub-cve"'
+          path: data["harbor-security-hub.json"]
+          pattern: '"title": "CVE lookup: \$cve"'
       - matchRegex:
+          path: data["harbor-security-hub.json"]
+          pattern: '"title": "Project: \$\{project:text\} \(\$severity\)"'
+      - notExists:
+          path: data["harbor-security-hub-cve.json"]
+      - notExists:
           path: data["harbor-security-hub-project.json"]
-          pattern: '"uid": "harbor-security-hub-project"'
       - notExists:
           path: data["harbor.json"]
