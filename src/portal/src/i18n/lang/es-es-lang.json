@@ -540,6 +540,7 @@
         "MEMBERS": "Miembros del Proyecto",
         "ROBOTS": "Robots",
         "ARTIFACTS": "Artefactos",
+        "TAGS": "Tags",
         "PROJECTS": "Proyectos",
         "CONFIGURATION": "Configuration",
         "REPOSITORIES": "Repositories",
