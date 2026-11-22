@@ -218,9 +218,22 @@ services:
       retries: 5
     restart: unless-stopped
 
+  postgresql-upgrade:
+    # Upgrades PostgreSQL 18 data to 19 before the database starts. See README.
+    image: docker.io/tianon/postgres-upgrade:18-to-19@sha256:39bd101fb28dd337c5760558b643089a82d508dc947836775662e2edf54461c3
+    entrypoint: ["sh", "/upgrade.sh"]
+    working_dir: /var/lib/postgresql
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ../chart/files/pg-upgrade.sh:/upgrade.sh:ro
+    restart: "no"
+
   postgresql:
     # Pinned: an older image on this mount starts an empty database. See README.
     image: docker.io/library/postgres:19-alpine
+    depends_on:
+      postgresql-upgrade:
+        condition: service_completed_successfully
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD}

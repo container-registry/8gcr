@@ -1,0 +1,12 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # Fixed name: postgresql.extraVolumes in values.yaml refers to it literally.
+  name: postgresql-upgrade
+  labels:
+    {{- include "harbor.labels" . | nindent 4 }}
+data:
+  pg-upgrade.sh: |-
+{{ .Files.Get "files/pg-upgrade.sh" | indent 4 }}
+{{- end }}

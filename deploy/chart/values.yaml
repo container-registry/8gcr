@@ -1588,23 +1588,15 @@ postgresql:
   image:
     # -- PostgreSQL image tag. The data lives in `<major>/docker` on the volume.
     tag: "19.0@sha256:bb6e70add742cd868fb62cb3b2f67d1dd2bdd2b65a521e778420748753687c60"
-  # -- Refuses to start when the volume holds data of an older major, which
-  # PostgreSQL 19 would otherwise skip and start empty. pgautoupgrade has no
-  # 19 image yet, so the upgrade is manual. See docs/postgresql.md.
-  # @default -- data guard, see values.yaml
+  # -- Upgrades PostgreSQL 18 data in `18/docker` to 19 with pg_upgrade in link mode
+  # before PostgreSQL starts, and refuses older majors and layouts, which
+  # PostgreSQL 19 would otherwise skip and start empty. See docs/postgresql.md.
+  # @default -- pg_upgrade from 18, see values.yaml
   initContainers:
-    - name: pgdata-guard
-      image: docker.io/library/postgres:19.0@sha256:bb6e70add742cd868fb62cb3b2f67d1dd2bdd2b65a521e778420748753687c60
+    - name: pgdata-upgrade
+      image: docker.io/tianon/postgres-upgrade:18-to-19@sha256:39bd101fb28dd337c5760558b643089a82d508dc947836775662e2edf54461c3
       workingDir: /var/lib/postgresql
-      command: ["sh", "-c"]
-      args:
-        - |
-          [ -s 19/docker/PG_VERSION ] && exit 0
-          for d in [0-9]*/docker pgdata pgdata/pg[0-9]*; do
-            [ -s "$d/PG_VERSION" ] || continue
-            echo "found PostgreSQL $(cat "$d/PG_VERSION") data in $d; upgrade it to 19 first, see the chart's docs/postgresql.md" >&2
-            exit 1
-          done
+      command: ["sh", "/scripts/pg-upgrade.sh"]
       securityContext:
         allowPrivilegeEscalation: false
         runAsNonRoot: true
@@ -1615,6 +1607,16 @@ postgresql:
       volumeMounts:
         - name: data
           mountPath: /var/lib/postgresql
+        - name: pg-upgrade
+          mountPath: /scripts
+  # -- Volumes added to the PostgreSQL pod. `pg-upgrade` holds the
+  # `pgdata-upgrade` script from the chart's files/pg-upgrade.sh; keep it when
+  # you add your own.
+  # @default -- the pg-upgrade script, see values.yaml
+  extraVolumes:
+    - name: pg-upgrade
+      configMap:
+        name: postgresql-upgrade
 
 # --- Valkey (Redis-compatible) ---
 valkey:

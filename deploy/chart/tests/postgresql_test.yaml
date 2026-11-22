@@ -5,6 +5,7 @@ templates:
   - templates/core.secret.yaml
   - charts/postgresql/templates/statefulset.yaml
   - templates/validate-values.yaml
+  - templates/postgresql-upgrade.configmap.yaml
 set:
   externalURL: https://harbor.example.com
   harborAdminPassword: Harbor12345
@@ -59,20 +60,34 @@ tests:
                 name: my-pg
                 key: pw
 
-  - it: should guard the main container's data volume and run PostgreSQL 19
+  - it: should upgrade the main container's data volume and run PostgreSQL 19
     template: charts/postgresql/templates/statefulset.yaml
     asserts:
       - equal:
           path: spec.template.spec.initContainers[0].name
-          value: pgdata-guard
+          value: pgdata-upgrade
       - equal:
           path: spec.template.spec.initContainers[0].image
-          value: docker.io/library/postgres:19.0@sha256:bb6e70add742cd868fb62cb3b2f67d1dd2bdd2b65a521e778420748753687c60
+          value: docker.io/tianon/postgres-upgrade:18-to-19@sha256:39bd101fb28dd337c5760558b643089a82d508dc947836775662e2edf54461c3
       - equal:
           path: spec.template.spec.initContainers[0].volumeMounts[0]
           value:
             name: data
             mountPath: /var/lib/postgresql
+      - equal:
+          path: spec.template.spec.initContainers[0].command
+          value: ["sh", "/scripts/pg-upgrade.sh"]
+      - contains:
+          path: spec.template.spec.initContainers[0].volumeMounts
+          content:
+            name: pg-upgrade
+            mountPath: /scripts
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pg-upgrade
+            configMap:
+              name: postgresql-upgrade
       - equal:
           path: spec.template.spec.containers[0].image
           value: docker.io/postgres:19.0@sha256:bb6e70add742cd868fb62cb3b2f67d1dd2bdd2b65a521e778420748753687c60
@@ -94,3 +109,39 @@ tests:
     asserts:
       - failedTemplate:
           errorPattern: "postgresql.initContainers must mount the data volume like the subchart"
+
+  - it: should ship the upgrade script from files/pg-upgrade.sh
+    template: templates/postgresql-upgrade.configmap.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: postgresql-upgrade
+      - matchRegex:
+          path: data["pg-upgrade.sh"]
+          pattern: 'pg_upgrade" --link'
+
+  - it: should refuse the upgrade init container with a PostgreSQL 18 image
+    template: templates/validate-values.yaml
+    set:
+      postgresql.image.tag: "18.1"
+    asserts:
+      - failedTemplate:
+          errorPattern: 'postgresql.image.tag "18.1" is not PostgreSQL 19'
+
+  - it: should accept PostgreSQL 18 once the upgrade init container is replaced
+    template: templates/validate-values.yaml
+    set:
+      postgresql.image.tag: "18.1"
+      postgresql.initContainers: []
+    asserts:
+      - notFailedTemplate: {}
+
+  - it: should refuse extraVolumes that drop the upgrade script
+    template: templates/validate-values.yaml
+    set:
+      postgresql.extraVolumes:
+        - name: other
+          emptyDir: {}
+    asserts:
+      - failedTemplate:
+          errorPattern: "postgresql.extraVolumes must keep the pg-upgrade volume"
