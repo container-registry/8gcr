@@ -18,8 +18,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	ctlevent "github.com/goharbor/harbor/src/controller/event"
@@ -46,6 +51,8 @@ const (
 	payloadPattern = `principal=(.*?)&password`
 )
 
+var payloadRe = regexp.MustCompile(payloadPattern)
+
 type loginResolver struct {
 }
 
@@ -61,12 +68,19 @@ func (l *loginResolver) Resolve(ce *commonevent.Metadata, event *event.Event) er
 	}
 
 	// Extract the username from payload
-	re := regexp.MustCompile(payloadPattern)
 	if len(ce.RequestPayload) > 0 {
-		match := re.FindStringSubmatch(ce.RequestPayload)
+		match := payloadRe.FindStringSubmatch(ce.RequestPayload)
 		if len(match) > 1 {
-			e.ResourceName = match[1]
-			e.Operator = match[1]
+			principal := match[1]
+			if decoded, err := url.QueryUnescape(principal); err == nil {
+				principal = decoded
+			}
+			// a decoded %0A, %00 or %FF would split a forwarded log line or fail the insert
+			if !utf8.ValidString(principal) || strings.IndexFunc(principal, unicode.IsControl) >= 0 {
+				principal = strconv.Quote(principal)
+			}
+			e.ResourceName = principal
+			e.Operator = principal
 		}
 	} else if ce.RequestMethod == http.MethodGet {
 		e.IsSuccessful = true // for OIDC login event, always success
