@@ -48,13 +48,9 @@ const oidcUserComment = "Onboarded via OIDC provider"
 
 const loginUserOperation = "login_user"
 
-// OIDCController handles requests for OIDC login, callback and user onboard
+// OIDCController handles requests for OIDC login and callback
 type OIDCController struct {
 	api.BaseController
-}
-
-type onboardReq struct {
-	Username string `json:"username"`
 }
 
 // Prepare include public code path for call request handler of OIDCController
@@ -154,11 +150,6 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	ouDataStr, err := json.Marshal(info)
-	if err != nil {
-		oc.SendInternalServerError(err)
-		return
-	}
 	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		oc.SendInternalServerError(err)
@@ -169,44 +160,13 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	u, err := ctluser.Ctl.GetBySubIss(ctx, info.Subject, info.Issuer)
-	if errors.IsNotFoundErr(err) { // User is not onboarded, kickoff the onboard flow
-		// Recover the username from d.Username by default
-		username := info.Username
-		// Fix blanks in username
-		username = strings.Replace(username, " ", "_", -1)
-		oidcSettings, err := config.OIDCSetting(ctx)
-		if err != nil {
-			oc.SendInternalServerError(err)
-			return
-		}
-		// If automatic onboard is enabled, skip the onboard page
-		if oidcSettings.AutoOnboard {
-			log.Debug("Doing automatic onboarding\n")
-			if username == "" {
-				oc.SendInternalServerError(fmt.Errorf("unable to recover username for auto onboard, username claim: %s",
-					oidcSettings.UserClaim))
-				return
-			}
-			userRec, onboarded := userOnboard(ctx, oc, info, username, tokenBytes)
-			if !onboarded {
-				log.Error("User not onboarded\n")
-				return
-			}
-			log.Debug("User automatically onboarded\n")
-			u = userRec
+	u, err := resolveOIDCUser(ctx, info, tokenBytes)
+	if err != nil {
+		if errors.IsErr(err, "FORBIDDEN") {
+			oc.SendForbiddenError(err)
 		} else {
-			if err := oc.SetSession(userInfoKey, string(ouDataStr)); err != nil {
-				log.Errorf("failed to set session for key: %s, error: %v", userInfoKey, err)
-				oc.SendInternalServerError(err)
-				return
-			}
-			oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s&redirect_url=%s", username, redirectURLStr), http.StatusFound)
-			// Once redirected, no further actions are done
-			return
+			oc.SendError(err)
 		}
-	} else if err != nil {
-		oc.SendError(err)
 		return
 	}
 	oidc.InjectGroupsToUser(ctx, info, u)
@@ -221,6 +181,11 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	oidcUser := um.OIDCUserMeta
+	if oidcUser == nil {
+		log.Errorf("OIDC user metadata is nil for user ID %d after retrieval; user may not have been properly linked or onboarded", u.UserID)
+		oc.SendInternalServerError(errors.New("OIDC user metadata is missing; please contact your administrator"))
+		return
+	}
 	oidcUser.Token = t
 	if err := ctluser.Ctl.UpdateOIDCMeta(ctx, oidcUser); err != nil {
 		oc.SendError(err)
@@ -327,11 +292,70 @@ func (oc *OIDCController) RedirectLogout() {
 	oc.Controller.Redirect(logoutURL, http.StatusFound)
 }
 
-func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
+// resolveOIDCUser determines which Harbor user should be used for the given OIDC identity.
+// Returns the resolved user, or nil if the user cannot be provisioned (and the caller should reject with 403).
+// This function encapsulates the user resolution logic for testing purposes.
+func resolveOIDCUser(ctx context.Context, info *oidc.UserInfo, tokenBytes []byte) (*models.User, error) {
+	// First, check if this OIDC identity is already linked
+	u, err := ctluser.Ctl.GetBySubIss(ctx, info.Subject, info.Issuer)
+	if err == nil {
+		// Already linked; return the existing user
+		return u, nil
+	}
+
+	if !errors.IsNotFoundErr(err) {
+		// Some other error occurred (not a "not found")
+		return nil, err
+	}
+
+	// User not found by sub/iss; try to find an existing local account by email or login name
+	existingUser, err := findLocalAccountForIdentity(ctx, info)
+	if err != nil {
+		return nil, err
+	}
+	if existingUser != nil {
+		// An account can carry only one OIDC identity; the oidc_user table does not enforce this
+		linked, err := ctluser.Ctl.HasOIDCIdentity(ctx, existingUser.UserID)
+		if err != nil {
+			return nil, err
+		}
+		if linked {
+			return nil, errors.ForbiddenError(nil).WithMessage("the matching account is already linked to a different OIDC identity; contact your administrator")
+		}
+		s, t, err := secretAndToken(tokenBytes)
+		if err != nil {
+			return nil, err
+		}
+		if err := ctluser.Ctl.LinkExistingUserToOIDC(ctx, existingUser.UserID, info.Subject, info.Issuer, s, t); err != nil {
+			return nil, err
+		}
+		// Retrieve the full user record with OIDC metadata
+		return ctluser.Ctl.Get(ctx, existingUser.UserID, &ctluser.Option{WithOIDCInfo: true})
+	}
+
+	// No existing local user found; check AutoOnboard setting
+	oidcSettings, err := config.OIDCSetting(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !oidcSettings.AutoOnboard {
+		// AutoOnboard disabled; cannot provision new identity
+		return nil, errors.ForbiddenError(nil).WithMessage("your account has not been provisioned; contact your administrator")
+	}
+
+	// AutoOnboard enabled; create new user from claims
+	username := info.Username
+	// Fix blanks in username
+	username = strings.Replace(username, " ", "_", -1)
+	if username == "" {
+		return nil, fmt.Errorf("unable to recover username for auto onboard, username claim: %s", oidcSettings.UserClaim)
+	}
+
+	// Create the OIDC user record
 	s, t, err := secretAndToken(tokenBytes)
 	if err != nil {
-		oc.SendInternalServerError(err)
-		return nil, false
+		return nil, err
 	}
 	oidcUser := models.OIDCUser{
 		SubIss: info.Subject + info.Issuer,
@@ -346,62 +370,50 @@ func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, u
 		OIDCUserMeta: &oidcUser,
 		Comment:      oidcUserComment,
 	}
-	oidc.InjectGroupsToUser(ctx, info, user)
-
-	log.Debugf("User created: %v\n", user.Username)
 
 	err = ctluser.Ctl.OnboardOIDCUser(ctx, user)
 	if err != nil {
-		oc.SendError(err)
-		return nil, false
+		return nil, err
 	}
-	return user, true
+	return user, nil
 }
 
-// Onboard handles the request to onboard a user authenticated via OIDC provider
-func (oc *OIDCController) Onboard() {
-	u := &onboardReq{}
-	if err := oc.DecodeJSONReq(u); err != nil {
-		oc.SendBadRequestError(err)
-		return
-	}
-	username := u.Username
-	if utils.IsIllegalLength(username, 1, 255) {
-		oc.SendBadRequestError(errors.New("username with illegal length"))
-		return
-	}
-	if strings.ContainsAny(username, common.IllegalCharsInUsername) {
-		oc.SendBadRequestError(errors.Errorf("username %v contains illegal characters: %v", username, common.IllegalCharsInUsername))
-		return
-	}
-
-	userInfoStr, ok := oc.GetSession(userInfoKey).(string)
-	if !ok {
-		oc.SendBadRequestError(errors.New("Failed to get OIDC user info from session"))
-		return
-	}
-	log.Debugf("User info string: %s\n", userInfoStr)
-	tb, ok := oc.GetSession(tokenKey).([]byte)
-	if !ok {
-		oc.SendBadRequestError(errors.New("Failed to get OIDC token from session"))
-		return
-	}
-
-	d := &oidc.UserInfo{}
-	err := json.Unmarshal([]byte(userInfoStr), &d)
-	if err != nil {
-		oc.SendInternalServerError(err)
-		return
-	}
-	ctx := oc.Ctx.Request.Context()
-	if user, onboarded := userOnboard(ctx, oc, d, username, tb); onboarded {
-		user.OIDCUserMeta = nil
-		if err := oc.DelSession(userInfoKey); err != nil {
-			log.Errorf("failed to delete session for key:%s, error: %v", userInfoKey, err)
-			oc.SendInternalServerError(err)
-			return
+// findLocalAccountForIdentity returns the local account whose email or login name exactly
+// matches the IdP identity, or nil if none does. Lookups are exact matches (the user
+// controller's keyword filters are not fuzzy). If the email and login name resolve to
+// two different accounts the identity cannot be attributed safely, so that is an error.
+func findLocalAccountForIdentity(ctx context.Context, info *oidc.UserInfo) (*models.User, error) {
+	var matches []*models.User
+	seen := map[int]bool{}
+	add := func(u *models.User) {
+		if u != nil && !seen[u.UserID] {
+			seen[u.UserID] = true
+			matches = append(matches, u)
 		}
-		oc.PopulateUserSession(*user)
+	}
+	// The email is only trusted for matching when the IdP asserts it is verified; otherwise
+	// anyone able to register that address at the IdP could claim the local account.
+	if info.Email != "" && info.EmailVerified {
+		u, err := ctluser.Ctl.GetByEmail(ctx, info.Email)
+		if err != nil && !errors.IsNotFoundErr(err) {
+			return nil, err
+		}
+		add(u)
+	}
+	if info.Username != "" {
+		u, err := ctluser.Ctl.GetByName(ctx, info.Username)
+		if err != nil && !errors.IsNotFoundErr(err) {
+			return nil, err
+		}
+		add(u)
+	}
+	switch len(matches) {
+	case 0:
+		return nil, nil
+	case 1:
+		return matches[0], nil
+	default:
+		return nil, errors.ForbiddenError(nil).WithMessage("the email and login name match different accounts; contact your administrator")
 	}
 }
 

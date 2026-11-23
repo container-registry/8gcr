@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -127,15 +128,39 @@ type Token struct {
 	RawIDToken string `json:"id_token,omitempty"`
 }
 
+// emailVerifiedClaim is the OIDC email_verified claim. Providers send a boolean, but some send
+// the string "true" or "false". Any other value, including an absent or null claim, is unverified.
+type emailVerifiedClaim bool
+
+// UnmarshalJSON never fails, so a malformed email_verified cannot break the whole claims decode.
+func (e *emailVerifiedClaim) UnmarshalJSON(b []byte) error {
+	var v any
+	if err := json.Unmarshal(b, &v); err != nil {
+		*e = false
+		return nil
+	}
+	switch t := v.(type) {
+	case bool:
+		*e = emailVerifiedClaim(t)
+	case string:
+		*e = emailVerifiedClaim(t == "true")
+	default:
+		*e = false
+	}
+	return nil
+}
+
 // UserInfo wraps the information that is extracted via token.  It will be transformed to data object that is persisted
 // in the DB
 type UserInfo struct {
-	Issuer              string   `json:"iss"`
-	Subject             string   `json:"sub"`
-	Username            string   `json:"name"`
-	Email               string   `json:"email"`
-	Groups              []string `json:"groups"`
-	AdminGroupMember    bool     `json:"admin_group_member"`
+	Issuer   string `json:"iss"`
+	Subject  string `json:"sub"`
+	Username string `json:"name"`
+	Email    string `json:"email"`
+	// EmailVerified is true only when the IdP asserts that Email has been verified
+	EmailVerified       emailVerifiedClaim `json:"email_verified"`
+	Groups              []string           `json:"groups"`
+	AdminGroupMember    bool               `json:"admin_group_member"`
 	autoOnboardUsername string
 	hasGroupClaim       bool
 }
@@ -325,8 +350,9 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 		// data only contained in ID token
 		Subject: local.Subject,
 		Issuer:  local.Issuer,
-		// Used data from userinfo
-		Email: remote.Email,
+		// Used data from userinfo; the verification flag must travel with the email it qualifies
+		Email:         remote.Email,
+		EmailVerified: remote.EmailVerified,
 	}
 	// priority for username (high to low):
 	// 1. Username based on the auto onboard claim from ID token
@@ -369,7 +395,6 @@ func userInfoFromRemote(ctx context.Context, token *Token, setting cfgModels.OID
 // UserInfoFromIDToken extract user info from ID token
 func UserInfoFromIDToken(ctx context.Context, token *Token, setting cfgModels.OIDCSetting) (*UserInfo, error) {
 	if token.RawIDToken == "" {
-		// nolint:nilnil // no ID token present
 		return nil, nil
 	}
 	idt, err := parseIDToken(ctx, token.RawIDToken)
