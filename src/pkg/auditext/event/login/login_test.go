@@ -107,3 +107,23 @@ func Test_login_PreCheck(t *testing.T) {
 		})
 	}
 }
+
+func TestLoginResolveQuotesControlCharacters(t *testing.T) {
+	for payload, want := range map[string]string{
+		"principal=alice%40example.com&password=x":     "alice@example.com",
+		"principal=alice%0Aadmin+logged+in&password=x": `"alice\nadmin logged in"`,
+		"principal=bob%0D%0Ax&password=x":              `"bob\r\nx"`,
+		"principal=eve%00&password=x":                  `"eve\x00"`,
+		"principal=alice%FF&password=x":                `"alice\xff"`,
+	} {
+		evt := &event.Event{}
+		ce := &commonevent.Metadata{RequestURL: "/c/login", RequestMethod: "POST", RequestPayload: payload, ResponseCode: 401}
+		if err := (&loginResolver{}).Resolve(ce, evt); err != nil {
+			t.Fatal(err)
+		}
+		e := evt.Data.(*model.CommonEvent)
+		if e.Operator != want || e.ResourceName != want {
+			t.Errorf("%s: got operator %q resource %q, want %q", payload, e.Operator, e.ResourceName, want)
+		}
+	}
+}
