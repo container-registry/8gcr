@@ -434,6 +434,15 @@ main() {
     exit 1
   fi
 
+  if [ -n "${SKIP_AUTHORS_KEEP_PATHS}" ]; then
+    local rc=0
+    grep -Eq -- "${SKIP_AUTHORS_KEEP_PATHS}" </dev/null || rc=$?
+    if [ "${rc}" -gt 1 ]; then
+      echo "::error::invalid SKIP_AUTHORS_KEEP_PATHS regex: ${SKIP_AUTHORS_KEEP_PATHS}"
+      exit 1
+    fi
+  fi
+
   git config user.name "${GIT_USER_NAME}"
   git config user.email "${GIT_USER_EMAIL}"
   gh auth setup-git
