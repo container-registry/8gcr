@@ -135,11 +135,12 @@ func (h *HookHandler) handle(ctx context.Context, taskID int64, sc *job.StatusCh
 	if len(statusMessage) > 0 || sc.Status == job.ErrorStatus.String() {
 		statusMsgArgs = append(statusMsgArgs, statusMessage)
 	}
-	if err = h.taskDAO.UpdateStatus(ctx, task.ID, sc.Status, sc.Metadata.Revision, statusMsgArgs...); err != nil {
+	changed, err := h.taskDAO.UpdateStatus(ctx, task.ID, sc.Status, sc.Metadata.Revision, statusMsgArgs...)
+	if err != nil {
 		return err
 	}
-	// run the status change post function
-	if fc, exist := statusChangePostFuncRegistry[execution.VendorType]; exist {
+	// run the status change post function once; a retried callback changes nothing
+	if fc, exist := statusChangePostFuncRegistry[execution.VendorType]; exist && changed {
 		if err = fc(ctx, task.ID, sc.Status); err != nil {
 			logger.Errorf("failed to run the task status change post function for task %d: %v", task.ID, err)
 		}

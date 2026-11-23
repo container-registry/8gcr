@@ -121,6 +121,8 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 					Status: status,
 				}
 
+				e.Scanner, _ = t.ExtraAttrs["scanner"].(string)
+				e.Scheduled = exec.Trigger == task.ExecutionTriggerSchedule
 				if operator, ok := exec.ExtraAttrs["operator"].(string); ok {
 					e.Operator = operator
 				}

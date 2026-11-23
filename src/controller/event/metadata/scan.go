@@ -30,6 +30,9 @@ type ScanImageMetaData struct {
 	ScanType string
 	Status   string
 	Operator string
+	Scanner  string
+	// Scheduled marks a scheduled Scan All, run by no user
+	Scheduled bool
 }
 
 // Resolve image scanning metadata into common chart event
@@ -57,6 +60,8 @@ func (si *ScanImageMetaData) Resolve(evt *event.Event) error {
 		OccurAt:   time.Now(),
 		Operator:  si.Operator,
 		ScanType:  si.ScanType,
+		Scanner:   si.Scanner,
+		Scheduled: si.Scheduled,
 	}
 
 	evt.Topic = topic

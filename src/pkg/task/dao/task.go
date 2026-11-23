@@ -43,8 +43,8 @@ type TaskDAO interface {
 	Create(ctx context.Context, task *Task) (id int64, err error)
 	// Update the specified task. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, task *Task, props ...string) (err error)
-	// UpdateStatus updates the status of task
-	UpdateStatus(ctx context.Context, id int64, status string, statusRevision int64, statusMessage ...string) (err error)
+	// UpdateStatus updates the status of task and reports whether it changed
+	UpdateStatus(ctx context.Context, id int64, status string, statusRevision int64, statusMessage ...string) (changed bool, err error)
 	// Delete the specified task
 	Delete(ctx context.Context, id int64) (err error)
 	// ListStatusCount lists the status count for the tasks reference the specified execution
@@ -180,10 +180,10 @@ func (t *taskDAO) Update(ctx context.Context, task *Task, props ...string) error
 
 func (t *taskDAO) UpdateStatus(
 	ctx context.Context, id int64, status string, statusRevision int64, statusMessage ...string,
-) error {
+) (bool, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// status revision is the unix timestamp of job starting time, it's changing means a retrying of the job
@@ -192,7 +192,7 @@ func (t *taskDAO) UpdateStatus(
 	sql := `update task set run_count = run_count + 1, start_time = ?, status_message = '' 
 				where id = ? and status_revision < ?`
 	if _, err = ormer.Raw(sql, startTime, id, statusRevision).Exec(); err != nil {
-		return err
+		return false, err
 	}
 
 	jobStatus := job.Status(status)
@@ -235,8 +235,12 @@ func (t *taskDAO) UpdateStatus(
 	sql = fmt.Sprintf(`update task set %s `+
 		`where id = ? and (status_revision = ? and status_code < ? or status_revision < ?)`,
 		strings.Join(setClauses, ", "))
-	_, err = ormer.Raw(sql, args...).Exec()
-	return err
+	res, err := ormer.Raw(sql, args...).Exec()
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n > 0, err
 }
 
 func (t *taskDAO) Delete(ctx context.Context, id int64) error {

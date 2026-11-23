@@ -1103,6 +1103,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 		artifactTagKey: param.Tag,
 		robotIDKey:     robot.ID,
 		reportUUIDsKey: reportUUIDs,
+		"scanner":      param.Registration.Name,
 	}
 
 	taskID, err := bc.taskMgr.CreateRecord(ctx, param.ExecutionID, extraAttrs)

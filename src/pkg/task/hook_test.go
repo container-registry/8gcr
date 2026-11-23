@@ -77,7 +77,7 @@ func (h *hookHandlerTestSuite) TestHandle() {
 			ExecutionID: 1,
 		},
 	}, nil)
-	h.taskDAO.On("UpdateStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	h.taskDAO.On("UpdateStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
 	h.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
 		ID:         1,
 		VendorType: "test",
@@ -109,7 +109,7 @@ func (h *hookHandlerTestSuite) TestHandle() {
 			},
 		}, nil)
 		h.taskDAO.On("UpdateStatus", mock.Anything, mock.Anything, job.ErrorStatus.String(),
-			mock.Anything, "413 Quota Exceeded").Return(nil)
+			mock.Anything, "413 Quota Exceeded").Return(true, nil)
 		h.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
 			ID:         1,
 			VendorType: "test",
@@ -139,7 +139,7 @@ func (h *hookHandlerTestSuite) TestHandle() {
 			},
 		}, nil)
 		h.taskDAO.On("UpdateStatus", mock.Anything, mock.Anything, job.ErrorStatus.String(),
-			mock.Anything, "").Return(nil)
+			mock.Anything, "").Return(true, nil)
 		h.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
 			ID:         1,
 			VendorType: "test",
@@ -183,7 +183,7 @@ func (h *hookHandlerTestSuite) TestHandleForTask() {
 			delete(checkInProcessorRegistry, "test")
 			h.True(called)
 		} else {
-			h.taskDAO.On("UpdateStatus", mock.Anything, int64(1), job.SuccessStatus.String(), int64(1)).Return(nil).Once()
+			h.taskDAO.On("UpdateStatus", mock.Anything, int64(1), job.SuccessStatus.String(), int64(1)).Return(true, nil).Once()
 			h.execDAO.On("AsyncRefreshStatus", mock.Anything, int64(2), "").Return(nil).Once()
 			h.NoError(h.handler.HandleForTask(context.Background(), 1, sc))
 		}
@@ -225,3 +225,17 @@ func TestHookHandlerTestSuite(t *testing.T) {
 	suite.Run(t, &hookHandlerTestSuite{})
 }
 
+func (h *hookHandlerTestSuite) TestRetriedFinalCallbackRunsPostFuncOnce() {
+	h.taskDAO.On("Get", mock.Anything, int64(1)).Return(&dao.Task{ID: 1, JobID: "job", ExecutionID: 2}, nil)
+	h.execDAO.On("Get", mock.Anything, int64(2)).Return(&dao.Execution{ID: 2, VendorType: "retried"}, nil)
+	h.execDAO.On("AsyncRefreshStatus", mock.Anything, int64(2), "").Return(nil)
+	h.taskDAO.On("UpdateStatus", mock.Anything, int64(1), job.SuccessStatus.String(), int64(1)).Return(true, nil).Once()
+	h.taskDAO.On("UpdateStatus", mock.Anything, int64(1), job.SuccessStatus.String(), int64(1)).Return(false, nil).Once()
+	calls := 0
+	statusChangePostFuncRegistry["retried"] = func(context.Context, int64, string) error { calls++; return nil }
+	defer delete(statusChangePostFuncRegistry, "retried")
+	sc := &job.StatusChange{JobID: "job", Status: job.SuccessStatus.String(), Metadata: &job.StatsInfo{Revision: 1}}
+	h.NoError(h.handler.HandleForTask(context.Background(), 1, sc))
+	h.NoError(h.handler.HandleForTask(context.Background(), 1, sc))
+	h.Equal(1, calls)
+}
