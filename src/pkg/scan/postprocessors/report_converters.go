@@ -68,9 +68,13 @@ func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Conte
 	// json.Decoder over a strings.Reader looks like the leaner option here and is not: on a
 	// single multi-MB document its internal buffer grows by reallocation and ends up allocating
 	// more than the one []byte copy it saves.
-	rawReport := new(vuln.Report)
-	if err := json.Unmarshal([]byte(reportData), rawReport); err != nil {
+	var rawReport *vuln.Report
+	if err := json.Unmarshal([]byte(reportData), &rawReport); err != nil {
 		return "", "", errors.Wrap(err, "Error when toSchema V1 report to V2")
+	}
+	if rawReport == nil {
+		// JSON null would otherwise sync an empty ID set and clear the existing associations.
+		return "", "", errors.Errorf("null vulnerability report for report UUID %s", reportUUID)
 	}
 
 	// toSchema takes the parsed report. It used to re-parse reportData into a second, complete

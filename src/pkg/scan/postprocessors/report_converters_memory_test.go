@@ -128,11 +128,13 @@ func peakLiveHeap(fn func()) uint64 {
 
 	var peak atomic.Uint64
 	done := make(chan struct{})
+	ready := make(chan struct{})
 	var sampler sync.WaitGroup
 	sampler.Add(1)
 	go func() {
 		defer sampler.Done()
 		var s runtime.MemStats
+		first := true
 		for {
 			select {
 			case <-done:
@@ -146,9 +148,14 @@ func peakLiveHeap(fn func()) uint64 {
 					break
 				}
 			}
+			if first {
+				first = false
+				close(ready)
+			}
 		}
 	}()
 
+	<-ready
 	fn()
 	close(done)
 	sampler.Wait()
@@ -216,4 +223,13 @@ func BenchmarkToRelationalSchema(b *testing.B) {
 			}
 		})
 	}
+}
+
+func TestToRelationalSchemaRejectsNullReport(t *testing.T) {
+	restore := report.Mgr
+	report.Mgr = &fakeReportMgr{rp: &scan.Report{UUID: "report-uuid"}}
+	t.Cleanup(func() { report.Mgr = restore })
+
+	_, _, err := newFakeConverter().ToRelationalSchema(context.Background(), "report-uuid", "registration-uuid", "sha256:cafe", "null")
+	require.Error(t, err)
 }
