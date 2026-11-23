@@ -48,8 +48,8 @@ const (
 	googleHost = "accounts.google.com"
 )
 
-// isGoogleEndpoint reports whether authURL points at the Google OIDC host, ignoring host case.
-func isGoogleEndpoint(authURL string) bool {
+// IsGoogleEndpoint reports whether authURL points at the Google OIDC host, ignoring host case.
+func IsGoogleEndpoint(authURL string) bool {
 	u, err := url.Parse(authURL)
 	return err == nil && u.Scheme == "https" && strings.EqualFold(u.Hostname(), googleHost)
 }
@@ -125,6 +125,9 @@ var insecureTransport = &http.Transport{
 type Token struct {
 	oauth2.Token
 	RawIDToken string `json:"id_token,omitempty"`
+	// IDTokenRetained is set when a refresh response omitted the ID token and the previous one was kept, its
+	// claims may predate the current authorization
+	IDTokenRetained bool `json:"id_token_retained,omitempty"`
 }
 
 // UserInfo wraps the information that is extracted via token.  It will be transformed to data object that is persisted
@@ -152,7 +155,7 @@ func getOauthConf(ctx context.Context) (*oauth2.Config, error) {
 	}
 	scopes := make([]string, 0)
 	for _, sc := range setting.Scope {
-		if isGoogleEndpoint(p.Endpoint().AuthURL) && sc == gooidc.ScopeOfflineAccess {
+		if IsGoogleEndpoint(p.Endpoint().AuthURL) && sc == gooidc.ScopeOfflineAccess {
 			log.Warningf("Dropped unsupported scope: %s ", sc)
 			continue
 		}
@@ -185,7 +188,7 @@ func AuthCodeURL(ctx context.Context, state string, pkceCode pkce.Code) (string,
 	for k, v := range setting.ExtraRedirectParms {
 		options = append(options, oauth2.SetAuthURLParam(k, v))
 	}
-	if isGoogleEndpoint(conf.Endpoint.AuthURL) { // make sure the refresh token will be returned
+	if IsGoogleEndpoint(conf.Endpoint.AuthURL) { // make sure the refresh token will be returned
 		options = append(options, oauth2.AccessTypeOffline)
 		options = append(options, oauth2.SetAuthURLParam("prompt", "consent"))
 	}
@@ -306,6 +309,14 @@ func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	if err != nil {
 		log.Warningf("Failed to get userInfo by calling remote userinfo endpoint, error: %v ", err)
 	}
+	return consolidateUserInfo(token, local, remote)
+}
+
+func consolidateUserInfo(token *Token, local, remote *UserInfo) (*UserInfo, error) {
+	if token.IDTokenRetained && local != nil {
+		// groups of a retained ID token may predate the current authorization
+		local.Groups, local.AdminGroupMember, local.hasGroupClaim = nil, false, false
+	}
 	if remote != nil && local != nil {
 		if remote.Subject != local.Subject {
 			return nil, fmt.Errorf("the subject from userinfo: %s does not match the subject from ID token: %s, probably a security attack happened", remote.Subject, local.Subject)
@@ -314,6 +325,9 @@ func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	} else if remote != nil && local == nil {
 		return remote, nil
 	} else if local != nil && remote == nil {
+		if token.IDTokenRetained {
+			return nil, fmt.Errorf("failed to get userinfo, the ID token was not reissued with the current access token")
+		}
 		log.Debugf("Fall back to user data from ID token.")
 		return local, nil
 	}
