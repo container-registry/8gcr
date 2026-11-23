@@ -365,6 +365,18 @@ jobs:
       - name: Configure ephemeral Git authentication
         uses: $/.github/actions/git-askpass
 
+      - name: Install gh
+        run: |
+          if ! command -v gh >/dev/null 2>&1; then
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+              | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+              | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt-get update
+            sudo apt-get install -y gh
+          fi
+
       - name: Open changelog sync PR against main
         run: |
           node .github/scripts/insert-changelog-section.mjs \
@@ -396,7 +408,7 @@ jobs:
             --base main \
             --head "${branch}" \
             --title "chore: Sync ${TAG_NAME} changelog section to main" \
-            --body "Automated by the Sync Patch Changelog To Main job: inserts the ${TAG_NAME} section released from ${GITHUB_REF_NAME} into main's CHANGELOG.md in version-sorted position."
+            --body "Automated by the Sync Patch Changelog To Main job: inserts the ${TAG_NAME} section released from ${GITHUB_REF_NAME} into main's CHANGELOG.md in version-sorted position. Opened with GITHUB_TOKEN, so PR checks do not start on their own: close and reopen this PR to run them."
 
   publish-images:
     name: Publish Release Images
