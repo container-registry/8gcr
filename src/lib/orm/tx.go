@@ -39,6 +39,17 @@ type ormerTx struct {
 	orm.Ormer
 	orm.TxOrmer
 	savepoint string
+	// beginCtx, when set, bounds the wait for a pooled connection in Begin.
+	beginCtx context.Context
+}
+
+type boundedBeginKey struct{}
+
+// WithBoundedBegin makes a transaction opened under ctx stop waiting for a
+// pooled connection once ctx is done. database/sql also rolls the transaction
+// back when ctx ends, so use it only where ctx is the transaction's own bound.
+func WithBoundedBegin(ctx context.Context) context.Context {
+	return context.WithValue(ctx, boundedBeginKey{}, true)
 }
 
 func (o *ormerTx) savepointMode() bool {
@@ -67,7 +78,13 @@ func (o *ormerTx) Begin() error {
 	if o.TxOrmer != nil {
 		return o.createSavepoint()
 	}
-	txOrmer, err := o.Ormer.Begin()
+	var txOrmer orm.TxOrmer
+	var err error
+	if o.beginCtx != nil {
+		txOrmer, err = o.Ormer.BeginWithCtx(o.beginCtx)
+	} else {
+		txOrmer, err = o.Ormer.Begin()
+	}
 	if err != nil {
 		return err
 	}

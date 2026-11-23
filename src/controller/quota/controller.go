@@ -17,6 +17,7 @@ package quota
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -402,7 +403,7 @@ func (c *controller) rollbackUsage(ctx context.Context, reference, referenceID s
 	attempt := func() error {
 		err := statementTimeout(func(ctx context.Context) error {
 			return c.updateUsageByDB(ctx, reference, referenceID, op)
-		})(ctx)
+		})(orm.WithBoundedBegin(ctx))
 		// only a CAS conflict proves the write did not land; any other error,
 		// a failed commit included, may have applied it, and retrying would
 		// subtract the reservation twice
@@ -415,10 +416,11 @@ func (c *controller) rollbackUsage(ctx context.Context, reference, referenceID s
 	return retry.Retry(attempt, c.retryOptions(ctx, reference, referenceID)...)
 }
 
-// statementTimeout runs f in a transaction whose statements the database gives
-// up on when ctx's deadline passes. SET LOCAL needs a transaction to be scoped
-// to, and reverts when that transaction ends, so this leaves no setting behind
-// on the pooled connection.
+// statementTimeout runs f in a transaction the database gives up on when ctx's
+// deadline passes. transaction_timeout (Postgres 17+) bounds the rest of the
+// transaction from the moment it is set; statement_timeout is the per-statement
+// fallback on older servers. Both are transaction-local, so this leaves no
+// setting behind on the pooled connection.
 func statementTimeout(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return orm.WithTransaction(func(ctx context.Context) error {
 		ormer, err := orm.FromContext(ctx)
@@ -438,9 +440,10 @@ func statementTimeout(f func(ctx context.Context) error) func(ctx context.Contex
 		// statement_timeout 0 means no timeout, so never round down to it
 		timeout = max(timeout, time.Millisecond)
 
-		// milliseconds: the bare integer form of statement_timeout, and the
-		// only form that takes a bind parameter in neither Postgres nor Beego
-		if _, err := ormer.Raw(fmt.Sprintf("SET LOCAL statement_timeout = %d", timeout.Milliseconds())).Exec(); err != nil {
+		// pg_settings filters out transaction_timeout where the server lacks it
+		if _, err := ormer.Raw(`SELECT set_config(name, ?, true) FROM pg_settings
+			WHERE name IN ('statement_timeout', 'transaction_timeout')`,
+			strconv.FormatInt(timeout.Milliseconds(), 10)).Exec(); err != nil {
 			return retry.Abort(err)
 		}
 

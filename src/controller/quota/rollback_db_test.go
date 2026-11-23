@@ -81,7 +81,11 @@ func (suite *RollbackTestSuite) lockUsageRow(id int64) func() {
 		suite.NoError(err)
 	}()
 
-	<-locked
+	select {
+	case <-locked:
+	case <-done:
+		suite.FailNow("the lock holder exited before taking the row lock")
+	}
 	var once sync.Once
 	return func() {
 		once.Do(func() { close(release) })
@@ -122,7 +126,8 @@ func (suite *RollbackTestSuite) TestRollbackGivesUpOnALockedRow() {
 	elapsed := time.Since(start)
 
 	suite.Error(err, "the rollback cannot succeed while another transaction holds the row")
-	suite.Less(elapsed, lockHoldLimit, "the rollback waited out the lock instead of its own deadline")
+	// scheduling slack only; a rollback that ignores its deadline waits out lockHoldLimit
+	suite.Less(elapsed, rollbackTimeout+500*time.Millisecond, "the rollback overran its own deadline")
 }
 
 // TestRollbackDoesNotRetryNonConflictErrors: only a CAS conflict proves the
