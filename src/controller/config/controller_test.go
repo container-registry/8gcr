@@ -188,3 +188,33 @@ func TestDefaultProjectPinnedByEnv(t *testing.T) {
 		t.Errorf("UpdateUserConfigs() error = %v, want forbidden while %s is set", err, common.DefaultProjectNameEnv)
 	}
 }
+
+func Test_hasOfflineAccessScope(t *testing.T) {
+	cases := []struct {
+		scope string
+		want  bool
+	}{
+		{"openid,profile,email,offline_access", true},
+		{"openid, offline_access ,email", true},
+		{"openid,profile,email", false},
+		{"openid,offline_access_x", false},
+		{"", false},
+	}
+	for _, c := range cases {
+		if got := hasOfflineAccessScope(c.scope); got != c.want {
+			t.Errorf("hasOfflineAccessScope(%q) = %v, want %v", c.scope, got, c.want)
+		}
+	}
+}
+
+func Test_requiresOfflineAccessScope(t *testing.T) {
+	if requiresOfflineAccessScope("https://accounts.google.com") {
+		t.Error("Google gets offline access without the offline_access scope")
+	}
+	if !requiresOfflineAccessScope("https://accounts.google.com.example.org") {
+		t.Error("a look-alike host is not Google")
+	}
+	if !requiresOfflineAccessScope("https://keycloak.example.com/realms/harbor") {
+		t.Error("other providers need the offline_access scope")
+	}
+}
