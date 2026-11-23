@@ -104,17 +104,27 @@ skipped_author() {
   local author
   local files
   local skip
+  local rc
   local skips=()
 
   author=$(git show -s --format=%an "${sha}")
   IFS=',' read -r -a skips <<<"${SKIP_AUTHORS}"
   for skip in "${skips[@]}"; do
+    skip="${skip#"${skip%%[![:space:]]*}"}"
+    skip="${skip%"${skip##*[![:space:]]}"}"
     if [ -n "${skip}" ] && [ "${author}" = "${skip}" ]; then
+      [ -n "${SKIP_AUTHORS_KEEP_PATHS}" ] || return 0
       files=$(git diff-tree --no-commit-id --name-only -r "${sha}")
-      if [ -n "${SKIP_AUTHORS_KEEP_PATHS}" ] && grep -Eq "${SKIP_AUTHORS_KEEP_PATHS}" <<<"${files}"; then
-        return 1
-      fi
-      return 0
+      rc=0
+      grep -Eq -- "${SKIP_AUTHORS_KEEP_PATHS}" <<<"${files}" || rc=$?
+      case "${rc}" in
+        0) return 1 ;;
+        1) return 0 ;;
+        *)
+          echo "::error::invalid SKIP_AUTHORS_KEEP_PATHS regex: ${SKIP_AUTHORS_KEEP_PATHS}" >&2
+          exit 1
+          ;;
+      esac
     fi
   done
   return 1
