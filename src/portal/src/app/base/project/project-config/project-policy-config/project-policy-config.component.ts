@@ -488,6 +488,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
     }
 
     deleteItem(index: number) {
+        if (!this.hasChangeConfigRole) {
+            return;
+        }
         this.projectAllowlist.items.splice(index, 1);
     }
 
