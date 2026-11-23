@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/auditext"
+	"github.com/goharbor/harbor/src/pkg/auditext/collapse"
 	am "github.com/goharbor/harbor/src/pkg/auditext/model"
 )
 
@@ -50,7 +51,7 @@ func (h *Handler) Handle(ctx context.Context, value any) error {
 		*event.CreateRobotEvent, *event.DeleteRobotEvent, *evtModel.CommonEvent:
 		addAuditLog = true
 	case *event.PullArtifactEvent:
-		addAuditLog = !config.PullAuditLogDisable(ctx)
+		addAuditLog = !config.PullAuditLogDisable(ctx) && !collapse.PullAuditSkipped(ctx)
 	default:
 		log.Errorf("Can not handler this event type! %#v", v)
 	}

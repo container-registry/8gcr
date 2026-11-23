@@ -126,7 +126,8 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// fire event, ignore the HEAD request and pulling request from replication service
-	if req.Method == http.MethodHead || req.UserAgent() == common.UserAgent {
+	headTag, audit := auditPull(req, &art.Artifact, reference, buffer.Buffer())
+	if !audit {
 		return
 	}
 
@@ -139,6 +140,10 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	// the reference is tag
 	if _, err = digest.Parse(reference); err != nil {
 		e.Tag = reference
+	}
+
+	if e.Tag == "" {
+		e.Tag = headTag
 	}
 	notification.AddEvent(req.Context(), e)
 }
