@@ -55,3 +55,8 @@ test('appends when no older release exists', () => {
   const out = insert('# Changelog\n\n## [2.16.0](x)\n\n* a\n', '2.15.0');
   assert.deepEqual(headings(out), ['## [2.16.0](x)', '## [2.15.0](https://example.test) (2026-11-10)']);
 });
+
+test('unbracketed first-release headings are ordered too', () => {
+  const out = insert('# Changelog\n\n## 2.16.0 (2026-11-01)\n\n* a\n', '2.16.1');
+  assert.deepEqual(headings(out), ['## [2.16.1](https://example.test) (2026-11-10)', '## 2.16.0 (2026-11-01)']);
+});

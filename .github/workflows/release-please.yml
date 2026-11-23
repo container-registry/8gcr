@@ -365,17 +365,29 @@ jobs:
       - name: Configure ephemeral Git authentication
         uses: $/.github/actions/git-askpass
 
-      - name: Install gh
+      - name: Install gh CLI
         run: |
-          if ! command -v gh >/dev/null 2>&1; then
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-              | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-              | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-            sudo apt-get update
-            sudo apt-get install -y gh
+          case "$(uname -m)" in
+            x86_64|amd64) arch="amd64" ;;
+            aarch64|arm64) arch="arm64" ;;
+            *) echo "Unsupported architecture for gh: $(uname -m)" >&2; exit 1 ;;
+          esac
+
+          version=$(awk -F= '$1 == "GH_CLI_VERSION" { print $2 }' versions.env)
+          if ! [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "GH_CLI_VERSION must be X.Y.Z" >&2
+            exit 1
           fi
+
+          archive="gh_${version}_linux_${arch}.tar.gz"
+          tool_dir="${RUNNER_TEMP}/gh-cli"
+          mkdir -p "${tool_dir}/bin"
+          curl -fsSL "https://github.com/cli/cli/releases/download/v${version}/${archive}" -o "${tool_dir}/${archive}"
+          curl -fsSL "https://github.com/cli/cli/releases/download/v${version}/gh_${version}_checksums.txt" -o "${tool_dir}/gh_checksums.txt"
+          (cd "${tool_dir}" && grep "  ${archive}$" gh_checksums.txt | sha256sum -c -)
+          tar -xzf "${tool_dir}/${archive}" -C "${tool_dir}"
+          install -m 0755 "${tool_dir}/gh_${version}_linux_${arch}/bin/gh" "${tool_dir}/bin/gh"
+          echo "${tool_dir}/bin" >> "${GITHUB_PATH}"
 
       - name: Open changelog sync PR against main
         run: |

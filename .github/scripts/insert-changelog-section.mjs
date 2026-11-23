@@ -37,7 +37,8 @@ const lines = changelog.split('\n');
 // unbracketed blocks ("## v2.14.x") are always older than new releases.
 let insertLine = -1;
 for (let i = 0; i < lines.length; i++) {
-  const release = lines[i].match(/^## \[v?(\d+\.\d+\.\d+)\]/)?.[1];
+  // bracketed, or unbracketed for a line's first release ("## 2.16.0 (date)")
+  const release = lines[i].match(/^## (?:\[v?(\d+\.\d+\.\d+)\]|v?(\d+\.\d+\.\d+)(?=[\s(]|$))/)?.slice(1).find(Boolean);
   if (release && compareVersions(release, version) < 0) {
     insertLine = i;
     break;
