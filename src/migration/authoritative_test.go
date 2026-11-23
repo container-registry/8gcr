@@ -19,6 +19,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -106,17 +107,17 @@ func TestApplyAuthoritativeSchemaIsRepeatable(t *testing.T) {
 		if tx.rolledBack {
 			t.Errorf("transaction %d was rolled back", i+1)
 		}
-		if got, want := len(tx.queries), 2; got != want {
+		wantQueries := []string{disableStatementTimeout, authoritativeSchemaLockQuery, restoreStatementTimeout, schema}
+		if got, want := len(tx.queries), len(wantQueries); got != want {
 			t.Fatalf("transaction %d query count = %d, want %d", i+1, got, want)
 		}
-		if got, want := tx.queries[0], "SELECT pg_advisory_xact_lock($1)"; got != want {
-			t.Errorf("transaction %d lock query = %q, want %q", i+1, got, want)
+		for j, want := range wantQueries {
+			if got := tx.queries[j]; got != want {
+				t.Errorf("transaction %d query %d = %q, want %q", i+1, j, got, want)
+			}
 		}
-		if got, want := tx.args[0][0], any(authoritativeSchemaLockID); got != want {
+		if got, want := tx.args[1][0], any(authoritativeSchemaLockID); got != want {
 			t.Errorf("transaction %d lock ID = %v, want %v", i+1, got, want)
-		}
-		if got := tx.queries[1]; got != schema {
-			t.Errorf("transaction %d schema query = %q, want %q", i+1, got, schema)
 		}
 	}
 }
@@ -124,6 +125,7 @@ func TestApplyAuthoritativeSchemaIsRepeatable(t *testing.T) {
 func TestApplyAuthoritativeSchemaErrors(t *testing.T) {
 	errBegin := errors.New("begin")
 	errLock := errors.New("lock")
+	errTimeout := errors.New("statement timeout")
 	errApply := errors.New("apply")
 	errCommit := errors.New("commit")
 
@@ -155,16 +157,30 @@ func TestApplyAuthoritativeSchemaErrors(t *testing.T) {
 			wantErr:  errBegin,
 		},
 		{
+			name:         "disable statement timeout",
+			path:         func(t *testing.T) string { return writeSchema(t, "SELECT 1;") },
+			execErrors:   map[int]error{1: errTimeout},
+			wantErr:      errTimeout,
+			wantRollback: true,
+		},
+		{
 			name:         "acquire advisory lock",
 			path:         func(t *testing.T) string { return writeSchema(t, "SELECT 1;") },
-			execErrors:   map[int]error{1: errLock},
+			execErrors:   map[int]error{2: errLock},
 			wantErr:      errLock,
+			wantRollback: true,
+		},
+		{
+			name:         "restore statement timeout",
+			path:         func(t *testing.T) string { return writeSchema(t, "SELECT 1;") },
+			execErrors:   map[int]error{3: errTimeout},
+			wantErr:      errTimeout,
 			wantRollback: true,
 		},
 		{
 			name:         "execute schema",
 			path:         func(t *testing.T) string { return writeSchema(t, "SELECT 1;") },
-			execErrors:   map[int]error{2: errApply},
+			execErrors:   map[int]error{4: errApply},
 			wantErr:      errApply,
 			wantRollback: true,
 		},
@@ -204,6 +220,70 @@ func TestApplyAuthoritativeSchemaErrors(t *testing.T) {
 			}
 		})
 	}
+}
+
+// lockWaitSchemaTx simulates a peer holding the advisory lock when blockLock
+// is set, and records whether the schema statement ran with a deadline.
+type lockWaitSchemaTx struct {
+	blockLock         bool
+	schemaHadDeadline bool
+	schemaRan         bool
+	rolledBack        bool
+}
+
+func (tx *lockWaitSchemaTx) Exec(ctx context.Context, query string, _ ...any) error {
+	if query == disableStatementTimeout || query == restoreStatementTimeout {
+		return nil
+	}
+	if strings.Contains(query, "pg_advisory_xact_lock") {
+		if tx.blockLock {
+			<-ctx.Done()
+			return ctx.Err()
+		}
+		return nil
+	}
+	tx.schemaRan = true
+	_, tx.schemaHadDeadline = ctx.Deadline()
+	return nil
+}
+
+func (tx *lockWaitSchemaTx) Commit() error {
+	return nil
+}
+
+func (tx *lockWaitSchemaTx) Rollback() error {
+	tx.rolledBack = true
+	return nil
+}
+
+func TestApplyAuthoritativeSchemaBoundsOnlyTheLockWait(t *testing.T) {
+	saved := authoritativeSchemaLockTimeout
+	authoritativeSchemaLockTimeout = 50 * time.Millisecond
+	t.Cleanup(func() { authoritativeSchemaLockTimeout = saved })
+	path := writeSchema(t, "SELECT 1;")
+
+	t.Run("lock held by a peer", func(t *testing.T) {
+		tx := &lockWaitSchemaTx{blockLock: true}
+		db := fakeSchemaDB{begin: func(context.Context) (schemaTx, error) { return tx, nil }}
+		err := applyAuthoritativeSchema(context.Background(), db, path)
+		if !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatalf("applyAuthoritativeSchema() error = %v, want error wrapping %v", err, context.DeadlineExceeded)
+		}
+		if tx.schemaRan || !tx.rolledBack {
+			t.Errorf("schemaRan = %t, rolledBack = %t, want false, true", tx.schemaRan, tx.rolledBack)
+		}
+	})
+
+	t.Run("schema apply runs unbounded", func(t *testing.T) {
+		tx := &lockWaitSchemaTx{}
+		db := fakeSchemaDB{begin: func(context.Context) (schemaTx, error) { return tx, nil }}
+		if err := applyAuthoritativeSchema(context.Background(), db, path); err != nil {
+			t.Fatalf("applyAuthoritativeSchema() error = %v", err)
+		}
+		if !tx.schemaRan || tx.schemaHadDeadline {
+			t.Errorf("schemaRan = %t, schemaHadDeadline = %t, want true, false", tx.schemaRan, tx.schemaHadDeadline)
+		}
+	})
 }
 
 func writeSchema(t *testing.T, contents string) string {
@@ -282,7 +362,10 @@ type serializingTx struct {
 }
 
 func (tx *serializingTx) Exec(_ context.Context, query string, _ ...any) error {
-	if query == "SELECT pg_advisory_xact_lock($1)" {
+	if query == disableStatementTimeout || query == restoreStatementTimeout {
+		return nil
+	}
+	if query == authoritativeSchemaLockQuery {
 		tx.lock.Lock()
 		tx.held = true
 		return nil

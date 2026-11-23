@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -53,8 +54,51 @@ func TestMigratorDSNHonorsURL(t *testing.T) {
 }
 
 func TestMigratorDSNInvalidURL(t *testing.T) {
-	cfg := &models.PostGreSQL{URL: "://not a url"}
-	if _, err := migratorDSN(cfg); err == nil {
-		t.Error("migratorDSN() with an invalid URL returned nil error")
+	cfg := &models.PostGreSQL{URL: "postgres://user:se%zzcret@db.internal:5432/registry"}
+	_, err := migratorDSN(cfg)
+	if err == nil {
+		t.Fatal("migratorDSN() with an invalid URL returned nil error")
+	}
+	if strings.Contains(err.Error(), "se%zzcret") {
+		t.Errorf("migratorDSN() error %q leaks the password", err)
+	}
+}
+
+func TestMigratorDSNRejectsNonURLDSN(t *testing.T) {
+	for name, dsn := range map[string]string{
+		"libpq key-value DSN":  "host=db.internal port=5432 user=postgres password=root123 dbname=registry sslmode=disable",
+		"empty-scheme URL":     "//db.internal:5432/registry?sslmode=disable",
+		"non-postgres scheme":  "mysql://db.internal:3306/registry",
+		"opaque key-value":     "postgres:host=localhost dbname=registry",
+		"no authority":         "postgres:/registry",
+		"bad escape key-value": "host=db.internal password=se%zzcret",
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got, err := migratorDSN(&models.PostGreSQL{URL: dsn}); err == nil {
+				t.Errorf("migratorDSN() = %q, want an error", got)
+			}
+		})
+	}
+}
+
+func TestMigratorDSNAcceptsQueryHost(t *testing.T) {
+	cfg := &models.PostGreSQL{URL: "postgres:///registry?host=%2Fvar%2Frun%2Fpostgresql&sslmode=disable"}
+	got, err := migratorDSN(cfg)
+	if err != nil {
+		t.Fatalf("migratorDSN() error = %v", err)
+	}
+	want := "pgx5:///registry?host=%2Fvar%2Frun%2Fpostgresql&sslmode=disable"
+	if got != want {
+		t.Errorf("migratorDSN() = %q, want %q", got, want)
+	}
+}
+
+func TestMigratorDSNAcceptsUppercaseScheme(t *testing.T) {
+	got, err := migratorDSN(&models.PostGreSQL{URL: "POSTGRESQL://u:p@db.internal:5432/registry"})
+	if err != nil {
+		t.Fatalf("migratorDSN() error = %v", err)
+	}
+	if want := "pgx5://u:p@db.internal:5432/registry"; got != want {
+		t.Errorf("migratorDSN() = %q, want %q", got, want)
 	}
 }
