@@ -65,8 +65,11 @@ runs too. A volume from the previous compose file, with PostgreSQL 18 data in
 `tianon/postgres-upgrade:18-to-19` image. The new cluster keeps the old
 superuser, encoding, locale, data checksum setting and WAL segment size, and
 takes over `pg_hba.conf`, `pg_ident.conf` and `postgresql.auto.conf`. Changes
-made directly in the old `postgresql.conf`, such as a raised
-`max_connections`, are not carried over: set them again with `ALTER SYSTEM`.
+made directly in the old `postgresql.conf` are not carried over: set them
+again with `ALTER SYSTEM`. `max_connections` is the exception. The compose
+file starts postgres with `-c max_connections=1024`, which overrides both
+config files, so change that value in the `command` of the `postgresql`
+service or in a compose override file.
 An empty volume or one already on 19 is left alone. Older data (a volume from
 PostgreSQL 16 or 15 at `/var/lib/postgresql/data`) makes the service fail with
 the directory it found; move it with a `pg_dump` from the old container and a
