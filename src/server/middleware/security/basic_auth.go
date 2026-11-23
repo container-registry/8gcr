@@ -59,6 +59,13 @@ func GetClientIP(r *http.Request) string {
 			return truncateRunes(ip.String(), maxClientIPLen)
 		}
 	}
+	if ip := parseIP(r.RemoteAddr); ip != nil {
+		return ip.String()
+	}
+	// net.ParseIP rejects zoned IPv6 such as fe80::1%eth0; keep the host, drop the port
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil && host != "" {
+		return truncateRunes(host, maxClientIPLen)
+	}
 	return truncateRunes(r.RemoteAddr, maxClientIPLen)
 }
 
