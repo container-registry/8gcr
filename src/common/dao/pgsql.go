@@ -16,11 +16,13 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	migrate "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5" // registers pgx5:// scheme for migrator
@@ -144,8 +146,18 @@ func migratorDSN(database *models.PostGreSQL) (string, error) {
 		}
 		return dbURL.String(), nil
 	}
+	// url.Parse accepts libpq key-value DSNs and postgres:host=...; golang-migrate cannot use them
+	scheme, _, ok := strings.Cut(database.URL, "://")
+	if !ok || (!strings.EqualFold(scheme, "postgres") && !strings.EqualFold(scheme, "postgresql")) {
+		return "", fmt.Errorf("database URL must be a postgres:// or postgresql:// URL; key-value DSNs are not supported by the migrator")
+	}
 	u, err := url.Parse(database.URL)
 	if err != nil {
+		// *url.Error quotes the whole URL, password included
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			err = urlErr.Err
+		}
 		return "", fmt.Errorf("parse database URL: %w", err)
 	}
 	u.Scheme = "pgx5"
