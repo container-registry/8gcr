@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/auditext/model"
@@ -334,6 +335,26 @@ type ScanImageEvent struct {
 	Artifact  *v1.Artifact
 	OccurAt   time.Time
 	Operator  string
+	Scanner   string
+	Scheduled bool
+}
+
+// ResolveToAuditLog ...
+func (s *ScanImageEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	user := s.Operator
+	if user == "" { // scheduled Scan All
+		user = secret.JobserviceUser
+	}
+	return &model.AuditLogExt{
+		ProjectID:            s.Artifact.NamespaceID,
+		OpTime:               s.OccurAt,
+		Operation:            "scan",
+		Username:             user,
+		ResourceType:         ResourceTypeArtifact,
+		IsSuccessful:         s.EventType == TopicScanningCompleted,
+		Resource:             fmt.Sprintf("%s@%s", s.Artifact.Repository, s.Artifact.Digest),
+		OperationDescription: s.Scanner,
+	}, nil
 }
 
 func (s *ScanImageEvent) String() string {

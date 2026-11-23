@@ -214,7 +214,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 	// update status to running
 	status := job.RunningStatus.String()
 	statusRevision := time.Now().Unix()
-	err := t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
+	_, err := t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
 	t.Require().Nil(err)
 
 	task, err := t.taskDAO.Get(t.ctx, t.taskID)
@@ -229,7 +229,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 
 	// update status to success
 	status = job.SuccessStatus.String()
-	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
+	_, err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
 	t.Require().Nil(err)
 
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
@@ -244,7 +244,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 	// update status to running again with different revision
 	status = job.RunningStatus.String()
 	statusRevision = time.Now().Add(1 * time.Second).Unix()
-	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
+	_, err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
 	t.Require().Nil(err)
 
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
@@ -259,7 +259,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 	// update status to error with status message
 	status = job.ErrorStatus.String()
 	errMsg := "413 Quota Exceeded"
-	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, errMsg)
+	_, err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, errMsg)
 	t.Require().Nil(err)
 
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
@@ -270,8 +270,9 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 
 	// update status to error with empty message (stale message should be cleared)
 	status = job.ErrorStatus.String()
-	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, "")
+	changed, err := t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, "")
 	t.Require().Nil(err)
+	t.False(changed, "a repeated final status changes nothing")
 
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
 	t.Require().Nil(err)
@@ -280,7 +281,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 	t.Equal(errMsg, task.StatusMessage)
 
 	// update status to error with message again
-	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, errMsg)
+	_, err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, errMsg)
 	t.Require().Nil(err)
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
 	t.Require().Nil(err)
@@ -288,7 +289,7 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 
 	// update status to success (message should be cleared)
 	status = job.SuccessStatus.String()
-	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
+	_, err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
 	t.Require().Nil(err)
 	task, err = t.taskDAO.Get(t.ctx, t.taskID)
 	t.Require().Nil(err)

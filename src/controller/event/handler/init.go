@@ -57,6 +57,9 @@ func init() {
 	_ = notifier.Subscribe(event.TopicArtifactLabeled, &p2p.Handler{})
 
 	// audit logs
+	_ = notifier.Subscribe(event.TopicScanningCompleted, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicScanningFailed, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicScanningStopped, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicPushArtifact, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicPullArtifact, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicDeleteArtifact, &auditlog.Handler{})

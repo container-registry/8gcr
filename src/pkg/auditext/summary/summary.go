@@ -41,6 +41,7 @@ var verbs = map[string]verb{
 	"delete": {"delete", "deleted"},
 	"pull":   {"pull", "pulled"},
 	"push":   {"push", "pushed"},
+	"scan":   {"scan", "scanned"},
 	"login":  {"log in", "logged in"},
 	"logout": {"log out", "logged out"},
 }
