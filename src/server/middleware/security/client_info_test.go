@@ -38,6 +38,9 @@ func TestGetClientIP(t *testing.T) {
 	}{
 		{"nil request", args{nil}, ""},
 		{"no header", args{&http.Request{RemoteAddr: "10.10.10.10"}}, "10.10.10.10"},
+		{"RemoteAddr port is dropped", args{&http.Request{RemoteAddr: "10.10.10.10:55144"}}, "10.10.10.10"},
+		{"RemoteAddr ipv6 port is dropped", args{&http.Request{RemoteAddr: "[::1]:55144"}}, "::1"},
+		{"RemoteAddr zoned ipv6 port is dropped", args{&http.Request{RemoteAddr: "[fe80::1%eth0]:55144"}}, "fe80::1%eth0"},
 		{"set x forwarded for", args{&http.Request{Header: header("1.1.1.1"), RemoteAddr: "10.10.10.10"}}, "1.1.1.1"},
 		{"proxy chain uses first hop", args{&http.Request{Header: header("1.1.1.1, 2.2.2.2, 3.3.3.3"), RemoteAddr: "10.10.10.10"}}, "1.1.1.1"},
 		{"first hop has surrounding whitespace", args{&http.Request{Header: header(" 1.1.1.1 , 2.2.2.2"), RemoteAddr: "10.10.10.10"}}, "1.1.1.1"},
