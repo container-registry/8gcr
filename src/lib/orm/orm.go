@@ -276,6 +276,9 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return errors.New("no orm found in the context")
 		}
 
+		if bounded, _ := ctx.Value(boundedBeginKey{}).(bool); bounded {
+			tx.beginCtx = ctx
+		}
 		if err := tx.Begin(); err != nil {
 			tracelib.RecordError(span, err, "begin transaction failed")
 			log.Errorf("begin transaction failed: %v", err)
