@@ -64,13 +64,23 @@ func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Conte
 		// toSchema.
 		return "", "", errors.Errorf("empty vulnerability report for report UUID %s", reportUUID)
 	}
-	// parse the raw report with the V1 schema of the report to the normalized structures
-	rawReport := new(vuln.Report)
+	// parse the raw report with the V1 schema of the report to the normalized structures.
+	// json.Decoder over a strings.Reader looks like the leaner option here and is not: on a
+	// single multi-MB document its internal buffer grows by reallocation and ends up allocating
+	// more than the one []byte copy it saves.
+	var rawReport *vuln.Report
 	if err := json.Unmarshal([]byte(reportData), &rawReport); err != nil {
 		return "", "", errors.Wrap(err, "Error when toSchema V1 report to V2")
 	}
+	if rawReport == nil {
+		// JSON null would otherwise sync an empty ID set and clear the existing associations.
+		return "", "", errors.Errorf("null vulnerability report for report UUID %s", reportUUID)
+	}
 
-	if err := c.toSchema(ctx, reportUUID, registrationUUID, digest, reportData); err != nil {
+	// toSchema takes the parsed report. It used to re-parse reportData into a second, complete
+	// vuln.Report, so two full trees were alive at once through the heaviest part of the conversion
+	// — the pile-up that puts jobservice over its memory limit on a large report (#478).
+	if err := c.toSchema(ctx, reportUUID, registrationUUID, digest, rawReport); err != nil {
 		return "", "", errors.Wrap(err, "Error when converting vulnerability report")
 	}
 
@@ -101,13 +111,7 @@ func (c *nativeToRelationalSchemaConverter) FromRelationalSchema(ctx context.Con
 	return rp, nil
 }
 
-func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, _ string, rawReportData string) error {
-	var vulnReport vuln.Report
-	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
-	if err != nil {
-		return err
-	}
-
+func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, _ string, vulnReport *vuln.Report) error {
 	var cveIDs []any
 	for _, v := range vulnReport.Vulnerabilities {
 		v.Severity = vuln.ParseSeverityVersion3(v.Severity.String())
@@ -119,7 +123,10 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 		return err
 	}
 
-	l := vulnReport.GetVulnerabilityItemList()
+	// A local list, not vulnReport.GetVulnerabilityItemList(): that caches on the report and would
+	// hold every item alive after the caller clears Vulnerabilities.
+	l := &vuln.VulnerabilityItemList{}
+	l.Add(vulnReport.Vulnerabilities...)
 	s := lib.Set{}
 
 	var (
