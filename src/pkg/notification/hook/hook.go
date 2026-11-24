@@ -76,7 +76,11 @@ func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent,
 		Parameters: map[string]any(data.Parameters),
 	})
 	if err != nil {
+<<<<<<< HEAD
 		// without a task nothing ever moves the execution out of Running
+=======
+		// without a task nothing moves the execution out of Running
+>>>>>>> baf3cd539 (Mark webhook execution as error when the task can't be submitted (#24480))
 		if e := hm.execMgr.MarkError(ctx, execID, err.Error()); e != nil {
 			log.Errorf("failed to mark webhook execution %d as error: %v", execID, e)
 		}
