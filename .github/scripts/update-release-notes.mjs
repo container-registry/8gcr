@@ -320,9 +320,6 @@ function commercialNotes(tag, tmp, token) {
 function render(ctx) {
   const { tag, chartMode, registry, repo, branch } = ctx;
   const parts = [];
-  if (ctx.summary) {
-    parts.push(`${ctx.summary}\n`);
-  }
   if (ctx.declared) {
     // The branch inventory once listed here carried commit subjects, which
     // is how sync merges reached the notes.
@@ -417,7 +414,7 @@ async function main() {
     node('extract-changelog-release.mjs', file('CHANGELOG.md'), version, file('release-source.md'));
     writeFileSync(file('generated-notes.md'), await generatedNotes(tag, version, chartMode, previewPr, repo));
     node('format-release-notes.mjs', file('release-source.md'), file('generated-notes.md'), file('formatted-notes.md'), file('contributors.md'));
-    node('extract-pr-summary.mjs', file('formatted-notes.md'), repo, file('summary.md'));
+    node('release-notes.mjs', 'inline', file('formatted-notes.md'), repo, 'container-registry/harbor-next');
 
     const branch = await releaseBranch(tag, chartMode, previewPr, repo);
     if (!branch) {
@@ -434,7 +431,6 @@ async function main() {
       declared,
       commercial,
       chartYaml,
-      summary: optional('summary.md'),
       formatted: read(file('formatted-notes.md')),
       contributors: optional('contributors.md'),
       chartName: chartField(chartYaml, 'name') || 'harbor',

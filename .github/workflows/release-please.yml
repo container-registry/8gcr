@@ -356,6 +356,7 @@ jobs:
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
     permissions:
       contents: write
+      pull-requests: read
     uses: $/.github/workflows/release-notes-engine.yml
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
@@ -470,6 +471,7 @@ jobs:
     if: ${{ needs.release-please-chart.outputs.release_created == 'true' }}
     permissions:
       contents: write
+      pull-requests: read
     uses: $/.github/workflows/release-notes-engine.yml
     with:
       tag_name: ${{ needs.release-please-chart.outputs.tag_name }}
