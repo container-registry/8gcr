@@ -44,6 +44,34 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Load Go version
+        id: versions
+        if: matrix.language == 'go'
+        run: |
+          go_version="$(sed -n 's/^GO_VERSION=//p' versions.env)"
+          if ! [[ "${go_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "GO_VERSION in versions.env must be X.Y.Z" >&2
+            exit 1
+          fi
+          echo "go-version=${go_version}" >> "${GITHUB_OUTPUT}"
+
+      - if: matrix.language == 'go'
+        uses: $/.github/actions/setup-go-cached
+        with:
+          go-version: ${{ steps.versions.outputs.go-version }}
+          go-sum-path: src/go.sum
+
+      - if: matrix.language == 'go'
+        uses: $/.github/actions/setup-task
+        with:
+          version: 3.49.1
+
+      # The swagger server packages are not committed; without them the Go
+      # extractor cannot resolve server/v2.0 and drops types from the API handlers.
+      - name: Generate API code
+        if: matrix.language == 'go'
+        run: task build:gen-apis
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
