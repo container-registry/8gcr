@@ -72,6 +72,19 @@ func (suite *DaoTestSuite) TestDelete() {
 	suite.Nil(err)
 }
 
+// TestDeleteAssignedRoleIsForeignKeyError pins the error mapping of the
+// fk_project_member_role RESTRICT key on every server version CI runs.
+func (suite *DaoTestSuite) TestDeleteAssignedRoleIsForeignKeyError() {
+	suite.ExecSQL(`INSERT INTO project_member (project_id, entity_id, entity_type, role) VALUES (1, 987654, 'u', $1)`, suite.roleID4)
+	defer suite.ExecSQL(`DELETE FROM project_member WHERE entity_id = 987654`)
+
+	err := suite.dao.Delete(orm.Context(), suite.roleID4)
+	suite.Require().Error(err)
+	e := orm.AsForeignKeyError(err, "role %d is assigned", suite.roleID4)
+	suite.Require().NotNil(e, "unexpected error: %v", err)
+	suite.True(errors.IsErr(e, errors.ViolateForeignKeyConstraintCode))
+}
+
 func (suite *DaoTestSuite) TestList() {
 	roles, err := suite.dao.List(orm.Context(), &q.Query{
 		Keywords: map[string]any{

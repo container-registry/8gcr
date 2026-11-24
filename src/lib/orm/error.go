@@ -28,6 +28,9 @@ import (
 const (
 	pgUniqueViolation     = "23505"
 	pgForeignKeyViolation = "23503"
+	// PostgreSQL 18+ reports ON DELETE/UPDATE RESTRICT violations as
+	// restrict_violation instead of foreign_key_violation.
+	pgRestrictViolation = "23001"
 )
 
 var (
@@ -105,7 +108,8 @@ func IsDuplicateKeyError(err error) bool {
 
 func isViolatingForeignKeyConstraintError(err error) bool {
 	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) && pgErr.Code == pgForeignKeyViolation {
+	if errors.As(err, &pgErr) &&
+		(pgErr.Code == pgForeignKeyViolation || pgErr.Code == pgRestrictViolation) {
 		return true
 	}
 
