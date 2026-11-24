@@ -92,6 +92,7 @@ func (s *RegistryCtl) Start() {
 }
 
 func main() {
+	lib.SetMemoryLimitFromCgroup()
 	// Start pprof server
 	lib.StartPprof()
 

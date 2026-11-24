@@ -146,6 +146,7 @@ func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 }
 
 func main() {
+	lib.SetMemoryLimitFromCgroup()
 	// Start pprof server
 	lib.StartPprof()
 
