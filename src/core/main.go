@@ -40,6 +40,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/controller/systemartifact"
 	"github.com/goharbor/harbor/src/controller/task"
+	"github.com/goharbor/harbor/src/controller/vulnrecord"
 	"github.com/goharbor/harbor/src/core/api"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
@@ -359,6 +360,12 @@ func main() {
 			return systemartifact.ScheduleCleanupTask(ctx)
 		}, options...); err != nil {
 			log.Errorf("failed to schedule system artifact cleanup job, error: %v", err)
+		}
+		// schedule the cleanup of vulnerability records no scan report links to
+		if err := retry.Retry(func() error {
+			return vulnrecord.ScheduleCleanup(ctx)
+		}, options...); err != nil {
+			log.Errorf("failed to schedule vulnerability record cleanup job, error: %v", err)
 		}
 		// schedule system execution sweep job
 		if err := retry.Retry(func() error {
