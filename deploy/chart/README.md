@@ -817,7 +817,7 @@ Kubernetes: `>=1.28.0-0`
 | core.podLabels | object | `{}` | Additional pod labels for Core |
 | core.podSecurityContext | object | `{"fsGroup":10000}` | Pod security context for Core |
 | core.probes | object | See [values.yaml](values.yaml) | Container probes, rendered verbatim (full Kubernetes probe spec — change paths, ports, timings, or swap httpGet for exec/grpc freely). `startup` gates liveness/readiness: its 2s period makes the pod Ready as soon as the endpoint responds instead of after a fixed initialDelay, while the failureThreshold gives slow first boots (DB migrations) a 180s budget. Disable a probe by setting it to null. |
-| core.quotaUpdateProvider | string | `"db"` | Quota update provider (db or redis) |
+| core.quotaUpdateProvider | string | `"db"` | Deprecated and ignored: quota usage is always updated in the database. Will be removed in a future release |
 | core.replicas | int | `1` | Number of Core replicas (ignored when autoscaling.enabled=true) |
 | core.resources | object | `{"limits":{"memory":"512Mi"},"requests":{"cpu":"100m","memory":"256Mi"}}` | Core resource requests and limits. Core sets its Go soft memory limit (GOMEMLIMIT) to 90% of limits.memory at startup; set GOMEMLIMIT in core.extraEnv to override it. |
 | core.secret | object | {} | Sensitive config for Core (converted to env vars in Secret) |

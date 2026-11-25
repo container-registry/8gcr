@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -97,8 +98,8 @@ func (suite *RollbackTestSuite) lockUsageRow(id int64) func() {
 const lockHoldLimit = 5 * time.Second
 
 // TestRollbackGivesUpOnALockedRow is the regression test for the deadline that
-// was not one. updateUsageByDB runs its CAS through Beego's ORM, which takes
-// no context, so before the database was told the deadline too, the UPDATE sat
+// was not one. The rollback UPDATE runs through Beego's ORM, which takes no
+// context, so before the database was told the deadline too, the UPDATE sat
 // on the row lock with a pool connection in hand for as long as the lock
 // holder wanted - the whole failure this timeout exists to prevent.
 func (suite *RollbackTestSuite) TestRollbackGivesUpOnALockedRow() {
@@ -122,7 +123,7 @@ func (suite *RollbackTestSuite) TestRollbackGivesUpOnALockedRow() {
 	defer cancel()
 
 	start := time.Now()
-	err = suite.ctl.rollbackUsage(rbCtx, q.Reference, q.ReferenceID, types.ResourceList{types.ResourceStorage: 10}, updateQuotaProviderDB)
+	err = suite.ctl.rollbackUsage(rbCtx, q.Reference, q.ReferenceID, types.ResourceList{types.ResourceStorage: 10})
 	elapsed := time.Since(start)
 
 	suite.Error(err, "the rollback cannot succeed while another transaction holds the row")
@@ -130,25 +131,20 @@ func (suite *RollbackTestSuite) TestRollbackGivesUpOnALockedRow() {
 	suite.Less(elapsed, rollbackTimeout+500*time.Millisecond, "the rollback overran its own deadline")
 }
 
-// TestRollbackDoesNotRetryNonConflictErrors: only a CAS conflict proves the
-// write did not land, so any other error must end the rollback after one
-// attempt instead of subtracting the reservation again.
-func (suite *RollbackTestSuite) TestRollbackDoesNotRetryNonConflictErrors() {
-	q := &quota.Quota{
-		Hard: types.ResourceList{types.ResourceStorage: 100}.String(),
-		Used: types.ResourceList{types.ResourceStorage: 10}.String(),
-	}
+// TestRollbackDoesNotRetry: an error leaves the outcome unknown, so the
+// rollback must end after one attempt instead of subtracting the reservation
+// again.
+func (suite *RollbackTestSuite) TestRollbackDoesNotRetry() {
 	mgr := &quotatesting.Manager{}
-	mock.OnAnything(mgr, "GetByRef").Return(q, nil)
-	mock.OnAnything(mgr, "Update").Return(errors.New("commit outcome unknown"))
+	mock.OnAnything(mgr, "AddUsage").Return(false, errors.New("commit outcome unknown"))
 	ctl := &controller{quotaMgr: mgr}
 
 	rbCtx, cancel := context.WithTimeout(orm.Context(), rollbackTimeout)
 	defer cancel()
 
-	err := ctl.rollbackUsage(rbCtx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10}, updateQuotaProviderDB)
+	err := ctl.rollbackUsage(rbCtx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10})
 	suite.Error(err)
-	mgr.AssertNumberOfCalls(suite.T(), "Update", 1)
+	mgr.AssertNumberOfCalls(suite.T(), "AddUsage", 1)
 }
 
 // TestRollbackAbortsOnExpiredDeadline: with no time left there is nothing to
@@ -160,9 +156,103 @@ func (suite *RollbackTestSuite) TestRollbackAbortsOnExpiredDeadline() {
 	rbCtx, cancel := context.WithDeadline(orm.Context(), time.Now().Add(-time.Second))
 	defer cancel()
 
-	err := ctl.rollbackUsage(rbCtx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10}, updateQuotaProviderDB)
+	err := ctl.rollbackUsage(rbCtx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10})
 	suite.Error(err)
-	mgr.AssertNotCalled(suite.T(), "GetByRef", mock.Anything, mock.Anything, mock.Anything)
+	mgr.AssertNotCalled(suite.T(), "AddUsage", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
+// TestRequestFailureInsideTransaction: inside a transaction the reservation
+// runs after f, so a failed f reserves nothing, and the usage ends where it
+// started whether the transaction then commits or rolls back.
+func (suite *RollbackTestSuite) TestRequestFailureInsideTransaction() {
+	for _, commit := range []bool{true, false} {
+		ctx := orm.Context()
+		id, err := quota.Mgr.Create(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 100}, types.ResourceList{types.ResourceStorage: 10})
+		suite.Require().NoError(err)
+		q, err := quota.Mgr.Get(ctx, id)
+		suite.Require().NoError(err)
+
+		failed := errors.New("upload failed")
+		txErr := orm.WithTransaction(func(ctx context.Context) error {
+			err := suite.ctl.Request(ctx, q.Reference, q.ReferenceID, types.ResourceList{types.ResourceStorage: 50}, func() error { return failed })
+			suite.ErrorIs(err, failed)
+			if commit {
+				return nil
+			}
+			return err
+		})(ctx)
+		suite.Equal(!commit, txErr != nil)
+
+		q, err = quota.Mgr.Get(ctx, id)
+		suite.Require().NoError(err)
+		used, err := q.GetUsed()
+		suite.Require().NoError(err)
+		suite.Equal(int64(10), used[types.ResourceStorage], "commit=%v", commit)
+	}
+}
+
+// TestRollbackAfterRefreshKeepsUsage: a refresh between the reservation and
+// the failed upload already recomputed the usage without the reservation, so
+// the rollback must not subtract it again and erase other usage.
+func (suite *RollbackTestSuite) TestRollbackAfterRefreshKeepsUsage() {
+	ctx := orm.Context()
+	id, err := quota.Mgr.Create(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 1000}, types.ResourceList{types.ResourceStorage: 50})
+	suite.Require().NoError(err)
+	q, err := quota.Mgr.Get(ctx, id)
+	suite.Require().NoError(err)
+
+	failed := errors.New("upload failed")
+	err = suite.ctl.Request(ctx, q.Reference, q.ReferenceID, types.ResourceList{types.ResourceStorage: 100}, func() error {
+		refreshed, err := quota.Mgr.Get(ctx, id)
+		suite.Require().NoError(err)
+		refreshed.SetUsed(types.ResourceList{types.ResourceStorage: 50})
+		suite.Require().NoError(quota.Mgr.Update(ctx, refreshed))
+		return failed
+	})
+	suite.ErrorIs(err, failed)
+
+	q, err = quota.Mgr.Get(ctx, id)
+	suite.Require().NoError(err)
+	used, err := q.GetUsed()
+	suite.Require().NoError(err)
+	suite.Equal(int64(50), used[types.ResourceStorage])
+}
+
+// TestRequestInTransactionEnforcesUnderConcurrency: with the reservation after
+// f, concurrent requests in their own transactions still never exceed the
+// limit, and a denied request rolls back without leaving usage behind.
+func (suite *RollbackTestSuite) TestRequestInTransactionEnforcesUnderConcurrency() {
+	ctx := orm.Context()
+	id, err := quota.Mgr.Create(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 100}, types.ResourceList{types.ResourceStorage: 0})
+	suite.Require().NoError(err)
+	q, err := quota.Mgr.Get(ctx, id)
+	suite.Require().NoError(err)
+
+	var ok atomic.Int64
+	var wg sync.WaitGroup
+	for range 25 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			err := orm.WithTransaction(func(ctx context.Context) error {
+				return suite.ctl.Request(ctx, q.Reference, q.ReferenceID, types.ResourceList{types.ResourceStorage: 10}, func() error {
+					time.Sleep(20 * time.Millisecond)
+					return nil
+				})
+			})(orm.Context())
+			if err == nil {
+				ok.Add(1)
+			}
+		}()
+	}
+	wg.Wait()
+
+	suite.Equal(int64(10), ok.Load())
+	q, err = quota.Mgr.Get(ctx, id)
+	suite.Require().NoError(err)
+	used, err := q.GetUsed()
+	suite.Require().NoError(err)
+	suite.Equal(int64(100), used[types.ResourceStorage])
 }
 
 func TestRollbackTestSuite(t *testing.T) {

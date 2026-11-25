@@ -352,7 +352,7 @@ core:
   # project is created as private. "" turns the fallback off; null leaves it to the UI.
   defaultProjectName: null
 
-  # -- Quota update provider (db or redis)
+  # -- Deprecated and ignored: quota usage is always updated in the database. Will be removed in a future release
   quotaUpdateProvider: db
 
   # -- Artifact pull async flush duration

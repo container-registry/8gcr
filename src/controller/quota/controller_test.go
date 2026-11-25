@@ -23,6 +23,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/quota"
@@ -64,6 +65,16 @@ func (suite *ControllerTestSuite) PrepareForUpdate(q *quota.Quota, newUsage any)
 	mock.OnAnything(suite.driver, "CalculateUsage").Return(newUsage, nil)
 
 	mock.OnAnything(suite.quotaMgr, "Update").Return(nil)
+
+	// emulates the conditional UPDATE against q's hard limit
+	mock.OnAnything(suite.quotaMgr, "AddUsage").Return(func(_ context.Context, _, _ string, delta types.ResourceList, enforce bool) (bool, error) {
+		hard, _ := q.GetHard()
+		used, _ := q.GetUsed()
+		if enforce && quota.IsSafe(hard, used, types.Add(used, delta), false) != nil {
+			return false, nil
+		}
+		return true, nil
+	})
 }
 
 func (suite *ControllerTestSuite) TestRefresh() {
@@ -183,7 +194,7 @@ func (suite *ControllerTestSuite) TestRequestRollbackSurvivesCanceledContext() {
 		return context.Canceled
 	})
 	suite.ErrorIs(err, context.Canceled)
-	suite.quotaMgr.AssertNumberOfCalls(suite.T(), "Update", 2)
+	suite.quotaMgr.AssertNumberOfCalls(suite.T(), "AddUsage", 2)
 }
 
 func (suite *ControllerTestSuite) TestRequestResourceIsZero() {
@@ -197,6 +208,7 @@ func (suite *ControllerTestSuite) TestRequestResourceIsZero() {
 	res := types.ResourceList{types.ResourceStorage: 0}
 	err := suite.ctl.Request(ctx, suite.reference, referenceID, res, f)
 	suite.Nil(err)
+	suite.quotaMgr.AssertNotCalled(suite.T(), "AddUsage", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 }
 
 func (suite *ControllerTestSuite) TestRequestUnlimitedSkipsReservation() {
@@ -216,6 +228,7 @@ func (suite *ControllerTestSuite) TestRequestUnlimitedSkipsReservation() {
 	suite.Nil(err)
 	suite.True(called)
 	suite.quotaMgr.AssertNotCalled(suite.T(), "Update")
+	suite.quotaMgr.AssertNotCalled(suite.T(), "AddUsage")
 }
 
 func (suite *ControllerTestSuite) TestRequestLimitedStillReserves() {
@@ -227,7 +240,7 @@ func (suite *ControllerTestSuite) TestRequestLimitedStillReserves() {
 		return nil
 	})
 	suite.Nil(err)
-	suite.quotaMgr.AssertCalled(suite.T(), "Update", mock.Anything, mock.Anything)
+	suite.quotaMgr.AssertCalled(suite.T(), "AddUsage", mock.Anything, mock.Anything, mock.Anything, types.ResourceList{types.ResourceStorage: 10}, true)
 }
 
 func (suite *ControllerTestSuite) TestRequestLimitedDenies() {
@@ -241,7 +254,22 @@ func (suite *ControllerTestSuite) TestRequestLimitedDenies() {
 		return nil
 	})
 	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.DENIED), "a quota breach is reported as denied")
 	suite.False(called)
+}
+
+func (suite *ControllerTestSuite) TestRequestZeroDeniedWhenAlreadyOver() {
+	q := &quota.Quota{
+		Hard: types.ResourceList{types.ResourceStorage: 100}.String(),
+		Used: types.ResourceList{types.ResourceStorage: 150}.String(),
+	}
+	suite.PrepareForUpdate(q, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 0}, func() error {
+		return nil
+	})
+	suite.Error(err)
 }
 
 func (suite *ControllerTestSuite) TestUpdateHardLimitRefreshesUsage() {
@@ -272,6 +300,62 @@ func (suite *ControllerTestSuite) TestUpdateWithoutHardChangeSkipsRefresh() {
 
 	suite.Nil(suite.ctl.Update(ctx, u))
 	suite.driver.AssertNotCalled(suite.T(), "CalculateUsage", mock.Anything, mock.Anything)
+}
+
+func (suite *ControllerTestSuite) TestRequestInTransactionReservesAfterF() {
+	// in a transaction the UPDATE must not hold the row lock across f
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeTxOrmer{})
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10}, func() error {
+		suite.quotaMgr.AssertNotCalled(suite.T(), "AddUsage", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		return nil
+	})
+	suite.Nil(err)
+	suite.quotaMgr.AssertNumberOfCalls(suite.T(), "AddUsage", 1)
+	suite.quotaMgr.AssertNumberOfCalls(suite.T(), "GetByRef", 1)
+}
+
+func (suite *ControllerTestSuite) TestRequestInTransactionFailureReservesNothing() {
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeTxOrmer{})
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10}, func() error {
+		return fmt.Errorf("error")
+	})
+	suite.Error(err)
+	suite.quotaMgr.AssertNotCalled(suite.T(), "AddUsage", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *ControllerTestSuite) TestRequestInTransactionDeniesBeforeF() {
+	// a request already over the limit is refused without running f
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeTxOrmer{})
+	called := false
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 1000}, func() error {
+		called = true
+		return nil
+	})
+	suite.True(errors.IsErr(err, errors.DENIED))
+	suite.False(called)
+}
+
+func (suite *ControllerTestSuite) TestRequestInTransactionDeniesWhenUpdateLoses() {
+	// the read-only check passed but a concurrent request took the room
+	suite.quotaMgr.On("GetByRef", mock.Anything, mock.Anything, mock.Anything).Return(suite.quota, nil)
+	mock.OnAnything(suite.quotaMgr, "AddUsage").Return(false, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeTxOrmer{})
+	called := false
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10}, func() error {
+		called = true
+		return nil
+	})
+	suite.True(called, "the handler runs before the late UPDATE")
+	suite.True(errors.IsErr(err, errors.DENIED))
+	var errs quota.Errors
+	suite.True(errors.As(err, &errs), "a lost race still reports the overflow for the quota-exceeded event")
 }
 
 func TestControllerTestSuite(t *testing.T) {

@@ -45,6 +45,16 @@ type ormerTx struct {
 
 type boundedBeginKey struct{}
 
+// InTransaction reports whether the ORM in ctx runs inside a transaction.
+func InTransaction(ctx context.Context) bool {
+	o, err := FromContext(ctx)
+	if err != nil {
+		return false
+	}
+	_, ok := o.(orm.TxOrmer)
+	return ok
+}
+
 // WithBoundedBegin makes a transaction opened under ctx stop waiting for a
 // pooled connection once ctx is done. database/sql also rolls the transaction
 // back when ctx ends, so use it only where ctx is the transaction's own bound.
