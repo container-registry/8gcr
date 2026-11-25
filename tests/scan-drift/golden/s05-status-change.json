@@ -1,0 +1,474 @@
+{
+  "captures": [
+    {
+      "export": {
+        "file_present": true,
+        "rows": [
+          {
+            "Additional Data": "{\"CVSS\": {\"nvd\": {\"V3Score\": 7.5}}}",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "CVE-2026-0401",
+            "CWE Ids": "",
+            "Current Version": "3.0.1-r0",
+            "Fixed in version": "",
+            "Package": "openssl",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "High"
+          }
+        ],
+        "status": "Success"
+      },
+      "label": "before",
+      "reports": [
+        {
+          "artifact": "a1",
+          "pull_block": {
+            "allowlisted_cve": "CVE-2026-0401",
+            "allowlisted_high_and_critical": [
+              "CVE-2026-0401"
+            ],
+            "blocked": {
+              "error_codes": [
+                "PROJECTPOLICYVIOLATION"
+              ],
+              "status": 412
+            },
+            "with_allowlist": {
+              "error_codes": [],
+              "status": 200
+            },
+            "with_allowlist_high_and_critical": {
+              "error_codes": [],
+              "status": 200
+            }
+          },
+          "scan_overview": {
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+              "complete_percent": 100,
+              "scan_status": "Success",
+              "scanner": {
+                "name": "Trivy",
+                "vendor": "Aqua Security",
+                "version": "v0.60.0"
+              },
+              "severity": "High",
+              "summary": {
+                "fixable": 0,
+                "summary": {
+                  "High": 1
+                },
+                "total": 1
+              }
+            }
+          },
+          "scanner": "s1",
+          "vulnerabilities": {
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+              "generated_at": "2026-11-25T10:00:00Z",
+              "scanner": {
+                "name": "Trivy",
+                "vendor": "Aqua Security",
+                "version": "v0.60.0"
+              },
+              "severity": "High",
+              "vulnerabilities": [
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    ""
+                  ],
+                  "description": "old text",
+                  "fix_version": "",
+                  "id": "CVE-2026-0401",
+                  "links": [
+                    "https://old.example.com"
+                  ],
+                  "package": "openssl",
+                  "preferred_cvss": {
+                    "score_v2": null,
+                    "score_v3": 7.5,
+                    "vector_v2": "",
+                    "vector_v3": ""
+                  },
+                  "severity": "High",
+                  "status": "affected",
+                  "vendor_attributes": {
+                    "CVSS": {
+                      "nvd": {
+                        "V3Score": 7.5
+                      }
+                    }
+                  },
+                  "version": "3.0.1-r0"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "security": [
+        {
+          "scanner": "s1",
+          "summary": {
+            "critical_cnt": 0,
+            "dangerous_artifacts": [
+              {
+                "critical_cnt": 0,
+                "digest": "<digest:a1>",
+                "high_cnt": 1,
+                "medium_cnt": 0,
+                "project_id": "<project-id>",
+                "repository_name": "<project>/a1"
+              }
+            ],
+            "dangerous_cves": [
+              {
+                "cve_id": "CVE-2026-0401",
+                "cvss_score_v3": 7.5,
+                "package": "openssl",
+                "severity": "High",
+                "version": "3.0.1-r0"
+              }
+            ],
+            "fixable_cnt": 0,
+            "high_cnt": 1,
+            "low_cnt": 0,
+            "medium_cnt": 0,
+            "scanned_cnt": 1,
+            "total_artifact": 1,
+            "total_vuls": 1
+          },
+          "vul_all": [
+            {
+              "cve_id": "CVE-2026-0401",
+              "cvss_v3_score": 7.5,
+              "desc": "old text",
+              "digest": "<digest:a1>",
+              "links": [
+                "https://old.example.com"
+              ],
+              "package": "openssl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "High",
+              "status": "affected",
+              "tags": null,
+              "version": "3.0.1-r0"
+            }
+          ],
+          "vul_critical": [],
+          "vul_cvss_7_10": [
+            {
+              "cve_id": "CVE-2026-0401",
+              "cvss_v3_score": 7.5,
+              "desc": "old text",
+              "digest": "<digest:a1>",
+              "links": [
+                "https://old.example.com"
+              ],
+              "package": "openssl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "High",
+              "status": "affected",
+              "tags": null,
+              "version": "3.0.1-r0"
+            }
+          ]
+        }
+      ],
+      "webhooks": [
+        {
+          "event_data": {
+            "repository": {
+              "name": "a1",
+              "namespace": "<project>",
+              "repo_full_name": "<project>/a1",
+              "repo_type": "private"
+            },
+            "resources": [
+              {
+                "digest": "<digest:a1>",
+                "resource_url": "core:8080/<project>/a1:a1",
+                "scan_overview": {
+                  "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+                    "complete_percent": 100,
+                    "scan_status": "Success",
+                    "scanner": {
+                      "name": "Trivy",
+                      "vendor": "Aqua Security",
+                      "version": "v0.60.0"
+                    },
+                    "severity": "High",
+                    "summary": {
+                      "fixable": 0,
+                      "summary": {
+                        "High": 1
+                      },
+                      "total": 1
+                    }
+                  }
+                },
+                "tag": "a1"
+              }
+            ],
+            "scan": {
+              "scan_type": "vulnerability"
+            }
+          },
+          "operator": "admin",
+          "type": "SCANNING_COMPLETED"
+        }
+      ]
+    },
+    {
+      "export": {
+        "file_present": true,
+        "rows": [
+          {
+            "Additional Data": "{\"CVSS\": {\"nvd\": {\"V3Score\": 7.5}}}",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "CVE-2026-0401",
+            "CWE Ids": "",
+            "Current Version": "3.0.1-r0",
+            "Fixed in version": "3.0.2-r0",
+            "Package": "openssl",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "High"
+          }
+        ],
+        "status": "Success"
+      },
+      "label": "after-status-change",
+      "reports": [
+        {
+          "artifact": "a1",
+          "pull_block": {
+            "allowlisted_cve": "CVE-2026-0401",
+            "allowlisted_high_and_critical": [
+              "CVE-2026-0401"
+            ],
+            "blocked": {
+              "error_codes": [
+                "PROJECTPOLICYVIOLATION"
+              ],
+              "status": 412
+            },
+            "with_allowlist": {
+              "error_codes": [],
+              "status": 200
+            },
+            "with_allowlist_high_and_critical": {
+              "error_codes": [],
+              "status": 200
+            }
+          },
+          "scan_overview": {
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+              "complete_percent": 100,
+              "scan_status": "Success",
+              "scanner": {
+                "name": "Trivy",
+                "vendor": "Aqua Security",
+                "version": "v0.60.0"
+              },
+              "severity": "High",
+              "summary": {
+                "fixable": 1,
+                "summary": {
+                  "High": 1
+                },
+                "total": 1
+              }
+            }
+          },
+          "scanner": "s1",
+          "vulnerabilities": {
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+              "generated_at": "2026-11-26T10:00:00Z",
+              "scanner": {
+                "name": "Trivy",
+                "vendor": "Aqua Security",
+                "version": "v0.60.0"
+              },
+              "severity": "High",
+              "vulnerabilities": [
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    ""
+                  ],
+                  "description": "old text",
+                  "fix_version": "3.0.2-r0",
+                  "id": "CVE-2026-0401",
+                  "links": [
+                    "https://old.example.com"
+                  ],
+                  "package": "openssl",
+                  "preferred_cvss": {
+                    "score_v2": null,
+                    "score_v3": 8.8,
+                    "vector_v2": "",
+                    "vector_v3": ""
+                  },
+                  "severity": "High",
+                  "status": "fixed",
+                  "vendor_attributes": {
+                    "CVSS": {
+                      "nvd": {
+                        "V3Score": 7.5
+                      }
+                    }
+                  },
+                  "version": "3.0.1-r0"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "security": [
+        {
+          "scanner": "s1",
+          "summary": {
+            "critical_cnt": 0,
+            "dangerous_artifacts": [
+              {
+                "critical_cnt": 0,
+                "digest": "<digest:a1>",
+                "high_cnt": 1,
+                "medium_cnt": 0,
+                "project_id": "<project-id>",
+                "repository_name": "<project>/a1"
+              }
+            ],
+            "dangerous_cves": [
+              {
+                "cve_id": "CVE-2026-0401",
+                "cvss_score_v3": 8.8,
+                "package": "openssl",
+                "severity": "High",
+                "version": "3.0.1-r0"
+              }
+            ],
+            "fixable_cnt": 1,
+            "high_cnt": 1,
+            "low_cnt": 0,
+            "medium_cnt": 0,
+            "scanned_cnt": 1,
+            "total_artifact": 1,
+            "total_vuls": 1
+          },
+          "vul_all": [
+            {
+              "cve_id": "CVE-2026-0401",
+              "cvss_v3_score": 8.8,
+              "desc": "old text",
+              "digest": "<digest:a1>",
+              "fixed_version": "3.0.2-r0",
+              "links": [
+                "https://old.example.com"
+              ],
+              "package": "openssl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "High",
+              "status": "fixed",
+              "tags": null,
+              "version": "3.0.1-r0"
+            }
+          ],
+          "vul_critical": [],
+          "vul_cvss_7_10": [
+            {
+              "cve_id": "CVE-2026-0401",
+              "cvss_v3_score": 8.8,
+              "desc": "old text",
+              "digest": "<digest:a1>",
+              "fixed_version": "3.0.2-r0",
+              "links": [
+                "https://old.example.com"
+              ],
+              "package": "openssl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "High",
+              "status": "fixed",
+              "tags": null,
+              "version": "3.0.1-r0"
+            }
+          ]
+        }
+      ],
+      "webhooks": [
+        {
+          "event_data": {
+            "repository": {
+              "name": "a1",
+              "namespace": "<project>",
+              "repo_full_name": "<project>/a1",
+              "repo_type": "private"
+            },
+            "resources": [
+              {
+                "digest": "<digest:a1>",
+                "resource_url": "core:8080/<project>/a1:a1",
+                "scan_overview": {
+                  "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+                    "complete_percent": 100,
+                    "scan_status": "Success",
+                    "scanner": {
+                      "name": "Trivy",
+                      "vendor": "Aqua Security",
+                      "version": "v0.60.0"
+                    },
+                    "severity": "High",
+                    "summary": {
+                      "fixable": 1,
+                      "summary": {
+                        "High": 1
+                      },
+                      "total": 1
+                    }
+                  }
+                },
+                "tag": "a1"
+              }
+            ],
+            "scan": {
+              "scan_type": "vulnerability"
+            }
+          },
+          "operator": "admin",
+          "type": "SCANNING_COMPLETED"
+        }
+      ]
+    }
+  ],
+  "scenario": "s05-status-change",
+  "steps": [
+    {
+      "op": "register_scanner",
+      "result": "ok",
+      "scanner": "s1"
+    },
+    {
+      "artifact": "a1",
+      "op": "scan",
+      "result": "ok",
+      "scanner": "s1"
+    },
+    {
+      "artifact": "a1",
+      "op": "scan",
+      "result": "ok",
+      "scanner": "s1"
+    }
+  ]
+}

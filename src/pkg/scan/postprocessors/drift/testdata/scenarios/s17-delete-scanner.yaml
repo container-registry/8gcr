@@ -1,0 +1,17 @@
+name: s17-delete-scanner
+description: Deleting a scanner cascades to its records and links; its reports keep only the stored summary.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - {op: register_scanner, scanner: s2}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report: &r
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1601, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+  - {op: scan, artifact: a1, scanner: s2, report: *r}
+  - {op: delete_scanner, scanner: s1}
+  - {op: capture, label: after-delete}

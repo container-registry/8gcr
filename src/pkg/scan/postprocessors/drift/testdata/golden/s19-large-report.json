@@ -1,0 +1,30 @@
+{
+  "first-scan": {
+    "critical_cnt": 0,
+    "fixable_cnt": 8000,
+    "high_cnt": 8000,
+    "records_total": 208000,
+    "records_unlinked": 0,
+    "report_items": 8000,
+    "report_sha256": "2a65fc8b41a1f27e5383f709ff8fae9c3567b58a2ba86f1f7c28967a3ea9fac1"
+  },
+  "identical-rescan": {
+    "critical_cnt": 0,
+    "fixable_cnt": 8000,
+    "high_cnt": 8000,
+    "records_total": 208000,
+    "records_unlinked": 0,
+    "report_items": 8000,
+    "report_sha256": "2a65fc8b41a1f27e5383f709ff8fae9c3567b58a2ba86f1f7c28967a3ea9fac1"
+  },
+  "rescan-10pct-severity-change": {
+    "critical_cnt": 800,
+    "fixable_cnt": 8000,
+    "high_cnt": 7200,
+    "records_total": 208000,
+    "records_unlinked": 0,
+    "report_items": 8000,
+    "report_sha256": "f23a4faf8d0201d9a435c104c6ecefd72ff516f1787ecdbd041987bd948a17e2"
+  },
+  "scenario": "s19-large-report"
+}

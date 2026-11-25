@@ -1,0 +1,30 @@
+name: s10-duplicate-key-in-report
+description: >-
+  The same CVE, package and version twice in one report with different severities. One record is
+  stored with the first item's data; the counters count both items.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: Critical
+      vulnerabilities:
+        - {id: CVE-2026-0901, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+        - {id: CVE-2026-0901, package: openssl, version: 3.0.1-r0, fix_version: 3.0.2-r0, severity: Critical, status: fixed, preferred_cvss: {score_v3: 9.8}}
+        - {id: CVE-2026-0902, package: zlib, version: 1.2.13-r0, severity: Low, status: affected}
+  - {op: capture, label: first-scan}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-26T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: Critical
+      vulnerabilities:
+        - {id: CVE-2026-0901, package: openssl, version: 3.0.1-r0, fix_version: 3.0.2-r0, severity: Critical, status: fixed, preferred_cvss: {score_v3: 9.8}}
+        - {id: CVE-2026-0901, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+        - {id: CVE-2026-0902, package: zlib, version: 1.2.13-r0, severity: Low, status: affected}
+  - {op: capture, label: rescan-swapped-order}

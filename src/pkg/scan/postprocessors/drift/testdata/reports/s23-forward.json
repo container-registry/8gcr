@@ -1,0 +1,1091 @@
+{
+ "generated_at": "2026-11-25T10:00:00Z",
+ "scanner": {
+  "name": "Trivy",
+  "vendor": "Aqua Security",
+  "version": "v0.60.0"
+ },
+ "severity": "Medium",
+ "vulnerabilities": [
+  {
+   "id": "CVE-2026-23000",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23001",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23002",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23003",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23004",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23005",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23006",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23007",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23008",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23009",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23010",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23011",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23012",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23013",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23014",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23015",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23016",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23017",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23018",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23019",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23020",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23021",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23022",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23023",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23024",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23025",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23026",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23027",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23028",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23029",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23030",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23031",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23032",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23033",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23034",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23035",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23036",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23037",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23038",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23039",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23040",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23041",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23042",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23043",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23044",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23045",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23046",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23047",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23048",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23049",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23050",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23051",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23052",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23053",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23054",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23055",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23056",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23057",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23058",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23059",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23060",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23061",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23062",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23063",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23064",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23065",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23066",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23067",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23068",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23069",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23070",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23071",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23072",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23073",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23074",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23075",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23076",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23077",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23078",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23079",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23080",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23081",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23082",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23083",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23084",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23085",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23086",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23087",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23088",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23089",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23090",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23091",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23092",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23093",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23094",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23095",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23096",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23097",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23098",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23099",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23100",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23101",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23102",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23103",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23104",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23105",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23106",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23107",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23108",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23109",
+   "package": "pkg-10",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23110",
+   "package": "pkg-0",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23111",
+   "package": "pkg-1",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23112",
+   "package": "pkg-2",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23113",
+   "package": "pkg-3",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23114",
+   "package": "pkg-4",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  },
+  {
+   "id": "CVE-2026-23115",
+   "package": "pkg-5",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.0
+   }
+  },
+  {
+   "id": "CVE-2026-23116",
+   "package": "pkg-6",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.1
+   }
+  },
+  {
+   "id": "CVE-2026-23117",
+   "package": "pkg-7",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.2
+   }
+  },
+  {
+   "id": "CVE-2026-23118",
+   "package": "pkg-8",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.3
+   }
+  },
+  {
+   "id": "CVE-2026-23119",
+   "package": "pkg-9",
+   "version": "2.0",
+   "severity": "Medium",
+   "preferred_cvss": {
+    "score_v3": 5.4
+   }
+  }
+ ]
+}

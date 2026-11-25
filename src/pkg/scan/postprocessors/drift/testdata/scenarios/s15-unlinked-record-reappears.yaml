@@ -1,0 +1,30 @@
+name: s15-unlinked-record-reappears
+description: >-
+  A finding disappears, leaving its record unlinked, then reappears with the same data. Today the
+  record is re-attached; after a cleanup it is created again. Both must look the same to users.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report: &both
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1401, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+        - {id: CVE-2026-1402, package: zlib, version: 1.2.13-r0, fix_version: 1.2.13-r1, severity: Medium, status: fixed, description: inflate overread, preferred_cvss: {score_v3: 5.3}, cwe_ids: [CWE-125]}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-26T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1401, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+  - {op: capture, label: one-unlinked}
+  - {op: cleanup}
+  - {op: capture, label: after-cleanup}
+  - {op: scan, artifact: a1, scanner: s1, report: *both}
+  - {op: capture, label: reappeared}

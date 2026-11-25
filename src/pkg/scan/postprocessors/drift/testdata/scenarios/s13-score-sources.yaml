@@ -1,0 +1,22 @@
+name: s13-score-sources
+description: >-
+  Where cvss_score_v3 comes from: preferred_cvss wins, else the nvd V3Score in vendor attributes,
+  else the only vendor's V3Score, else 0 when vendor attributes exist without a score, else NULL.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: Critical
+      vulnerabilities:
+        - {id: CVE-2026-1201, package: p1, version: "1", severity: High, preferred_cvss: {score_v3: 7.1}, vendor_attributes: {CVSS: {nvd: {V3Score: 9.9}}}}
+        - {id: CVE-2026-1202, package: p2, version: "1", severity: Critical, vendor_attributes: {CVSS: {nvd: {V3Score: 9.1}, redhat: {V3Score: 8.0}}}}
+        - {id: CVE-2026-1203, package: p3, version: "1", severity: Medium, vendor_attributes: {CVSS: {redhat: {V3Score: 6.1, V3Vector: "CVSS:3.1/AV:L"}}}}
+        - {id: CVE-2026-1204, package: p4, version: "1", severity: Low, vendor_attributes: {vendor_severity: {ubuntu: 1}}}
+        - {id: CVE-2026-1205, package: p5, version: "1", severity: Low}
+        - {id: CVE-2026-1206, package: p6, version: "1", severity: Medium, preferred_cvss: {vector_v3: "CVSS:3.1/AV:N/AC:H"}}
+        - {id: CVE-2026-1207, package: p7, version: "1", severity: High, preferred_cvss: {score_v2: 6.8, vector_v2: "AV:N/AC:M/Au:N/C:P/I:P/A:P"}}
+  - {op: capture, label: scored}

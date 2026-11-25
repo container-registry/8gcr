@@ -1,0 +1,761 @@
+{
+  "scenario": "s01-first-scan",
+  "steps": [
+    {
+      "op": "register_scanner",
+      "scanner": "s1",
+      "result": "ok"
+    },
+    {
+      "op": "scan",
+      "artifact": "a1",
+      "scanner": "s1",
+      "result": "ok"
+    }
+  ],
+  "captures": [
+    {
+      "label": "after-first-scan",
+      "reports": [
+        {
+          "artifact": "a1",
+          "counts": {
+            "critical": 1,
+            "fixable": 2,
+            "high": 1,
+            "low": 1,
+            "medium": 1,
+            "none": 1,
+            "unknown": 1
+          },
+          "report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "Critical",
+            "vulnerabilities": [
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  "CWE-120",
+                  "CWE-787"
+                ],
+                "description": "Buffer overflow in X.509 name constraint checking.",
+                "fix_version": "3.0.2-r0",
+                "id": "CVE-2026-0001",
+                "links": [
+                  "https://avd.aquasec.com/nvd/cve-2026-0001",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2026-0001"
+                ],
+                "package": "openssl",
+                "preferred_cvss": {
+                  "score_v2": 7.5,
+                  "score_v3": 9.8,
+                  "vector_v2": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
+                  "vector_v3": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                },
+                "severity": "Critical",
+                "status": "fixed",
+                "vendor_attributes": {
+                  "CVSS": {
+                    "nvd": {
+                      "V3Score": 9.8,
+                      "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                    }
+                  }
+                },
+                "version": "3.0.1-r0"
+              },
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "Heap read past the end of the window in inflate.",
+                "fix_version": "",
+                "id": "CVE-2026-0002",
+                "links": [
+                  "https://avd.aquasec.com/nvd/cve-2026-0002"
+                ],
+                "package": "zlib",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 5.3,
+                  "vector_v2": "",
+                  "vector_v3": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+                },
+                "severity": "Medium",
+                "status": "affected",
+                "vendor_attributes": null,
+                "version": "1.2.13-r0"
+              },
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-0003",
+                "links": [
+                  ""
+                ],
+                "package": "busybox",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": null,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "Low",
+                "status": "",
+                "vendor_attributes": null,
+                "version": "1.36.1-r2"
+              },
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-0004",
+                "links": [
+                  ""
+                ],
+                "package": "musl",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": null,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "Unknown",
+                "status": "",
+                "vendor_attributes": null,
+                "version": "1.2.4-r1"
+              },
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-0005",
+                "links": [
+                  ""
+                ],
+                "package": "libcurl",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": null,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "None",
+                "status": "",
+                "vendor_attributes": null,
+                "version": "8.5.0-r0"
+              },
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "v0.23.0",
+                "id": "GHSA-aaaa-bbbb-cccc",
+                "links": [
+                  ""
+                ],
+                "package": "golang.org/x/net",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 7.5,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "High",
+                "status": "fixed",
+                "vendor_attributes": null,
+                "version": "v0.20.0"
+              }
+            ]
+          },
+          "scanner": "s1",
+          "stored_report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "Critical",
+            "vulnerabilities": []
+          },
+          "summary": {
+            "complete_percent": 100,
+            "scan_status": "Success",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "Critical",
+            "summary": {
+              "fixable": 2,
+              "summary": {
+                "Critical": 1,
+                "High": 1,
+                "Low": 1,
+                "Medium": 1,
+                "None": 1,
+                "Unknown": 1
+              },
+              "total": 6
+            }
+          }
+        }
+      ],
+      "security_hub": [
+        {
+          "dangerous_artifacts": {
+            "complete": true,
+            "rows": [
+              {
+                "critical_cnt": 1,
+                "high_cnt": 1,
+                "low_cnt": 1,
+                "medium_cnt": 1
+              }
+            ]
+          },
+          "dangerous_cves": {
+            "complete": true,
+            "rows": [
+              {
+                "CVE2Score": null,
+                "CVE3Score": 5.3,
+                "CVEID": "CVE-2026-0002",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "Heap read past the end of the window in inflate.",
+                "Fix": "",
+                "Package": "zlib",
+                "PackageType": "",
+                "PackageVersion": "1.2.13-r0",
+                "RegistrationUUID": "",
+                "Severity": "Medium",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              },
+              {
+                "CVE2Score": null,
+                "CVE3Score": 7.5,
+                "CVEID": "GHSA-aaaa-bbbb-cccc",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "",
+                "Fix": "",
+                "Package": "golang.org/x/net",
+                "PackageType": "",
+                "PackageVersion": "v0.20.0",
+                "RegistrationUUID": "",
+                "Severity": "High",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              },
+              {
+                "CVE2Score": null,
+                "CVE3Score": 9.8,
+                "CVEID": "CVE-2026-0001",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "Buffer overflow in X.509 name constraint checking.",
+                "Fix": "",
+                "Package": "openssl",
+                "PackageType": "",
+                "PackageVersion": "3.0.1-r0",
+                "RegistrationUUID": "",
+                "Severity": "Critical",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              }
+            ]
+          },
+          "scanned_artifacts": 1,
+          "scanner": "s1",
+          "summary": {
+            "critical_cnt": 1,
+            "dangerous_artifacts": null,
+            "dangerous_cves": null,
+            "fixable_cnt": 2,
+            "high_cnt": 1,
+            "low_cnt": 1,
+            "medium_cnt": 1,
+            "none_cnt": 1,
+            "not_scan_cnt": 0,
+            "scanned_cnt": 0,
+            "total_artifact_cnt": 0,
+            "unknown_cnt": 1
+          },
+          "vulnerabilities": {
+            "all": {
+              "count": 6,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 5.3,
+                  "CVEID": "CVE-2026-0002",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "Heap read past the end of the window in inflate.",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "zlib",
+                  "PackageType": "",
+                  "PackageVersion": "1.2.13-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Medium",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "https://avd.aquasec.com/nvd/cve-2026-0002",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "GHSA-aaaa-bbbb-cccc",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "v0.23.0",
+                  "Package": "golang.org/x/net",
+                  "PackageType": "",
+                  "PackageVersion": "v0.20.0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "High",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 9.8,
+                  "CVEID": "CVE-2026-0001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "Buffer overflow in X.509 name constraint checking.",
+                  "Digest": "<digest:a1>",
+                  "Fix": "3.0.2-r0",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Critical",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "https://avd.aquasec.com/nvd/cve-2026-0001|https://nvd.nist.gov/vuln/detail/CVE-2026-0001",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": null,
+                  "CVEID": "CVE-2026-0003",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "busybox",
+                  "PackageType": "",
+                  "PackageVersion": "1.36.1-r2",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Low",
+                  "Status": "",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": null,
+                  "CVEID": "CVE-2026-0004",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "musl",
+                  "PackageType": "",
+                  "PackageVersion": "1.2.4-r1",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Unknown",
+                  "Status": "",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": null,
+                  "CVEID": "CVE-2026-0005",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "libcurl",
+                  "PackageType": "",
+                  "PackageVersion": "8.5.0-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "None",
+                  "Status": "",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            },
+            "critical": {
+              "count": 1,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 9.8,
+                  "CVEID": "CVE-2026-0001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "Buffer overflow in X.509 name constraint checking.",
+                  "Digest": "<digest:a1>",
+                  "Fix": "3.0.2-r0",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Critical",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "https://avd.aquasec.com/nvd/cve-2026-0001|https://nvd.nist.gov/vuln/detail/CVE-2026-0001",
+                  "VendorAttributes": ""
+                }
+              ]
+            },
+            "cvss_7_or_more": {
+              "count": 2,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "GHSA-aaaa-bbbb-cccc",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "v0.23.0",
+                  "Package": "golang.org/x/net",
+                  "PackageType": "",
+                  "PackageVersion": "v0.20.0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "High",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 9.8,
+                  "CVEID": "CVE-2026-0001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "Buffer overflow in X.509 name constraint checking.",
+                  "Digest": "<digest:a1>",
+                  "Fix": "3.0.2-r0",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Critical",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "https://avd.aquasec.com/nvd/cve-2026-0001|https://nvd.nist.gov/vuln/detail/CVE-2026-0001",
+                  "VendorAttributes": ""
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "export": [
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-0002",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "zlib",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "Medium",
+          "Version": "1.2.13-r0"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-0003",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "busybox",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "Low",
+          "Version": "1.36.1-r2"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-0004",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "musl",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "Unknown",
+          "Version": "1.2.4-r1"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-0005",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "libcurl",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "None",
+          "Version": "8.5.0-r0"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "GHSA-aaaa-bbbb-cccc",
+          "CWEIds": "",
+          "FixVersion": "v0.23.0",
+          "Package": "golang.org/x/net",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "High",
+          "Version": "v0.20.0"
+        },
+        {
+          "AdditionalData": "{\"CVSS\": {\"nvd\": {\"V3Score\": 9.8, \"V3Vector\": \"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\"}}}",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-0001",
+          "CWEIds": "CWE-120,CWE-787",
+          "FixVersion": "3.0.2-r0",
+          "Package": "openssl",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "Critical",
+          "Version": "3.0.1-r0"
+        }
+      ],
+      "records": [
+        {
+          "linked_records": [
+            {
+              "cve_id": "CVE-2026-0001",
+              "cvss_score_v2": "7.5",
+              "cvss_score_v3": "9.8",
+              "cvss_vector_v2": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
+              "cvss_vector_v3": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "cwe_ids": "CWE-120,CWE-787",
+              "description": "Buffer overflow in X.509 name constraint checking.",
+              "fixed_version": "3.0.2-r0",
+              "package": "openssl",
+              "package_type": "Unknown",
+              "package_version": "3.0.1-r0",
+              "severity": "Critical",
+              "status": "fixed",
+              "urls": "https://avd.aquasec.com/nvd/cve-2026-0001|https://nvd.nist.gov/vuln/detail/CVE-2026-0001",
+              "vendor_attributes": "{\"CVSS\":{\"nvd\":{\"V3Score\":9.8,\"V3Vector\":\"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\"}}}"
+            },
+            {
+              "cve_id": "CVE-2026-0002",
+              "cvss_score_v2": null,
+              "cvss_score_v3": "5.3",
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+              "cwe_ids": "",
+              "description": "Heap read past the end of the window in inflate.",
+              "fixed_version": "",
+              "package": "zlib",
+              "package_type": "Unknown",
+              "package_version": "1.2.13-r0",
+              "severity": "Medium",
+              "status": "affected",
+              "urls": "https://avd.aquasec.com/nvd/cve-2026-0002",
+              "vendor_attributes": null
+            },
+            {
+              "cve_id": "CVE-2026-0003",
+              "cvss_score_v2": null,
+              "cvss_score_v3": null,
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "",
+              "package": "busybox",
+              "package_type": "Unknown",
+              "package_version": "1.36.1-r2",
+              "severity": "Low",
+              "status": "",
+              "urls": "",
+              "vendor_attributes": null
+            },
+            {
+              "cve_id": "CVE-2026-0004",
+              "cvss_score_v2": null,
+              "cvss_score_v3": null,
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "",
+              "package": "musl",
+              "package_type": "Unknown",
+              "package_version": "1.2.4-r1",
+              "severity": "Unknown",
+              "status": "",
+              "urls": "",
+              "vendor_attributes": null
+            },
+            {
+              "cve_id": "CVE-2026-0005",
+              "cvss_score_v2": null,
+              "cvss_score_v3": null,
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "",
+              "package": "libcurl",
+              "package_type": "Unknown",
+              "package_version": "8.5.0-r0",
+              "severity": "None",
+              "status": "",
+              "urls": "",
+              "vendor_attributes": null
+            },
+            {
+              "cve_id": "GHSA-aaaa-bbbb-cccc",
+              "cvss_score_v2": null,
+              "cvss_score_v3": "7.5",
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "v0.23.0",
+              "package": "golang.org/x/net",
+              "package_type": "Unknown",
+              "package_version": "v0.20.0",
+              "severity": "High",
+              "status": "fixed",
+              "urls": "",
+              "vendor_attributes": null
+            }
+          ],
+          "links": {
+            "a1@s1": [
+              [
+                "CVE-2026-0001",
+                "openssl",
+                "3.0.1-r0"
+              ],
+              [
+                "CVE-2026-0002",
+                "zlib",
+                "1.2.13-r0"
+              ],
+              [
+                "CVE-2026-0003",
+                "busybox",
+                "1.36.1-r2"
+              ],
+              [
+                "CVE-2026-0004",
+                "musl",
+                "1.2.4-r1"
+              ],
+              [
+                "CVE-2026-0005",
+                "libcurl",
+                "8.5.0-r0"
+              ],
+              [
+                "GHSA-aaaa-bbbb-cccc",
+                "golang.org/x/net",
+                "v0.20.0"
+              ]
+            ]
+          },
+          "scanner": "s1",
+          "unlinked_records": []
+        }
+      ]
+    }
+  ]
+}

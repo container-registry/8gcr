@@ -1,0 +1,27 @@
+name: s16-delete-artifact
+description: Deleting an artifact removes its report and links; the records stay, shared ones still linked.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1501, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+        - {id: CVE-2026-1502, package: zlib, version: 1.2.13-r0, severity: Low, status: affected}
+  - op: scan
+    artifact: a2
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1501, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+  - {op: delete_artifact, artifact: a1}
+  - {op: capture, label: after-delete}
+  - {op: cleanup}
+  - {op: capture, label: after-cleanup}

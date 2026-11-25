@@ -1,0 +1,569 @@
+{
+  "captures": [
+    {
+      "export": {
+        "file_present": true,
+        "rows": [
+          {
+            "Additional Data": "",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "CVE-2026-0002",
+            "CWE Ids": "",
+            "Current Version": "1.2.13-r0",
+            "Fixed in version": "",
+            "Package": "zlib",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "Medium"
+          },
+          {
+            "Additional Data": "",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "CVE-2026-0003",
+            "CWE Ids": "",
+            "Current Version": "1.36.1-r2",
+            "Fixed in version": "",
+            "Package": "busybox",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "Low"
+          },
+          {
+            "Additional Data": "",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "CVE-2026-0004",
+            "CWE Ids": "",
+            "Current Version": "1.2.4-r1",
+            "Fixed in version": "",
+            "Package": "musl",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "Unknown"
+          },
+          {
+            "Additional Data": "",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "CVE-2026-0005",
+            "CWE Ids": "",
+            "Current Version": "8.5.0-r0",
+            "Fixed in version": "",
+            "Package": "libcurl",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "None"
+          },
+          {
+            "Additional Data": "",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "GHSA-aaaa-bbbb-cccc",
+            "CWE Ids": "",
+            "Current Version": "v0.20.0",
+            "Fixed in version": "v0.23.0",
+            "Package": "golang.org/x/net",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "High"
+          },
+          {
+            "Additional Data": "{\"CVSS\": {\"nvd\": {\"V3Score\": 9.8, \"V3Vector\": \"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\"}}}",
+            "Artifact Digest": "<digest:a1>",
+            "CVE": "CVE-2026-0001",
+            "CWE Ids": "CWE-120,CWE-787",
+            "Current Version": "3.0.1-r0",
+            "Fixed in version": "3.0.2-r0",
+            "Package": "openssl",
+            "Repository": "<project>/a1",
+            "Scanner": "<scanner:s1>",
+            "Severity": "Critical"
+          }
+        ],
+        "status": "Success"
+      },
+      "label": "after-first-scan",
+      "reports": [
+        {
+          "artifact": "a1",
+          "pull_block": {
+            "allowlisted_cve": "CVE-2026-0001",
+            "allowlisted_high_and_critical": [
+              "CVE-2026-0001",
+              "GHSA-aaaa-bbbb-cccc"
+            ],
+            "blocked": {
+              "error_codes": [
+                "PROJECTPOLICYVIOLATION"
+              ],
+              "status": 412
+            },
+            "with_allowlist": {
+              "error_codes": [
+                "PROJECTPOLICYVIOLATION"
+              ],
+              "status": 412
+            },
+            "with_allowlist_high_and_critical": {
+              "error_codes": [],
+              "status": 200
+            }
+          },
+          "scan_overview": {
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+              "complete_percent": 100,
+              "scan_status": "Success",
+              "scanner": {
+                "name": "Trivy",
+                "vendor": "Aqua Security",
+                "version": "v0.60.0"
+              },
+              "severity": "Critical",
+              "summary": {
+                "fixable": 2,
+                "summary": {
+                  "Critical": 1,
+                  "High": 1,
+                  "Low": 1,
+                  "Medium": 1,
+                  "None": 1,
+                  "Unknown": 1
+                },
+                "total": 6
+              }
+            }
+          },
+          "scanner": "s1",
+          "vulnerabilities": {
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+              "generated_at": "2026-11-25T10:00:00Z",
+              "scanner": {
+                "name": "Trivy",
+                "vendor": "Aqua Security",
+                "version": "v0.60.0"
+              },
+              "severity": "Critical",
+              "vulnerabilities": [
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    ""
+                  ],
+                  "description": "",
+                  "fix_version": "",
+                  "id": "CVE-2026-0003",
+                  "links": [
+                    ""
+                  ],
+                  "package": "busybox",
+                  "preferred_cvss": {
+                    "score_v2": null,
+                    "score_v3": null,
+                    "vector_v2": "",
+                    "vector_v3": ""
+                  },
+                  "severity": "Low",
+                  "status": "",
+                  "vendor_attributes": null,
+                  "version": "1.36.1-r2"
+                },
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    ""
+                  ],
+                  "description": "",
+                  "fix_version": "",
+                  "id": "CVE-2026-0004",
+                  "links": [
+                    ""
+                  ],
+                  "package": "musl",
+                  "preferred_cvss": {
+                    "score_v2": null,
+                    "score_v3": null,
+                    "vector_v2": "",
+                    "vector_v3": ""
+                  },
+                  "severity": "Unknown",
+                  "status": "",
+                  "vendor_attributes": null,
+                  "version": "1.2.4-r1"
+                },
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    ""
+                  ],
+                  "description": "",
+                  "fix_version": "",
+                  "id": "CVE-2026-0005",
+                  "links": [
+                    ""
+                  ],
+                  "package": "libcurl",
+                  "preferred_cvss": {
+                    "score_v2": null,
+                    "score_v3": null,
+                    "vector_v2": "",
+                    "vector_v3": ""
+                  },
+                  "severity": "None",
+                  "status": "",
+                  "vendor_attributes": null,
+                  "version": "8.5.0-r0"
+                },
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    ""
+                  ],
+                  "description": "",
+                  "fix_version": "v0.23.0",
+                  "id": "GHSA-aaaa-bbbb-cccc",
+                  "links": [
+                    ""
+                  ],
+                  "package": "golang.org/x/net",
+                  "preferred_cvss": {
+                    "score_v2": null,
+                    "score_v3": 7.5,
+                    "vector_v2": "",
+                    "vector_v3": ""
+                  },
+                  "severity": "High",
+                  "status": "fixed",
+                  "vendor_attributes": null,
+                  "version": "v0.20.0"
+                },
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    ""
+                  ],
+                  "description": "Heap read past the end of the window in inflate.",
+                  "fix_version": "",
+                  "id": "CVE-2026-0002",
+                  "links": [
+                    "https://avd.aquasec.com/nvd/cve-2026-0002"
+                  ],
+                  "package": "zlib",
+                  "preferred_cvss": {
+                    "score_v2": null,
+                    "score_v3": 5.3,
+                    "vector_v2": "",
+                    "vector_v3": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+                  },
+                  "severity": "Medium",
+                  "status": "affected",
+                  "vendor_attributes": null,
+                  "version": "1.2.13-r0"
+                },
+                {
+                  "artifact_digests": [
+                    "<digest:a1>"
+                  ],
+                  "cwe_ids": [
+                    "CWE-120",
+                    "CWE-787"
+                  ],
+                  "description": "Buffer overflow in X.509 name constraint checking.",
+                  "fix_version": "3.0.2-r0",
+                  "id": "CVE-2026-0001",
+                  "links": [
+                    "https://avd.aquasec.com/nvd/cve-2026-0001",
+                    "https://nvd.nist.gov/vuln/detail/CVE-2026-0001"
+                  ],
+                  "package": "openssl",
+                  "preferred_cvss": {
+                    "score_v2": 7.5,
+                    "score_v3": 9.8,
+                    "vector_v2": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
+                    "vector_v3": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                  },
+                  "severity": "Critical",
+                  "status": "fixed",
+                  "vendor_attributes": {
+                    "CVSS": {
+                      "nvd": {
+                        "V3Score": 9.8,
+                        "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                      }
+                    }
+                  },
+                  "version": "3.0.1-r0"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "security": [
+        {
+          "scanner": "s1",
+          "summary": {
+            "critical_cnt": 1,
+            "dangerous_artifacts": [
+              {
+                "critical_cnt": 1,
+                "digest": "<digest:a1>",
+                "high_cnt": 1,
+                "medium_cnt": 1,
+                "project_id": "<project-id>",
+                "repository_name": "<project>/a1"
+              }
+            ],
+            "dangerous_cves": [
+              {
+                "cve_id": "CVE-2026-0001",
+                "cvss_score_v3": 9.8,
+                "package": "openssl",
+                "severity": "Critical",
+                "version": "3.0.1-r0"
+              },
+              {
+                "cve_id": "CVE-2026-0002",
+                "cvss_score_v3": 5.3,
+                "package": "zlib",
+                "severity": "Medium",
+                "version": "1.2.13-r0"
+              },
+              {
+                "cve_id": "GHSA-aaaa-bbbb-cccc",
+                "cvss_score_v3": 7.5,
+                "package": "golang.org/x/net",
+                "severity": "High",
+                "version": "v0.20.0"
+              }
+            ],
+            "fixable_cnt": 2,
+            "high_cnt": 1,
+            "low_cnt": 1,
+            "medium_cnt": 1,
+            "none_cnt": 1,
+            "scanned_cnt": 1,
+            "total_artifact": 1,
+            "total_vuls": 6,
+            "unknown_cnt": 1
+          },
+          "vul_all": [
+            {
+              "cve_id": "CVE-2026-0001",
+              "cvss_v3_score": 9.8,
+              "desc": "Buffer overflow in X.509 name constraint checking.",
+              "digest": "<digest:a1>",
+              "fixed_version": "3.0.2-r0",
+              "links": [
+                "https://avd.aquasec.com/nvd/cve-2026-0001",
+                "https://nvd.nist.gov/vuln/detail/CVE-2026-0001"
+              ],
+              "package": "openssl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "Critical",
+              "status": "fixed",
+              "tags": null,
+              "version": "3.0.1-r0"
+            },
+            {
+              "cve_id": "CVE-2026-0002",
+              "cvss_v3_score": 5.3,
+              "desc": "Heap read past the end of the window in inflate.",
+              "digest": "<digest:a1>",
+              "links": [
+                "https://avd.aquasec.com/nvd/cve-2026-0002"
+              ],
+              "package": "zlib",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "Medium",
+              "status": "affected",
+              "tags": null,
+              "version": "1.2.13-r0"
+            },
+            {
+              "cve_id": "CVE-2026-0003",
+              "digest": "<digest:a1>",
+              "links": [
+                ""
+              ],
+              "package": "busybox",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "Low",
+              "tags": null,
+              "version": "1.36.1-r2"
+            },
+            {
+              "cve_id": "CVE-2026-0004",
+              "digest": "<digest:a1>",
+              "links": [
+                ""
+              ],
+              "package": "musl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "Unknown",
+              "tags": null,
+              "version": "1.2.4-r1"
+            },
+            {
+              "cve_id": "CVE-2026-0005",
+              "digest": "<digest:a1>",
+              "links": [
+                ""
+              ],
+              "package": "libcurl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "None",
+              "tags": null,
+              "version": "8.5.0-r0"
+            },
+            {
+              "cve_id": "GHSA-aaaa-bbbb-cccc",
+              "cvss_v3_score": 7.5,
+              "digest": "<digest:a1>",
+              "fixed_version": "v0.23.0",
+              "links": [
+                ""
+              ],
+              "package": "golang.org/x/net",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "High",
+              "status": "fixed",
+              "tags": null,
+              "version": "v0.20.0"
+            }
+          ],
+          "vul_critical": [
+            {
+              "cve_id": "CVE-2026-0001",
+              "cvss_v3_score": 9.8,
+              "desc": "Buffer overflow in X.509 name constraint checking.",
+              "digest": "<digest:a1>",
+              "fixed_version": "3.0.2-r0",
+              "links": [
+                "https://avd.aquasec.com/nvd/cve-2026-0001",
+                "https://nvd.nist.gov/vuln/detail/CVE-2026-0001"
+              ],
+              "package": "openssl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "Critical",
+              "status": "fixed",
+              "tags": null,
+              "version": "3.0.1-r0"
+            }
+          ],
+          "vul_cvss_7_10": [
+            {
+              "cve_id": "CVE-2026-0001",
+              "cvss_v3_score": 9.8,
+              "desc": "Buffer overflow in X.509 name constraint checking.",
+              "digest": "<digest:a1>",
+              "fixed_version": "3.0.2-r0",
+              "links": [
+                "https://avd.aquasec.com/nvd/cve-2026-0001",
+                "https://nvd.nist.gov/vuln/detail/CVE-2026-0001"
+              ],
+              "package": "openssl",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "Critical",
+              "status": "fixed",
+              "tags": null,
+              "version": "3.0.1-r0"
+            },
+            {
+              "cve_id": "GHSA-aaaa-bbbb-cccc",
+              "cvss_v3_score": 7.5,
+              "digest": "<digest:a1>",
+              "fixed_version": "v0.23.0",
+              "links": [
+                ""
+              ],
+              "package": "golang.org/x/net",
+              "project_id": "<project-id>",
+              "repository_name": "<project>/a1",
+              "severity": "High",
+              "status": "fixed",
+              "tags": null,
+              "version": "v0.20.0"
+            }
+          ]
+        }
+      ],
+      "webhooks": [
+        {
+          "event_data": {
+            "repository": {
+              "name": "a1",
+              "namespace": "<project>",
+              "repo_full_name": "<project>/a1",
+              "repo_type": "private"
+            },
+            "resources": [
+              {
+                "digest": "<digest:a1>",
+                "resource_url": "core:8080/<project>/a1:a1",
+                "scan_overview": {
+                  "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+                    "complete_percent": 100,
+                    "scan_status": "Success",
+                    "scanner": {
+                      "name": "Trivy",
+                      "vendor": "Aqua Security",
+                      "version": "v0.60.0"
+                    },
+                    "severity": "Critical",
+                    "summary": {
+                      "fixable": 2,
+                      "summary": {
+                        "Critical": 1,
+                        "High": 1,
+                        "Low": 1,
+                        "Medium": 1,
+                        "None": 1,
+                        "Unknown": 1
+                      },
+                      "total": 6
+                    }
+                  }
+                },
+                "tag": "a1"
+              }
+            ],
+            "scan": {
+              "scan_type": "vulnerability"
+            }
+          },
+          "operator": "admin",
+          "type": "SCANNING_COMPLETED"
+        }
+      ]
+    }
+  ],
+  "scenario": "s01-first-scan",
+  "steps": [
+    {
+      "op": "register_scanner",
+      "result": "ok",
+      "scanner": "s1"
+    },
+    {
+      "artifact": "a1",
+      "op": "scan",
+      "result": "ok",
+      "scanner": "s1"
+    }
+  ]
+}

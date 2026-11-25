@@ -1,0 +1,15 @@
+name: s08-shared-record
+description: Two artifacts with the same finding share one record with two links.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report: &r
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-0701, package: openssl, version: 3.0.1-r0, fix_version: 3.0.2-r0, severity: High, status: fixed, preferred_cvss: {score_v3: 7.5}}
+  - {op: scan, artifact: a2, scanner: s1, report: *r}
+  - {op: capture, label: shared}

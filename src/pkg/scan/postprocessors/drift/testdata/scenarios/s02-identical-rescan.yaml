@@ -1,0 +1,18 @@
+name: s02-identical-rescan
+description: Rescanning an unchanged artifact writes no record or link row (ScanAll common case, #23310).
+steps:
+  - {op: register_scanner, scanner: s1}
+  - &scan
+    op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-0101, package: openssl, version: 3.0.1-r0, fix_version: 3.0.2-r0, severity: High, status: fixed, preferred_cvss: {score_v3: 7.5}}
+        - {id: CVE-2026-0102, package: zlib, version: 1.2.13-r0, severity: Low, status: affected}
+  - {op: capture, label: first}
+  - *scan
+  - {op: capture, label: rescan, rows_unchanged: true}

@@ -1,0 +1,9 @@
+name: s20-concurrent-new-records
+description: Two scans running at once both create the same new records; both succeed and share them.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: concurrent
+    steps:
+      - {op: scan, artifact: a1, scanner: s1, report_file: s20-shared.json}
+      - {op: scan, artifact: a2, scanner: s1, report_file: s20-shared.json}
+  - {op: capture, label: after-concurrent}
