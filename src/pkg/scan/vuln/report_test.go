@@ -113,3 +113,15 @@ func TestGetSummarySeverity(t *testing.T) {
 	assert.Equal(1, sum.Fixable)
 	assert.Equal(s, sum.Summary)
 }
+
+func TestSummaryCountsFindingsWhoseJoinedKeysCollide(t *testing.T) {
+	l := &VulnerabilityItemList{}
+	l.Add(
+		&VulnerabilityItem{ID: "CVE-2026-1001", Package: "a-b", Version: "1", Severity: High},
+		&VulnerabilityItem{ID: "CVE-2026-1001", Package: "a", Version: "b-1", Severity: Medium},
+	)
+	severity, sum := l.GetSeveritySummary()
+	assert.Equal(t, High, severity)
+	assert.Equal(t, 2, sum.Total)
+	assert.Equal(t, SeveritySummary{High: 1, Medium: 1}, sum.Summary)
+}

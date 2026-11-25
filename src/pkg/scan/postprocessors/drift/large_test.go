@@ -116,6 +116,7 @@ func TestDriftLarge(t *testing.T) {
 		golden[p.name] = obs
 	}
 	baseline["explain_current_lookup"] = explainLookup(ctx, reg.UUID)
+	baseline["explain_key_lookup"] = explainKeyLookup(ctx, reg.UUID)
 
 	writeJSON(t, filepath.Join("testdata", "baseline", "s19-"+baselineName()+".json"), baseline)
 	got := encode(t, golden)
@@ -304,6 +305,37 @@ func explainLookup(ctx context.Context, scannerUUID string) any {
 	for _, p := range plan {
 		line := fmt.Sprint(p["QUERY PLAN"])
 		if len(line) > 200 { // the filter line repeats all 8000 ids
+			line = line[:200] + "..."
+		}
+		lines = append(lines, line)
+	}
+	return lines
+}
+
+// explainKeyLookup plans one chunk of the lookup by full key that ListByKeys sends.
+func explainKeyLookup(ctx context.Context, scannerUUID string) any {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err.Error()
+	}
+	const chunk = 1000
+	rows := make([]string, chunk)
+	for i := range rows {
+		rows[i] = fmt.Sprintf("('CVE-2026-%06d', 'package-%d', '1.2.3-4')", i, i%512)
+	}
+	sql := `EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) SELECT v.id, v.cve_id, v.package, v.package_version, v.severity, COALESCE(v.status, '') AS status
+FROM vulnerability_record v
+JOIN (VALUES ` + strings.Join(rows, ", ") + `) AS k(cve_id, package, package_version)
+  ON v.cve_id = k.cve_id AND v.package = k.package AND v.package_version = k.package_version
+WHERE v.registration_uuid = ?`
+	var plan []beegoorm.Params
+	if _, err := o.Raw(sql, scannerUUID).Values(&plan); err != nil {
+		return err.Error()
+	}
+	lines := make([]string, 0, len(plan))
+	for _, p := range plan {
+		line := fmt.Sprint(p["QUERY PLAN"])
+		if len(line) > 200 {
 			line = line[:200] + "..."
 		}
 		lines = append(lines, line)

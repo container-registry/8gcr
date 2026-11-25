@@ -26,10 +26,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 )
 
 // Converting one report used to parse it twice and keep both trees alive at once, which is what
@@ -45,14 +47,20 @@ type fakeVulnRecordDao struct {
 	nextID int64
 }
 
-func (d *fakeVulnRecordDao) List(_ context.Context, _ *q.Query) ([]*scan.VulnerabilityRecord, error) {
+func (d *fakeVulnRecordDao) ListByKeys(_ context.Context, _ string, _ []scan.RecordKey) ([]*scan.RecordState, error) {
 	return nil, nil
 }
 
-func (d *fakeVulnRecordDao) Create(_ context.Context, _ *scan.VulnerabilityRecord) (int64, error) {
-	d.nextID++
-	return d.nextID, nil
+func (d *fakeVulnRecordDao) InsertBatch(_ context.Context, records []*scan.VulnerabilityRecord) ([]*scan.RecordState, error) {
+	out := make([]*scan.RecordState, 0, len(records))
+	for _, r := range records {
+		d.nextID++
+		out = append(out, &scan.RecordState{ID: d.nextID, CVEID: r.CVEID, Package: r.Package, PackageVersion: r.PackageVersion})
+	}
+	return out, nil
 }
+
+func (d *fakeVulnRecordDao) UpdateBatch(_ context.Context, _ []*scan.RecordUpdate) error { return nil }
 
 func (d *fakeVulnRecordDao) SyncForReport(_ context.Context, _ string, _ ...int64) error { return nil }
 
@@ -104,6 +112,11 @@ func syntheticReport(n int) string {
 		panic(err)
 	}
 	return string(data)
+}
+
+// fakeContext carries a fake ormer, which the conversion needs to open its transaction.
+func fakeContext() context.Context {
+	return orm.NewContext(context.Background(), &ormtesting.FakeOrmer{})
 }
 
 func newFakeConverter() NativeScanReportConverter {
@@ -175,7 +188,7 @@ func TestToRelationalSchemaDoesNotParseTheReportTwice(t *testing.T) {
 	t.Cleanup(func() { report.Mgr = restore })
 
 	c := newFakeConverter()
-	ctx := context.Background()
+	ctx := fakeContext()
 
 	// Warm up, so lazily initialised package state is not billed to the measured run.
 	_, _, err := c.ToRelationalSchema(ctx, "report-uuid", "registration-uuid", "sha256:cafe", raw)
@@ -212,7 +225,7 @@ func BenchmarkToRelationalSchema(b *testing.B) {
 			b.Cleanup(func() { report.Mgr = restore })
 
 			c := newFakeConverter()
-			ctx := context.Background()
+			ctx := fakeContext()
 			b.SetBytes(int64(len(raw)))
 			b.ReportAllocs()
 			b.ResetTimer()
@@ -230,6 +243,6 @@ func TestToRelationalSchemaRejectsNullReport(t *testing.T) {
 	report.Mgr = &fakeReportMgr{rp: &scan.Report{UUID: "report-uuid"}}
 	t.Cleanup(func() { report.Mgr = restore })
 
-	_, _, err := newFakeConverter().ToRelationalSchema(context.Background(), "report-uuid", "registration-uuid", "sha256:cafe", "null")
+	_, _, err := newFakeConverter().ToRelationalSchema(fakeContext(), "report-uuid", "registration-uuid", "sha256:cafe", "null")
 	require.Error(t, err)
 }

@@ -230,9 +230,11 @@ type VulnerabilityItem struct {
 	VendorAttributes map[string]any `json:"vendor_attributes"`
 }
 
-// Key returns the uniq key for the item
+// Key returns the uniq key for the item. The parts are quoted: joined with "-" alone, package
+// "a-b" version "1" and package "a" version "b-1" of the same CVE got the same key, and the
+// summary counted the two findings as one.
 func (item *VulnerabilityItem) Key() string {
-	return fmt.Sprintf("%s-%s-%s", item.ID, item.Package, item.Version)
+	return fmt.Sprintf("%q %q %q", item.ID, item.Package, item.Version)
 }
 
 // CVSS holds the score and attack vector for the vulnerability based on the CVSS3 and CVSS2 standards

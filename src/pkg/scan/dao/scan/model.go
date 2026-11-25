@@ -15,7 +15,6 @@
 package scan
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -95,11 +94,6 @@ func (vr *VulnerabilityRecord) TableUnique() [][]string {
 // GetID returns the ID of the record
 func (vr *VulnerabilityRecord) GetID() int64 {
 	return vr.ID
-}
-
-// Key returns the uniq key of the vuln
-func (vr *VulnerabilityRecord) Key() string {
-	return fmt.Sprintf("%s-%s-%s", vr.CVEID, vr.Package, vr.PackageVersion)
 }
 
 // ReportVulnerabilityRecord is relation table required to optimize data storage for both the

@@ -132,6 +132,31 @@
                 "links": [
                   ""
                 ],
+                "package": "a",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 5,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "Medium",
+                "status": "affected",
+                "vendor_attributes": null,
+                "version": "b-1"
+              },
+              {
+                "artifact_digests": [
+                  "<digest:a2>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-1001",
+                "links": [
+                  ""
+                ],
                 "package": "a-b",
                 "preferred_cvss": {
                   "score_v2": null,
@@ -169,9 +194,10 @@
             "summary": {
               "fixable": 0,
               "summary": {
-                "High": 1
+                "High": 1,
+                "Medium": 1
               },
-              "total": 1
+              "total": 2
             }
           }
         }
@@ -198,6 +224,24 @@
           "dangerous_cves": {
             "complete": true,
             "rows": [
+              {
+                "CVE2Score": null,
+                "CVE3Score": 5,
+                "CVEID": "CVE-2026-1001",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "",
+                "Fix": "",
+                "Package": "a",
+                "PackageType": "",
+                "PackageVersion": "b-1",
+                "RegistrationUUID": "",
+                "Severity": "Medium",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              },
               {
                 "CVE2Score": null,
                 "CVE3Score": 7.5,
@@ -236,7 +280,7 @@
           },
           "vulnerabilities": {
             "all": {
-              "count": 2,
+              "count": 3,
               "items": [
                 {
                   "ArtifactID": "a1",
@@ -255,6 +299,28 @@
                   "RegistrationUUID": "",
                   "RepositoryName": "<repo:a1>",
                   "Severity": "High",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a2",
+                  "CVE2Score": null,
+                  "CVE3Score": 5,
+                  "CVEID": "CVE-2026-1001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a2>",
+                  "Fix": "",
+                  "Package": "a",
+                  "PackageType": "",
+                  "PackageVersion": "b-1",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a2>",
+                  "Severity": "Medium",
                   "Status": "affected",
                   "Tags": null,
                   "URLs": "",
@@ -359,6 +425,18 @@
           "CVEId": "CVE-2026-1001",
           "CWEIds": "",
           "FixVersion": "",
+          "Package": "a",
+          "Repository": "<repo:a2>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "Medium",
+          "Version": "b-1"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a2>",
+          "CVEId": "CVE-2026-1001",
+          "CWEIds": "",
+          "FixVersion": "",
           "Package": "a-b",
           "Repository": "<repo:a2>",
           "ScannerName": "<scanner-name:s1>",
@@ -369,6 +447,23 @@
       "records": [
         {
           "linked_records": [
+            {
+              "cve_id": "CVE-2026-1001",
+              "cvss_score_v2": null,
+              "cvss_score_v3": "5",
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "",
+              "package": "a",
+              "package_type": "Unknown",
+              "package_version": "b-1",
+              "severity": "Medium",
+              "status": "affected",
+              "urls": "",
+              "vendor_attributes": null
+            },
             {
               "cve_id": "CVE-2026-1001",
               "cvss_score_v2": null,
@@ -396,6 +491,11 @@
               ]
             ],
             "a2@s1": [
+              [
+                "CVE-2026-1001",
+                "a",
+                "b-1"
+              ],
               [
                 "CVE-2026-1001",
                 "a-b",
