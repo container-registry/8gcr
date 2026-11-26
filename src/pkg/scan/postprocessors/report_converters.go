@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
@@ -112,96 +112,99 @@ func (c *nativeToRelationalSchemaConverter) FromRelationalSchema(ctx context.Con
 }
 
 func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, _ string, vulnReport *vuln.Report) error {
-	var cveIDs []any
+	// A report can list the same finding twice. The first occurrence decides what is stored and
+	// what an existing record is compared with, as it did when the items were indexed by Key().
+	items := make(map[scan.RecordKey]*vuln.VulnerabilityItem, len(vulnReport.Vulnerabilities))
+	keys := make([]scan.RecordKey, 0, len(vulnReport.Vulnerabilities))
 	for _, v := range vulnReport.Vulnerabilities {
 		v.Severity = vuln.ParseSeverityVersion3(v.Severity.String())
-		cveIDs = append(cveIDs, v.ID)
-	}
-
-	records, err := c.dao.List(ctx, q.New(q.KeyWords{"cve_id": q.NewOrList(cveIDs), "registration_uuid": registrationUUID}))
-	if err != nil {
-		return err
-	}
-
-	// A local list, not vulnReport.GetVulnerabilityItemList(): that caches on the report and would
-	// hold every item alive after the caller clears Vulnerabilities.
-	l := &vuln.VulnerabilityItemList{}
-	l.Add(vulnReport.Vulnerabilities...)
-	s := lib.Set{}
-
-	var (
-		outOfDateRecords []*scan.VulnerabilityRecord
-		recordIDs        []int64
-	)
-	for _, record := range records {
-		key := record.Key()
-
-		v, ok := l.GetItem(key)
-		if !ok {
-			// skip the record which not in the vulnReport.Vulnerabilities
-			continue
-		}
-
-		s.Add(key)
-
-		recordIDs = append(recordIDs, record.ID)
-
-		if record.Severity != v.Severity.String() || record.Status != v.Status {
-			record.Status = v.Status
-			record.Severity = v.Severity.String()
-			record.CVE3Score = v.CVSSDetails.ScoreV3
-			record.Fix = v.FixVersion
-			outOfDateRecords = append(outOfDateRecords, record)
+		k := scan.RecordKey{CVEID: v.ID, Package: v.Package, PackageVersion: v.Version}
+		if _, ok := items[k]; !ok {
+			items[k] = v
+			keys = append(keys, k)
 		}
 	}
 
-	for _, record := range outOfDateRecords {
-		// Update the severity, fixed_version, and cvss_score_v3 of the record when it's changed in the scanner, closes #14745 #21463
-		if err := c.dao.Update(ctx, record, "severity", "fixed_version", "cvss_score_v3", "status"); err != nil {
-			return err
-		}
-	}
-
-	if len(outOfDateRecords) > 0 {
-		log.G(ctx).Infof("%d vulnerabilities' severity changed", len(outOfDateRecords))
-	}
-
-	var newRecords []*scan.VulnerabilityRecord
-	for _, v := range vulnReport.Vulnerabilities {
-		if !s.Exists(v.Key()) {
-			newRecords = append(newRecords, toVulnerabilityRecord(ctx, v, registrationUUID))
-		}
-	}
-
-	for _, record := range newRecords {
-		recordID, err := c.dao.Create(ctx, record)
+	// One transaction: a failed conversion leaves the records and the report's links as they were.
+	convert := func(ctx context.Context) error {
+		// Only the records this report needs, matched on the full key. Looking them up by CVE id
+		// alone returned every package and version ever stored for those CVEs (#478).
+		existing, err := c.dao.ListByKeys(ctx, registrationUUID, keys)
 		if err != nil {
-			fields := log.Fields{
-				"error":          err,
-				"report":         reportUUID,
-				"cveID":          record.CVEID,
-				"package":        record.Package,
-				"packageVersion": record.PackageVersion,
-			}
-			log.G(ctx).WithFields(fields).Errorf("Could not insert vulnerability record")
-
 			return err
 		}
 
-		recordIDs = append(recordIDs, recordID)
-	}
-
-	// Reconcile the report's vulnerability associations with a set-diff instead of a bulk insert so a
-	// re-scan of an unchanged artifact (the common ScanAll case) writes nothing. Combined with the
-	// stable report UUID kept by MakePlaceHolder, this stops report_vulnerability_record from growing
-	// on every scan. See #23310.
-	if err := c.dao.SyncForReport(ctx, reportUUID, recordIDs...); err != nil {
-		fields := log.Fields{
-			"error":  err,
-			"report": reportUUID,
+		recordIDs := make([]int64, 0, len(keys))
+		stored := make(map[scan.RecordKey]struct{}, len(existing))
+		var updates []*scan.RecordUpdate
+		for _, rec := range existing {
+			v := items[rec.Key()]
+			stored[rec.Key()] = struct{}{}
+			recordIDs = append(recordIDs, rec.ID)
+			// Update the severity, fixed_version, and cvss_score_v3 of the record when it's changed in the scanner, closes #14745 #21463
+			if rec.Severity != v.Severity.String() || rec.Status != v.Status {
+				updates = append(updates, &scan.RecordUpdate{
+					ID:        rec.ID,
+					Severity:  v.Severity.String(),
+					Status:    v.Status,
+					Fix:       v.FixVersion,
+					CVE3Score: v.CVSSDetails.ScoreV3,
+				})
+			}
 		}
-		log.G(ctx).WithFields(fields).Errorf("Could not associate vulnerability records to the report")
+		if err := c.dao.UpdateBatch(ctx, updates); err != nil {
+			return err
+		}
+		if len(updates) > 0 {
+			log.G(ctx).Infof("%d vulnerabilities' severity changed", len(updates))
+		}
 
+		var newRecords []*scan.VulnerabilityRecord
+		for _, k := range keys {
+			if _, ok := stored[k]; !ok {
+				newRecords = append(newRecords, toVulnerabilityRecord(ctx, items[k], registrationUUID))
+			}
+		}
+		inserted, err := c.dao.InsertBatch(ctx, newRecords)
+		if err != nil {
+			log.G(ctx).WithFields(log.Fields{"error": err, "report": reportUUID}).Errorf("Could not insert vulnerability records")
+			return err
+		}
+		for _, rec := range inserted {
+			stored[rec.Key()] = struct{}{}
+			recordIDs = append(recordIDs, rec.ID)
+		}
+		// A key that is still missing was inserted by a concurrent scan after the lookup above.
+		var raced []scan.RecordKey
+		for _, k := range keys {
+			if _, ok := stored[k]; !ok {
+				raced = append(raced, k)
+			}
+		}
+		if len(raced) > 0 {
+			others, err := c.dao.ListByKeys(ctx, registrationUUID, raced)
+			if err != nil {
+				return err
+			}
+			if len(others) != len(raced) {
+				return errors.Errorf("%d of %d vulnerability records inserted concurrently could not be read", len(raced)-len(others), len(raced))
+			}
+			for _, rec := range others {
+				recordIDs = append(recordIDs, rec.ID)
+			}
+		}
+
+		// Reconcile the report's vulnerability associations with a set-diff instead of a bulk insert so a
+		// re-scan of an unchanged artifact (the common ScanAll case) writes nothing. Combined with the
+		// stable report UUID kept by MakePlaceHolder, this stops report_vulnerability_record from growing
+		// on every scan. See #23310.
+		if err := c.dao.SyncForReport(ctx, reportUUID, recordIDs...); err != nil {
+			log.G(ctx).WithFields(log.Fields{"error": err, "report": reportUUID}).Errorf("Could not associate vulnerability records to the report")
+			return err
+		}
+		return nil
+	}
+	if err := orm.WithTransaction(convert)(orm.SetTransactionOpNameToContext(ctx, "tx-convert-report")); err != nil {
 		return err
 	}
 

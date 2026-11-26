@@ -17,8 +17,10 @@
 package postprocessors
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
+	"slices"
 	"testing"
 	"time"
 
@@ -422,7 +424,7 @@ func (suite *TestReportConverterSuite) TestConvertToNativeReport() {
 	v.WithArtifactDigest(rp.Digest)
 	data, err := json.Marshal(v)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), string(data), completeReport)
+	suite.sameReport(string(data), completeReport)
 }
 
 func (suite *TestReportConverterSuite) TestNativeReportSummaryAfterConversion() {
@@ -447,7 +449,7 @@ func (suite *TestReportConverterSuite) TestNativeReportSummaryAfterConversion() 
 	v.WithArtifactDigest(rp.Digest)
 	data, err := json.Marshal(v)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), string(data), completeReport)
+	suite.sameReport(string(data), completeReport)
 	// validate that summarization happens correctly on this report
 	rp.Report = completeReport
 	rp.Status = job.SuccessStatus.String()
@@ -483,7 +485,7 @@ func (suite *TestReportConverterSuite) TestGenericVulnReportSummaryAfterConversi
 	v.WithArtifactDigest(rp.Digest)
 	data, err := json.Marshal(v)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), string(data), completeReport)
+	suite.sameReport(string(data), completeReport)
 	// validate that summarization happens correctly on this report
 	rp.Report = completeReport
 	rp.Status = job.SuccessStatus.String()
@@ -557,6 +559,22 @@ func (suite *TestReportConverterSuite) TestConvertEmptyReportKeepsLastResult() {
 	assert.Equal(suite.T(), rptsBefore[0].UnknownCnt, rptsAfter[0].UnknownCnt)
 	assert.Equal(suite.T(), rptsBefore[0].FixableCnt, rptsAfter[0].FixableCnt)
 	assert.Equal(suite.T(), rptsBefore[0].Report, rptsAfter[0].Report)
+}
+
+// sameReport compares two reports with their findings in any order: GetForReport has no ORDER BY,
+// so the order a stored report comes back in depends on the query plan.
+func (suite *TestReportConverterSuite) sameReport(expected, actual string) {
+	sorted := func(data string) string {
+		rp := new(vuln.Report)
+		require.NoError(suite.T(), json.Unmarshal([]byte(data), rp))
+		slices.SortFunc(rp.Vulnerabilities, func(a, b *vuln.VulnerabilityItem) int {
+			return cmp.Or(cmp.Compare(a.ID, b.ID), cmp.Compare(a.Package, b.Package), cmp.Compare(a.Version, b.Version))
+		})
+		out, err := json.Marshal(rp)
+		require.NoError(suite.T(), err)
+		return string(out)
+	}
+	assert.Equal(suite.T(), sorted(expected), sorted(actual))
 }
 
 func (suite *TestReportConverterSuite) create(r *scan.Report) {
