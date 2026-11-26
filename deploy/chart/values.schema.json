@@ -797,7 +797,7 @@
             },
             "existingCaSecret": {
               "type": "string",
-              "description": "Secret holding a CA bundle that all Harbor components should trust (Redis, S3, OIDC, etc.). Mounted at /etc/harbor/extra-ca."
+              "description": "Secret holding a CA bundle that all Harbor components should trust (Redis, S3, OIDC, etc.). Mounted at /etc/harbor/ca."
             },
             "existingCaSecretKey": {
               "type": "string",

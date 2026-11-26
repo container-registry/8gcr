@@ -9,6 +9,7 @@ FROM 8gears.container-registry.com/healthprobe/healthprobe:${HEALTHPROBE_VERSION
 FROM scratch
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=certs /etc/passwd /etc/group /etc/
+ENV SSL_CERT_DIR=/etc/harbor/ca:/harbor_cust_cert
 ARG TARGETARCH
 COPY --from=healthprobe /healthprobe-notls /healthprobe
 COPY bin/linux-${TARGETARCH}/jobservice /jobservice

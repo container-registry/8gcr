@@ -45,6 +45,17 @@ docker buildx build --platform linux/amd64 -t harbor-portal:dev -f dockerfile/po
 | RegistryCtl | `/etc/registryctl/config.yml` | Mounted at runtime |
 | Registry | `/etc/registry/config.yml` | Mounted at runtime |
 
+## Trusted CA Certificates
+
+The scratch images trust the public CA bundle copied from Alpine at build time (`/etc/ssl/certs/ca-certificates.crt`). To trust a private CA as well, for internal TLS or for an external endpoint such as S3, OIDC or LDAP, mount PEM certificates into either directory:
+
+| Directory | Use |
+|-----------|-----|
+| `/etc/harbor/ca` | Generic location, for example a Kubernetes Secret volume |
+| `/harbor_cust_cert` | Kept for the goharbor chart's `caBundleSecretName` |
+
+Every image sets `SSL_CERT_DIR=/etc/harbor/ca:/harbor_cust_cert`, so Go adds every certificate in both directories to the public bundle at process start. Go reads each directory without recursing into subdirectories, and it reads the certificates once per process, so a restart picks up changes. Setting `SSL_CERT_DIR` in the deployment replaces this list. Setting `SSL_CERT_FILE` replaces the public bundle.
+
 ## Portal: SPA-only vs SPA + Reverse Proxy
 
 The portal image serves the Angular SPA on port 8080. Its role differs by deployment:

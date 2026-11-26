@@ -1688,7 +1688,7 @@ externalRedis:
   # CA (self-hosted Redis, some on-prem managed offerings, custom certs
   # via cert-manager), set `existingCaSecret` to a Secret holding the
   # CA bundle. The chart mounts it on every Harbor component at
-  # `/etc/harbor/extra-ca` and sets `SSL_CERT_DIR` so Go's TLS adds it
+  # `/etc/harbor/ca` and sets `SSL_CERT_DIR` so Go's TLS adds it
   # to the system trust pool — so the same Secret also covers private
   # CAs used for S3 endpoints, OIDC, etc. Tracks upstream
   # goharbor/harbor-helm#549.

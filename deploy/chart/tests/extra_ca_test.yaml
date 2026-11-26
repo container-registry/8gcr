@@ -2,7 +2,7 @@
 # feature. Tracks upstream goharbor/harbor-helm#549. When the value is
 # set, every Harbor component that talks to Redis (and, incidentally,
 # to S3 / OIDC / other TLS endpoints) gets:
-#   1. A Secret volume mounted at /etc/harbor/extra-ca
+#   1. A Secret volume mounted at /etc/harbor/ca
 #   2. A volumeMount on the container pointing to that path
 #   3. SSL_CERT_DIR env so Go's crypto/x509 reads CAs from that dir
 #      ON TOP of the default system trust bundle baked into the image.
@@ -47,12 +47,12 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: SSL_CERT_DIR
-            value: "/etc/ssl/certs:/etc/harbor/extra-ca"
+            value: "/etc/harbor/ca:/harbor_cust_cert"
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
             name: extra-ca
-            mountPath: /etc/harbor/extra-ca
+            mountPath: /etc/harbor/ca
             readOnly: true
       - contains:
           path: spec.template.spec.volumes
@@ -71,12 +71,12 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: SSL_CERT_DIR
-            value: "/etc/ssl/certs:/etc/harbor/extra-ca"
+            value: "/etc/harbor/ca:/harbor_cust_cert"
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
             name: extra-ca
-            mountPath: /etc/harbor/extra-ca
+            mountPath: /etc/harbor/ca
             readOnly: true
 
   # Registry has two containers; both need the mount + env.
@@ -87,23 +87,23 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: SSL_CERT_DIR
-            value: "/etc/ssl/certs:/etc/harbor/extra-ca"
+            value: "/etc/harbor/ca:/harbor_cust_cert"
       - contains:
           path: spec.template.spec.containers[1].env
           content:
             name: SSL_CERT_DIR
-            value: "/etc/ssl/certs:/etc/harbor/extra-ca"
+            value: "/etc/harbor/ca:/harbor_cust_cert"
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
             name: extra-ca
-            mountPath: /etc/harbor/extra-ca
+            mountPath: /etc/harbor/ca
             readOnly: true
       - contains:
           path: spec.template.spec.containers[1].volumeMounts
           content:
             name: extra-ca
-            mountPath: /etc/harbor/extra-ca
+            mountPath: /etc/harbor/ca
             readOnly: true
 
   - it: should mount + env on exporter
@@ -113,7 +113,7 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: SSL_CERT_DIR
-            value: "/etc/ssl/certs:/etc/harbor/extra-ca"
+            value: "/etc/harbor/ca:/harbor_cust_cert"
 
   - it: should mount + env on trivy
     template: templates/trivy.statefulset.yaml
@@ -122,12 +122,12 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: SSL_CERT_DIR
-            value: "/etc/ssl/certs:/etc/harbor/extra-ca"
+            value: "/etc/harbor/ca:/harbor_cust_cert"
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
             name: extra-ca
-            mountPath: /etc/harbor/extra-ca
+            mountPath: /etc/harbor/ca
             readOnly: true
 
   # Custom key name resolves correctly.

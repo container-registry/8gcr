@@ -21,6 +21,7 @@ COPY bin/linux-${TARGETARCH}/registry /usr/bin/registry_DO_NOT_USE_GC
 COPY --from=certs --chown=harbor:harbor /var/lib/registry /var/lib/registry
 
 ENV OTEL_TRACES_EXPORTER=none
+ENV SSL_CERT_DIR=/etc/harbor/ca:/harbor_cust_cert
 
 VOLUME /var/lib/registry
 
