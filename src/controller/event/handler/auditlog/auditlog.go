@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/auditext"
 	am "github.com/goharbor/harbor/src/pkg/auditext/model"
+	"github.com/goharbor/harbor/src/pkg/auditext/summary"
 )
 
 // Handler - audit log handler
@@ -63,6 +64,7 @@ func (h *Handler) Handle(ctx context.Context, value any) error {
 			return err
 		}
 		if auditLog != nil && config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", auditLog.Operation, auditLog.ResourceType)) {
+			auditLog.OperationDescription = summary.Describe(auditLog)
 			_, err := auditext.Mgr.Create(ctx, auditLog)
 			if err != nil {
 				log.Infof("add audit log err: %v", err)
