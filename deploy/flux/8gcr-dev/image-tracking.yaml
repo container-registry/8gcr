@@ -70,7 +70,7 @@ metadata:
   name: trivy-adapter
   namespace: flux-system
 spec:
-  image: 8gears.container-registry.com/8gcr/trivy-adapter
+  image: 8gears.container-registry.com/8gcr/harbor-scanner-trivy
   interval: 1m
   provider: generic
   serviceAccountName: flux-oci-hz-cr-int

@@ -209,6 +209,19 @@ Jobservice config moved into a verbatim `config.yml` passthrough
 | `persistence.persistentVolumeClaim.trivy.*` | `trivy.persistence.*` | |
 | — | `trivy.config` / `trivy.secret` | New: any `SCANNER_*` adapter env without chart changes |
 
+#### Optional: harbor-scanner-trivy subchart mode
+
+| This chart, built-in mode (`trivy.*`) | Subchart (`harbor-scanner-trivy.*`) | Notes |
+|---|---|---|
+| `trivy.enabled` | `harbor-scanner-trivy.enabled` | Subchart wins when both are on. Switching modes replaces the adapter StatefulSet and Service (`<release>-scanner-trivy`) and changes core's `TRIVY_ADAPTER_URL` |
+| `trivy.{debugMode,vulnType,severity,ignoreUnfixed,insecure,gitHubToken,skipUpdate,skipJavaDBUpdate,offlineScan,timeout}` | `harbor-scanner-trivy.trivy.*` | |
+| `trivy.securityCheck` | `harbor-scanner-trivy.trivy.securityChecks` | Renamed (plural) |
+| `trivy.dbRepository` / `javaDBRepository` (list) | comma-joined string | |
+| `trivy.replicas` | `harbor-scanner-trivy.replicaCount` | |
+| `trivy.persistence.*` | `harbor-scanner-trivy.persistence.*` | Subchart persistence is off by default |
+| `trivy.pdb` | `harbor-scanner-trivy.podDisruptionBudget` | |
+| — | `harbor-scanner-trivy.redis.url` | Not inherited. Required (or `redis.existingSecret`) with `externalRedis`, Valkey auth, or a disabled or renamed Valkey; rendering fails otherwise. Defaults to the bundled passwordless Valkey |
+
 ### Database
 
 | 2.x | This chart | Notes |
