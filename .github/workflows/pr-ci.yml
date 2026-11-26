@@ -124,7 +124,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        component: [core, jobservice, registryctl, exporter, portal, registry]
+        component: [core, jobservice, exporter, portal, registry]
         platform:
           - linux/amd64
           - linux/arm64
@@ -164,11 +164,11 @@ jobs:
           version: 3.49.1
 
       - name: Generate API code
-        if: ${{ contains(fromJSON('["core","jobservice","registryctl","exporter","registry"]'), matrix.component) }}
+        if: ${{ contains(fromJSON('["core","jobservice","exporter","registry"]'), matrix.component) }}
         run: task build:gen-apis
 
       - name: Compile Go binary
-        if: ${{ contains(fromJSON('["core","jobservice","registryctl","exporter","registry"]'), matrix.component) }}
+        if: ${{ contains(fromJSON('["core","jobservice","exporter","registry"]'), matrix.component) }}
         env:
           COMPONENT: ${{ matrix.component }}
           PLATFORM_PAIR: ${{ env.PLATFORM_PAIR }}
@@ -235,7 +235,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        component: [core, jobservice, registryctl, exporter, portal, registry]
+        component: [core, jobservice, exporter, portal, registry]
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -317,7 +317,7 @@ jobs:
 
       - name: Sign images, generate SBOMs, and attest
         run: |
-          for image in core jobservice registryctl exporter portal registry; do
+          for image in core jobservice exporter portal registry; do
             image_name="harbor-${image}"
             ref="${REGISTRY_ADDRESS}/${PR_REGISTRY_PROJECT}/${image_name}:${PREVIEW_TAG}"
             digest="$(crane digest "${ref}")"
@@ -372,7 +372,7 @@ jobs:
             const registryAddress = process.env.REGISTRY_ADDRESS;
             const registryProject = process.env.PR_REGISTRY_PROJECT;
             const previewTag = process.env.PREVIEW_TAG;
-            const components = ['harbor-core', 'harbor-jobservice', 'harbor-registryctl', 'harbor-exporter', 'harbor-portal', 'harbor-registry'];
+            const components = ['harbor-core', 'harbor-jobservice', 'harbor-exporter', 'harbor-portal', 'harbor-registry'];
 
             const stack = stackNumber
               ? await github.request('GET /repos/{owner}/{repo}/stacks/{stack_number}', {
