@@ -1,0 +1,29 @@
+name: s12-empty-and-null-reports
+description: >-
+  An empty raw report and a JSON null are rejected and keep the last result. A structured report
+  with no vulnerabilities is a clean image and clears the findings.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1101, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+  - {op: capture, label: after-first-scan}
+  - {op: scan, artifact: a1, scanner: s1, raw_report: ""}
+  - {op: scan, artifact: a1, scanner: s1, raw_report: "null"}
+  - {op: capture, label: after-rejected-reports, rows_unchanged: true}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    raw_report: '{"generated_at":"2026-11-26T10:00:00Z","scanner":{"name":"Trivy","vendor":"Aqua Security","version":"v0.60.0"},"severity":"None","vulnerabilities":[]}'
+  - {op: capture, label: after-clean-report}
+  - op: scan
+    artifact: a2
+    scanner: s1
+    raw_report: '{"generated_at":"2026-11-26T10:00:00Z","scanner":{"name":"Trivy","vendor":"Aqua Security","version":"v0.60.0"},"severity":"None"}'
+  - {op: capture, label: clean-report-without-list}

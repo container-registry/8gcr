@@ -1,0 +1,39 @@
+name: s21-cleanup-during-reattach
+description: >-
+  A cleanup runs while a scan re-attaches the unlinked record. The scan must succeed and its link
+  must survive, whichever of the two runs first.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-2001, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+        - {id: CVE-2026-2002, package: zlib, version: 1.2.13-r0, severity: Medium, status: affected, preferred_cvss: {score_v3: 5.3}}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-26T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-2001, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+  - {op: capture, label: one-unlinked}
+  - op: concurrent
+    steps:
+      - {op: cleanup}
+      - op: scan
+        artifact: a2
+        scanner: s1
+        report:
+          generated_at: "2026-11-26T10:00:00Z"
+          scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+          severity: Medium
+          vulnerabilities:
+            - {id: CVE-2026-2002, package: zlib, version: 1.2.13-r0, severity: Medium, status: affected, preferred_cvss: {score_v3: 5.3}}
+  - {op: capture, label: after-race}

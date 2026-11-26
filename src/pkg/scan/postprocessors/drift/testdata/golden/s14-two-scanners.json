@@ -1,0 +1,627 @@
+{
+  "scenario": "s14-two-scanners",
+  "steps": [
+    {
+      "op": "register_scanner",
+      "scanner": "s1",
+      "result": "ok"
+    },
+    {
+      "op": "register_scanner",
+      "scanner": "s2",
+      "result": "ok"
+    },
+    {
+      "op": "scan",
+      "artifact": "a1",
+      "scanner": "s1",
+      "result": "ok"
+    },
+    {
+      "op": "scan",
+      "artifact": "a1",
+      "scanner": "s2",
+      "result": "ok"
+    }
+  ],
+  "captures": [
+    {
+      "label": "both-scanners",
+      "reports": [
+        {
+          "artifact": "a1",
+          "counts": {
+            "critical": 0,
+            "fixable": 0,
+            "high": 1,
+            "low": 0,
+            "medium": 0,
+            "none": 0,
+            "unknown": 0
+          },
+          "report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "vulnerabilities": [
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-1301",
+                "links": [
+                  ""
+                ],
+                "package": "openssl",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 7.5,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "High",
+                "status": "affected",
+                "vendor_attributes": null,
+                "version": "3.0.1-r0"
+              }
+            ]
+          },
+          "scanner": "s1",
+          "stored_report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "vulnerabilities": []
+          },
+          "summary": {
+            "complete_percent": 100,
+            "scan_status": "Success",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "summary": {
+              "fixable": 0,
+              "summary": {
+                "High": 1
+              },
+              "total": 1
+            }
+          }
+        },
+        {
+          "artifact": "a1",
+          "counts": {
+            "critical": 1,
+            "fixable": 1,
+            "high": 0,
+            "low": 0,
+            "medium": 1,
+            "none": 0,
+            "unknown": 0
+          },
+          "report": {
+            "generated_at": "2026-11-25T11:00:00Z",
+            "scanner": {
+              "name": "Grype",
+              "vendor": "Anchore",
+              "version": "v0.80.0"
+            },
+            "severity": "Critical",
+            "vulnerabilities": [
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "3.0.2-r0",
+                "id": "CVE-2026-1301",
+                "links": [
+                  ""
+                ],
+                "package": "openssl",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 9.8,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "Critical",
+                "status": "fixed",
+                "vendor_attributes": null,
+                "version": "3.0.1-r0"
+              },
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-1302",
+                "links": [
+                  ""
+                ],
+                "package": "libssl3",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 5.9,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "Medium",
+                "status": "",
+                "vendor_attributes": null,
+                "version": "3.0.1-r0"
+              }
+            ]
+          },
+          "scanner": "s2",
+          "stored_report": {
+            "generated_at": "2026-11-25T11:00:00Z",
+            "scanner": {
+              "name": "Grype",
+              "vendor": "Anchore",
+              "version": "v0.80.0"
+            },
+            "severity": "Critical",
+            "vulnerabilities": []
+          },
+          "summary": {
+            "complete_percent": 100,
+            "scan_status": "Success",
+            "scanner": {
+              "name": "Grype",
+              "vendor": "Anchore",
+              "version": "v0.80.0"
+            },
+            "severity": "Critical",
+            "summary": {
+              "fixable": 1,
+              "summary": {
+                "Critical": 1,
+                "Medium": 1
+              },
+              "total": 2
+            }
+          }
+        }
+      ],
+      "security_hub": [
+        {
+          "dangerous_artifacts": {
+            "complete": true,
+            "rows": [
+              {
+                "critical_cnt": 0,
+                "high_cnt": 1,
+                "low_cnt": 0,
+                "medium_cnt": 0
+              }
+            ]
+          },
+          "dangerous_cves": {
+            "complete": true,
+            "rows": [
+              {
+                "CVE2Score": null,
+                "CVE3Score": 7.5,
+                "CVEID": "CVE-2026-1301",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "",
+                "Fix": "",
+                "Package": "openssl",
+                "PackageType": "",
+                "PackageVersion": "3.0.1-r0",
+                "RegistrationUUID": "",
+                "Severity": "High",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              }
+            ]
+          },
+          "scanned_artifacts": 1,
+          "scanner": "s1",
+          "summary": {
+            "critical_cnt": 0,
+            "dangerous_artifacts": null,
+            "dangerous_cves": null,
+            "fixable_cnt": 0,
+            "high_cnt": 1,
+            "low_cnt": 0,
+            "medium_cnt": 0,
+            "none_cnt": 0,
+            "not_scan_cnt": 0,
+            "scanned_cnt": 0,
+            "total_artifact_cnt": 0,
+            "unknown_cnt": 0
+          },
+          "vulnerabilities": {
+            "all": {
+              "count": 1,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "CVE-2026-1301",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "High",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            },
+            "critical": {
+              "count": 0,
+              "items": []
+            },
+            "cvss_7_or_more": {
+              "count": 1,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "CVE-2026-1301",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "High",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "dangerous_artifacts": {
+            "complete": true,
+            "rows": [
+              {
+                "critical_cnt": 1,
+                "high_cnt": 0,
+                "low_cnt": 0,
+                "medium_cnt": 1
+              }
+            ]
+          },
+          "dangerous_cves": {
+            "complete": true,
+            "rows": [
+              {
+                "CVE2Score": null,
+                "CVE3Score": 5.9,
+                "CVEID": "CVE-2026-1302",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "",
+                "Fix": "",
+                "Package": "libssl3",
+                "PackageType": "",
+                "PackageVersion": "3.0.1-r0",
+                "RegistrationUUID": "",
+                "Severity": "Medium",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              },
+              {
+                "CVE2Score": null,
+                "CVE3Score": 9.8,
+                "CVEID": "CVE-2026-1301",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "",
+                "Fix": "",
+                "Package": "openssl",
+                "PackageType": "",
+                "PackageVersion": "3.0.1-r0",
+                "RegistrationUUID": "",
+                "Severity": "Critical",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              }
+            ]
+          },
+          "scanned_artifacts": 1,
+          "scanner": "s2",
+          "summary": {
+            "critical_cnt": 1,
+            "dangerous_artifacts": null,
+            "dangerous_cves": null,
+            "fixable_cnt": 1,
+            "high_cnt": 0,
+            "low_cnt": 0,
+            "medium_cnt": 1,
+            "none_cnt": 0,
+            "not_scan_cnt": 0,
+            "scanned_cnt": 0,
+            "total_artifact_cnt": 0,
+            "unknown_cnt": 0
+          },
+          "vulnerabilities": {
+            "all": {
+              "count": 2,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 5.9,
+                  "CVEID": "CVE-2026-1302",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "libssl3",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Medium",
+                  "Status": "",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 9.8,
+                  "CVEID": "CVE-2026-1301",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "3.0.2-r0",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Critical",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            },
+            "critical": {
+              "count": 1,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 9.8,
+                  "CVEID": "CVE-2026-1301",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "3.0.2-r0",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Critical",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            },
+            "cvss_7_or_more": {
+              "count": 1,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 9.8,
+                  "CVEID": "CVE-2026-1301",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "3.0.2-r0",
+                  "Package": "openssl",
+                  "PackageType": "",
+                  "PackageVersion": "3.0.1-r0",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "Critical",
+                  "Status": "fixed",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "export": [
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-1301",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "openssl",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "High",
+          "Version": "3.0.1-r0"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-1301",
+          "CWEIds": "",
+          "FixVersion": "3.0.2-r0",
+          "Package": "openssl",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s2>",
+          "Severity": "Critical",
+          "Version": "3.0.1-r0"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-1302",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "libssl3",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s2>",
+          "Severity": "Medium",
+          "Version": "3.0.1-r0"
+        }
+      ],
+      "records": [
+        {
+          "linked_records": [
+            {
+              "cve_id": "CVE-2026-1301",
+              "cvss_score_v2": null,
+              "cvss_score_v3": "7.5",
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "",
+              "package": "openssl",
+              "package_type": "Unknown",
+              "package_version": "3.0.1-r0",
+              "severity": "High",
+              "status": "affected",
+              "urls": "",
+              "vendor_attributes": null
+            }
+          ],
+          "links": {
+            "a1@s1": [
+              [
+                "CVE-2026-1301",
+                "openssl",
+                "3.0.1-r0"
+              ]
+            ]
+          },
+          "scanner": "s1",
+          "unlinked_records": []
+        },
+        {
+          "linked_records": [
+            {
+              "cve_id": "CVE-2026-1301",
+              "cvss_score_v2": null,
+              "cvss_score_v3": "9.8",
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "3.0.2-r0",
+              "package": "openssl",
+              "package_type": "Unknown",
+              "package_version": "3.0.1-r0",
+              "severity": "Critical",
+              "status": "fixed",
+              "urls": "",
+              "vendor_attributes": null
+            },
+            {
+              "cve_id": "CVE-2026-1302",
+              "cvss_score_v2": null,
+              "cvss_score_v3": "5.9",
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "",
+              "package": "libssl3",
+              "package_type": "Unknown",
+              "package_version": "3.0.1-r0",
+              "severity": "Medium",
+              "status": "",
+              "urls": "",
+              "vendor_attributes": null
+            }
+          ],
+          "links": {
+            "a1@s2": [
+              [
+                "CVE-2026-1301",
+                "openssl",
+                "3.0.1-r0"
+              ],
+              [
+                "CVE-2026-1302",
+                "libssl3",
+                "3.0.1-r0"
+              ]
+            ]
+          },
+          "scanner": "s2",
+          "unlinked_records": []
+        }
+      ]
+    }
+  ]
+}

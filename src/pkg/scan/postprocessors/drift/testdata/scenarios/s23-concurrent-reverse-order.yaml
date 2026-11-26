@@ -1,0 +1,11 @@
+name: s23-concurrent-reverse-order
+description: >-
+  Two scans insert the same 120 new records at once, in opposite orders. Both must succeed and
+  share the records; a write path that deadlocks here fails one of the scans.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: concurrent
+    steps:
+      - {op: scan, artifact: a1, scanner: s1, report_file: s23-forward.json}
+      - {op: scan, artifact: a2, scanner: s1, report_file: s23-reverse.json}
+  - {op: capture, label: after-concurrent}

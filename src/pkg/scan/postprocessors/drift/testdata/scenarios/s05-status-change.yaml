@@ -1,0 +1,24 @@
+name: s05-status-change
+description: A status change updates severity, status, fix_version and the v3 score, but not the v3 vector, description, links or vendor attributes.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-0401, package: openssl, version: 3.0.1-r0, severity: High, status: affected, description: old text, links: [https://old.example.com], preferred_cvss: {score_v3: 7.5}, vendor_attributes: {CVSS: {nvd: {V3Score: 7.5}}}}
+  - {op: capture, label: before}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-26T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-0401, package: openssl, version: 3.0.1-r0, fix_version: 3.0.2-r0, severity: High, status: fixed, description: new text, links: [https://new.example.com], preferred_cvss: {score_v3: 8.8, vector_v3: "CVSS:3.1/AV:N"}, vendor_attributes: {CVSS: {nvd: {V3Score: 8.8}}}}
+  - {op: capture, label: after-status-change}

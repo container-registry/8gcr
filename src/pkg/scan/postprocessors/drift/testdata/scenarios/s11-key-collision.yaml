@@ -1,0 +1,35 @@
+name: s11-key-collision
+description: >-
+  Key() joins CVE, package and version with "-", so package "a-b" version "1" and package "a"
+  version "b-1" collide. When the first record already exists, a report holding both stores only one.
+known_bug:
+  description: a finding whose string key collides with an existing record is dropped from the report
+  expect_fixed:
+    - capture: second-artifact
+      artifact: a2
+      scanner: s1
+      findings:
+        - {cve: CVE-2026-1001, package: a-b, version: "1"}
+        - {cve: CVE-2026-1001, package: a, version: b-1}
+steps:
+  - {op: register_scanner, scanner: s1}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1001, package: a-b, version: "1", severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+  - op: scan
+    artifact: a2
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1001, package: a-b, version: "1", severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+        - {id: CVE-2026-1001, package: a, version: b-1, severity: Medium, status: affected, preferred_cvss: {score_v3: 5.0}}
+  - {op: capture, label: second-artifact}

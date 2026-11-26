@@ -1,0 +1,25 @@
+name: s14-two-scanners
+description: Two scanners reporting the same CVE on the same artifact keep separate records.
+steps:
+  - {op: register_scanner, scanner: s1}
+  - {op: register_scanner, scanner: s2}
+  - op: scan
+    artifact: a1
+    scanner: s1
+    report:
+      generated_at: "2026-11-25T10:00:00Z"
+      scanner: {name: Trivy, vendor: Aqua Security, version: v0.60.0}
+      severity: High
+      vulnerabilities:
+        - {id: CVE-2026-1301, package: openssl, version: 3.0.1-r0, severity: High, status: affected, preferred_cvss: {score_v3: 7.5}}
+  - op: scan
+    artifact: a1
+    scanner: s2
+    report:
+      generated_at: "2026-11-25T11:00:00Z"
+      scanner: {name: Grype, vendor: Anchore, version: v0.80.0}
+      severity: Critical
+      vulnerabilities:
+        - {id: CVE-2026-1301, package: openssl, version: 3.0.1-r0, fix_version: 3.0.2-r0, severity: Critical, status: fixed, preferred_cvss: {score_v3: 9.8}}
+        - {id: CVE-2026-1302, package: libssl3, version: 3.0.1-r0, severity: Medium, preferred_cvss: {score_v3: 5.9}}
+  - {op: capture, label: both-scanners}

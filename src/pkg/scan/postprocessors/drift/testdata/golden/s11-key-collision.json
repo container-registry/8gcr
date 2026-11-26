@@ -1,0 +1,412 @@
+{
+  "scenario": "s11-key-collision",
+  "steps": [
+    {
+      "op": "register_scanner",
+      "scanner": "s1",
+      "result": "ok"
+    },
+    {
+      "op": "scan",
+      "artifact": "a1",
+      "scanner": "s1",
+      "result": "ok"
+    },
+    {
+      "op": "scan",
+      "artifact": "a2",
+      "scanner": "s1",
+      "result": "ok"
+    }
+  ],
+  "captures": [
+    {
+      "label": "second-artifact",
+      "reports": [
+        {
+          "artifact": "a1",
+          "counts": {
+            "critical": 0,
+            "fixable": 0,
+            "high": 1,
+            "low": 0,
+            "medium": 0,
+            "none": 0,
+            "unknown": 0
+          },
+          "report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "vulnerabilities": [
+              {
+                "artifact_digests": [
+                  "<digest:a1>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-1001",
+                "links": [
+                  ""
+                ],
+                "package": "a-b",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 7.5,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "High",
+                "status": "affected",
+                "vendor_attributes": null,
+                "version": "1"
+              }
+            ]
+          },
+          "scanner": "s1",
+          "stored_report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "vulnerabilities": []
+          },
+          "summary": {
+            "complete_percent": 100,
+            "scan_status": "Success",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "summary": {
+              "fixable": 0,
+              "summary": {
+                "High": 1
+              },
+              "total": 1
+            }
+          }
+        },
+        {
+          "artifact": "a2",
+          "counts": {
+            "critical": 0,
+            "fixable": 0,
+            "high": 1,
+            "low": 0,
+            "medium": 1,
+            "none": 0,
+            "unknown": 0
+          },
+          "report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "vulnerabilities": [
+              {
+                "artifact_digests": [
+                  "<digest:a2>"
+                ],
+                "cwe_ids": [
+                  ""
+                ],
+                "description": "",
+                "fix_version": "",
+                "id": "CVE-2026-1001",
+                "links": [
+                  ""
+                ],
+                "package": "a-b",
+                "preferred_cvss": {
+                  "score_v2": null,
+                  "score_v3": 7.5,
+                  "vector_v2": "",
+                  "vector_v3": ""
+                },
+                "severity": "High",
+                "status": "affected",
+                "vendor_attributes": null,
+                "version": "1"
+              }
+            ]
+          },
+          "scanner": "s1",
+          "stored_report": {
+            "generated_at": "2026-11-25T10:00:00Z",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "vulnerabilities": []
+          },
+          "summary": {
+            "complete_percent": 100,
+            "scan_status": "Success",
+            "scanner": {
+              "name": "Trivy",
+              "vendor": "Aqua Security",
+              "version": "v0.60.0"
+            },
+            "severity": "High",
+            "summary": {
+              "fixable": 0,
+              "summary": {
+                "High": 1
+              },
+              "total": 1
+            }
+          }
+        }
+      ],
+      "security_hub": [
+        {
+          "dangerous_artifacts": {
+            "complete": true,
+            "rows": [
+              {
+                "critical_cnt": 0,
+                "high_cnt": 1,
+                "low_cnt": 0,
+                "medium_cnt": 0
+              },
+              {
+                "critical_cnt": 0,
+                "high_cnt": 1,
+                "low_cnt": 0,
+                "medium_cnt": 1
+              }
+            ]
+          },
+          "dangerous_cves": {
+            "complete": true,
+            "rows": [
+              {
+                "CVE2Score": null,
+                "CVE3Score": 7.5,
+                "CVEID": "CVE-2026-1001",
+                "CVSS2Vector": "",
+                "CVSS3Vector": "",
+                "CWEIDs": "",
+                "Description": "",
+                "Fix": "",
+                "Package": "a-b",
+                "PackageType": "",
+                "PackageVersion": "1",
+                "RegistrationUUID": "",
+                "Severity": "High",
+                "Status": "",
+                "URLs": "",
+                "VendorAttributes": ""
+              }
+            ]
+          },
+          "scanned_artifacts": 2,
+          "scanner": "s1",
+          "summary": {
+            "critical_cnt": 0,
+            "dangerous_artifacts": null,
+            "dangerous_cves": null,
+            "fixable_cnt": 0,
+            "high_cnt": 2,
+            "low_cnt": 0,
+            "medium_cnt": 1,
+            "none_cnt": 0,
+            "not_scan_cnt": 0,
+            "scanned_cnt": 0,
+            "total_artifact_cnt": 0,
+            "unknown_cnt": 0
+          },
+          "vulnerabilities": {
+            "all": {
+              "count": 2,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "CVE-2026-1001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "a-b",
+                  "PackageType": "",
+                  "PackageVersion": "1",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "High",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a2",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "CVE-2026-1001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a2>",
+                  "Fix": "",
+                  "Package": "a-b",
+                  "PackageType": "",
+                  "PackageVersion": "1",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a2>",
+                  "Severity": "High",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            },
+            "critical": {
+              "count": 0,
+              "items": []
+            },
+            "cvss_7_or_more": {
+              "count": 2,
+              "items": [
+                {
+                  "ArtifactID": "a1",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "CVE-2026-1001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a1>",
+                  "Fix": "",
+                  "Package": "a-b",
+                  "PackageType": "",
+                  "PackageVersion": "1",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a1>",
+                  "Severity": "High",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                },
+                {
+                  "ArtifactID": "a2",
+                  "CVE2Score": null,
+                  "CVE3Score": 7.5,
+                  "CVEID": "CVE-2026-1001",
+                  "CVSS2Vector": "",
+                  "CVSS3Vector": "",
+                  "CWEIDs": "",
+                  "Description": "",
+                  "Digest": "<digest:a2>",
+                  "Fix": "",
+                  "Package": "a-b",
+                  "PackageType": "",
+                  "PackageVersion": "1",
+                  "RegistrationUUID": "",
+                  "RepositoryName": "<repo:a2>",
+                  "Severity": "High",
+                  "Status": "affected",
+                  "Tags": null,
+                  "URLs": "",
+                  "VendorAttributes": ""
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "export": [
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a1>",
+          "CVEId": "CVE-2026-1001",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "a-b",
+          "Repository": "<repo:a1>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "High",
+          "Version": "1"
+        },
+        {
+          "AdditionalData": "",
+          "ArtifactDigest": "<digest:a2>",
+          "CVEId": "CVE-2026-1001",
+          "CWEIds": "",
+          "FixVersion": "",
+          "Package": "a-b",
+          "Repository": "<repo:a2>",
+          "ScannerName": "<scanner-name:s1>",
+          "Severity": "High",
+          "Version": "1"
+        }
+      ],
+      "records": [
+        {
+          "linked_records": [
+            {
+              "cve_id": "CVE-2026-1001",
+              "cvss_score_v2": null,
+              "cvss_score_v3": "7.5",
+              "cvss_vector_v2": "",
+              "cvss_vector_v3": "",
+              "cwe_ids": "",
+              "description": "",
+              "fixed_version": "",
+              "package": "a-b",
+              "package_type": "Unknown",
+              "package_version": "1",
+              "severity": "High",
+              "status": "affected",
+              "urls": "",
+              "vendor_attributes": null
+            }
+          ],
+          "links": {
+            "a1@s1": [
+              [
+                "CVE-2026-1001",
+                "a-b",
+                "1"
+              ]
+            ],
+            "a2@s1": [
+              [
+                "CVE-2026-1001",
+                "a-b",
+                "1"
+              ]
+            ]
+          },
+          "scanner": "s1",
+          "unlinked_records": []
+        }
+      ]
+    }
+  ]
+}
