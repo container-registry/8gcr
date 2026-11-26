@@ -507,6 +507,47 @@ tls:
 
 `harbor-scanner-trivy.enabled: true` deploys the Trivy adapter from the [harbor-scanner-trivy](https://github.com/container-registry/harbor-scanner-trivy/tree/main/deploy/chart) subchart instead of the built-in `trivy.*` templates; it wins when both are enabled. Its values follow that chart's shape, and its Redis URL defaults to the bundled Valkey, so set `harbor-scanner-trivy.redis.url` for external Redis or Valkey auth. Key map: [MIGRATION-REFERENCE](docs/MIGRATION-REFERENCE.md).
 
+### Scanner Subcharts (Grype, Snyk)
+
+Scanners other than Trivy ship as opt-in subcharts. Harbor core carries no scanner-specific code for them: each subchart deploys an adapter, and a post-install/post-upgrade Job registers it through Harbor's pluggable scanner API (`POST /api/v2.0/scanners`).
+
+```yaml
+harbor-scanner-grype:
+  enabled: true
+  registration:
+    default: true          # make Grype the system default scanner
+
+harbor-scanner-snyk:
+  enabled: true
+  snyk:
+    existingSecret: snyk-token   # Secret with the API token under SNYK_TOKEN
+```
+
+The Job looks each scanner up by name, creates or updates the registration, and sets the default when asked, once every scanner is registered, so it is safe to run on every upgrade. A registration that already matches is not updated, so an upgrade that changes nothing about the scanners also works while Harbor is in read-only mode; creating, changing or making a scanner the default still needs a writable Harbor. It also runs after `helm rollback`, with the values of the revision rolled back to. Harbor pings an adapter before it accepts a new registration, and the Job asks for the same ping before an update that changes the adapter URL (not possible for a registration with stored credentials or `skipCertVerify`), so a run that beats the adapter's start retries every 10 seconds inside the Job, and the Job itself is retried up to `scannerRegistration.backoffLimit` times within `scannerRegistration.activeDeadlineSeconds`. An update keeps the deactivated state of a registration, and its stored authentication type and credential as long as the adapter URL is unchanged; a registration with credentials for another URL fails the Job until it is fixed in Harbor.
+
+A disabled scanner subchart keeps its registration in Harbor by default, together with its vulnerability reports; remove it in the UI when you no longer need it. With `scannerRegistration.prune: true`, the next Job run removes the registration after all other scanners are registered, provided the scanner uses the Service URL this chart derives (no `registration.url`) and the registration still points at it. Harbor deletes that scanner's stored vulnerability records together with the registration. When Harbor is left without a default scanner after the removal, the Job makes Trivy the default if the chart deploys it, otherwise the first remaining chart scanner. When two scanners share a name and one replaces the other, the Job repoints the existing registration, which keeps project scanner assignments; rescan to replace the old scanner's reports. Giving a scanner the name of another one that is disabled in the same upgrade only works while a single registration is involved; with both registered, Harbor rejects the duplicate URL, so rename in a second upgrade. The Job finds a registration by the configured name and Service URL, so one whose name, Service name or port is changed in the upgrade that disables it stays behind for manual cleanup. The Job only renders while at least one scanner is left to register, so remove the registration by hand (Administration > Interrogation Services) after disabling the last one; the same applies to a rollback onto a revision without scanners.
+
+A subchart with `registration.enabled: false` is deployed but left out of the Job entirely, for a registration managed by hand.
+
+The Job logs in as `admin` with the chart's admin password. After rotating that password in the UI, point `scannerRegistration.username` and `scannerRegistration.existingSecret` at an account that may manage scanners, for example a system robot account with the scanner permissions. Until then Harbor answers the Job with HTTP 401 or 403, and the Job logs a warning naming `scannerRegistration.existingSecret`, skips registration and lets the upgrade finish. Other failures, such as Harbor core not answering or an adapter that stays unreachable, still fail the Job and the upgrade, since they point at a broken release rather than stale credentials.
+
+`scannerRegistration.extra` registers adapters that run outside this chart:
+
+```yaml
+scannerRegistration:
+  extra:
+    - name: Clair
+      url: http://clair-adapter.scanners.svc:8080
+```
+
+With `proxy.httpProxy` or `proxy.httpsProxy` set, add the host of each `extra` adapter that the proxy cannot reach to `proxy.noProxy`, next to the entries already there. Only the scanner subcharts' Services are added on their own.
+
+The Job pod takes `scannerRegistration.podAnnotations`, `podLabels`, `nodeSelector`, `tolerations`, `affinity`, `podSecurityContext` and `securityContext`, and the `global.priorityClassName`. Under a service mesh a classic sidecar keeps the Job from completing. Where core accepts traffic from outside the mesh, keep the sidecar out with a pod annotation such as `sidecar.istio.io/inject: "false"`; under strict mutual TLS use the mesh's own Job support instead (native sidecars, for example), set through the same pod annotations. On OpenShift, set `podSecurityContext.runAsUser` and `runAsGroup` to `null` so the SCC assigns them, and do the same for `runAsUser`, `runAsGroup` and `fsGroup` under `harbor-scanner-grype.podSecurityContext` and `harbor-scanner-snyk.podSecurityContext`. Scanner pods do not inherit the chart's `imagePullSecrets` or `commonLabels`; each subchart has its own `commonLabels`, and you set `harbor-scanner-grype.imagePullSecrets` or `harbor-scanner-snyk.imagePullSecrets` for an authenticated mirror.
+
+The chart's `proxy.*` settings do not reach a subchart. Behind a proxy, give the adapter its own `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` through `harbor-scanner-grype.extraEnv` (the Grype database download) or `harbor-scanner-snyk.extraEnv` (the Snyk API), and keep the Harbor core Service in `NO_PROXY`. For a private CA, mount the bundle with the subchart's `extraVolumes` and `extraVolumeMounts` and point `SSL_CERT_FILE` at it through `extraEnv`.
+
+Both adapters keep scan jobs in memory and run as a single replica. Their images publish only a `latest` tag, so the subcharts pin them by digest. All subchart values are listed in [`harbor-scanner-grype/values.yaml`](https://github.com/container-registry/harbor-next/blob/main/deploy/chart/subcharts/harbor-scanner-grype/values.yaml) and [`harbor-scanner-snyk/values.yaml`](https://github.com/container-registry/harbor-next/blob/main/deploy/chart/subcharts/harbor-scanner-snyk/values.yaml). Trivy keeps its `trivy.*` deployment or the `harbor-scanner-trivy` subchart, and core registers it as before.
+
 ### HPA / Autoscaling
 
 Per-component HPAs target the matching Deployment (or the trivy StatefulSet) and the controller template OMITS `replicas:` whenever `autoscaling.enabled=true` — otherwise each `helm upgrade` would reset the count and fight the HPA. Available on `core`, `jobservice`, `registry`, `portal`, and `trivy`.
@@ -772,6 +813,8 @@ Kubernetes: `>=1.28.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
+| file://subcharts/harbor-scanner-grype | harbor-scanner-grype | 0.1.0 |
+| file://subcharts/harbor-scanner-snyk | harbor-scanner-snyk | 0.1.0 |
 | oci://8gears.container-registry.com/8gcr/charts | harbor-scanner-trivy | 1.0.1 |
 | oci://ghcr.io/valkey-io/valkey-helm | valkey | 0.12.1 |
 | oci://registry-1.docker.io/cloudpirates | postgresql(postgres) | 0.21.2 |
@@ -943,6 +986,13 @@ Kubernetes: `>=1.28.0-0`
 | global.imageRegistry | string | `""` | Override the registry host for ALL component images at once (air-gap / mirror). When set it wins over per-component `image.registry` and `image.source`. Repository paths are preserved, so a flat mirror works (`global.imageRegistry=mirror.io` -> `mirror.io/8gcr/harbor-core`). Propagated to subcharts; the valkey subchart image must be mirrored/overridden separately (it may not honor this). |
 | global.priorityClassName | string | `""` | Priority class name for all component pods |
 | global.revisionHistoryLimit | int | `3` | Number of old ReplicaSets to retain (K8s default is 10) |
+| harbor-scanner-grype.enabled | bool | `false` | Deploy the Grype scanner adapter and register it in Harbor |
+| harbor-scanner-grype.registration.default | bool | `false` | Make Grype the system default scanner |
+| harbor-scanner-grype.registration.name | string | `"Grype"` | Scanner name shown in Harbor. Also names the registration the Job removes once this subchart is disabled again |
+| harbor-scanner-snyk.enabled | bool | `false` | Deploy the Snyk scanner adapter and register it in Harbor. Requires `harbor-scanner-snyk.snyk.existingSecret` |
+| harbor-scanner-snyk.registration.default | bool | `false` | Make Snyk the system default scanner |
+| harbor-scanner-snyk.registration.name | string | `"Snyk"` | Scanner name shown in Harbor. Also names the registration the Job removes once this subchart is disabled again |
+| harbor-scanner-snyk.snyk.existingSecret | string | `""` | Existing Secret holding the Snyk API token under `tokenKey` (default `SNYK_TOKEN`) |
 | harbor-scanner-trivy.enabled | bool | `false` | Deploy the Trivy adapter via the harbor-scanner-trivy subchart instead of the built-in `trivy.*` templates |
 | harbor-scanner-trivy.nameOverride | string | `"scanner-trivy"` | Kept apart from the built-in `<fullname>-trivy` so switching modes replaces the StatefulSet instead of patching its immutable selector |
 | harbor-scanner-trivy.persistence.enabled | bool | `false` |  |
@@ -1128,6 +1178,27 @@ Kubernetes: `>=1.28.0-0`
 | registry.storageCredentials.s3.existingSecretSecretKeyKey | string | `"REGISTRY_STORAGE_S3_SECRETKEY"` | Key in `existingSecret` holding the secret access key. |
 | registry.tolerations | list | `[]` | Tolerations for Registry pods |
 | registry.topologySpreadConstraints | list | `[]` | Topology spread constraints for pod scheduling |
+| scannerRegistration | object | See [values.yaml](values.yaml) | Post-install/post-upgrade Job that registers scanner adapters through `POST /api/v2.0/scanners`. It renders only when a scanner subchart is enabled or `extra` lists an adapter, and updates registrations it finds by name. With `prune` it also removes the registration of a scanner subchart that was switched off while another scanner stays registered. |
+| scannerRegistration.activeDeadlineSeconds | int | `270` | Deadline for the whole Job in seconds. Keep it below the Helm `--timeout` (5m by default), or Helm gives up while the Job still runs |
+| scannerRegistration.affinity | object | `{}` | Affinity for the Job pod |
+| scannerRegistration.backoffLimit | int | `6` | Retries before the Job, and with it the release, is marked failed |
+| scannerRegistration.enabled | bool | `true` | Run the registration Job when there is a scanner to register |
+| scannerRegistration.existingSecret | string | `""` | Existing Secret with that user's password. Empty uses the chart's admin password (`existingSecretAdminPassword` or `harborAdminPassword`), so set it once the admin password is rotated in the UI. While Harbor rejects the credentials, the Job logs a warning and skips registration |
+| scannerRegistration.existingSecretPasswordKey | string | `"password"` | Key of the password inside `existingSecret` |
+| scannerRegistration.extra | list | `[]` | Adapters deployed outside this chart to register as well. Each entry takes `name`, `url`, and optional `description`, `default`, `useInternalAddr` and `skipCertVerify`. Use `useInternalAddr: true` only for an adapter in Harbor's namespace; elsewhere the internal core address does not resolve, so leave it `false` and let the adapter use `externalURL` |
+| scannerRegistration.image.digest | string | `""` | Pin by digest (sha256:...); used instead of tag when set |
+| scannerRegistration.image.registry | string | `"docker.io"` | Registry host of the Job image (`global.imageRegistry` wins) |
+| scannerRegistration.image.repository | string | `"curlimages/curl"` | Repository of the Job image; any image with `sh`, `curl`, `sed`, `tr` and `sleep` works |
+| scannerRegistration.image.tag | string | `"8.23.0"` | Job image tag |
+| scannerRegistration.nodeSelector | object | `{}` | Node selector for the Job pod |
+| scannerRegistration.podAnnotations | object | `{}` | Job pod annotations, for example to keep a service mesh sidecar out (`sidecar.istio.io/inject: "false"`) where core accepts non-mesh traffic, or to switch on the mesh's native sidecar mode under strict mutual TLS |
+| scannerRegistration.podLabels | object | `{}` | Job pod labels |
+| scannerRegistration.podSecurityContext | object | `{"runAsGroup":65534,"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | Job pod security context. On OpenShift set `runAsUser` and `runAsGroup` to `null` so the SCC assigns them |
+| scannerRegistration.prune | bool | `false` | Remove the registration of a disabled scanner subchart. Harbor drops that scanner's stored vulnerability records with it. When the removed scanner was the default, Trivy or another chart scanner becomes the default |
+| scannerRegistration.resources | object | `{"limits":{"memory":"64Mi"},"requests":{"cpu":"10m","memory":"32Mi"}}` | Job resource requests and limits |
+| scannerRegistration.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | Job container security context |
+| scannerRegistration.tolerations | list | `[]` | Tolerations for the Job pod |
+| scannerRegistration.username | string | `"admin"` | Harbor user the Job authenticates as; needs permission to manage scanners |
 | secretKey | string | auto-generated | Secret key for encryption (16 characters) Used for encrypting credentials stored in the database |
 | tls.certManager.duration | string | `"2160h"` | Certificate duration |
 | tls.certManager.enabled | bool | `false` | Enable cert-manager for TLS certificates |

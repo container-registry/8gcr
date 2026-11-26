@@ -8,5 +8,11 @@ dependencies:
 - name: harbor-scanner-trivy
   repository: oci://8gears.container-registry.com/8gcr/charts
   version: 1.0.1
-digest: sha256:f16b227aab37ea87a3584799704ccafbbf6f32b290e51c0e174f09f87972730b
-generated: "2026-11-10T18:08:16.35336334+05:30"
+- name: harbor-scanner-grype
+  repository: file://subcharts/harbor-scanner-grype
+  version: 0.1.0
+- name: harbor-scanner-snyk
+  repository: file://subcharts/harbor-scanner-snyk
+  version: 0.1.0
+digest: sha256:3f2e8096f4471fad8d6b30689a17ebd9e5269fd9bcebb9db9b1f6ad928188b30
+generated: "2026-11-26T13:46:57.819515047+05:30"
