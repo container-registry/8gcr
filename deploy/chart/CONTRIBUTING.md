@@ -82,6 +82,34 @@ surface", but its shape follows what the process consumes:
 | registry, jobservice | a config file | the **verbatim config-file body** (YAML passthrough); `jobservice.env` carries supplementary env vars |
 | portal | nginx.conf | none — not key-value-driven, so `portal.existingConfigMap` is its only customization |
 
+Env precedence, lowest first: chart defaults, `global.env` (core and
+jobservice), `<component>.config` (`jobservice.env` for jobservice),
+`<component>.secret`, `<component>.extraEnv`. Build env ConfigMaps with
+`harbor.mergedEnv` so a key exists once; appending a user block after chart
+keys renders duplicate keys, which Helm resolves silently and strict YAML
+parsers reject. Chart env on the pod spec itself (explicit `env:` beats
+`envFrom`) must drop names the user claims in the passthrough, as exporter
+and trivy do. What stays pinned is per component: trivy keeps its listen
+address and Redis wiring, while the exporter lets the passthrough override
+everything, including its database and Redis credentials. In the core and
+jobservice Secrets, `<component>.secret` replaces `HARBOR_ADMIN_PASSWORD`
+and `SECRET_KEY`, but not credentials that must match other components
+(`CSRF_KEY`, `REGISTRY_CREDENTIAL_PASSWORD`, `JOBSERVICE_SECRET`, the core
+secret and token pair); `harbor.secretEnvMerged` keeps one copy of each key.
+Set those through their typed values or `existing*` Secrets. Set
+`SCANNER_TRIVY_GITHUB_TOKEN` through `trivy.secret` or `trivy.gitHubToken`,
+both stored in a Secret; a copy in `trivy.config` lands in a ConfigMap and
+never replaces the Secret-backed token. `<component>.config` maps render
+into ConfigMaps and are not checked, so never put credentials there.
+
+`task helm:schema-check` fails when `values.yaml` gains a path that is not
+in `.values-keys`, or loses one that is. Subcharts and the passthrough maps
+directly under a component count as one path. Regenerate the baseline only
+for chart wiring (Kubernetes fields, resources, chart behavior), never for a
+Harbor setting the passthrough reaches, and never to remove a value outside
+a chart major:
+`ys tools/typed-values-gate.ys values.yaml .values-keys write`.
+
 ### Three customization tiers
 
 Uniformly across components: chart defaults → inline `<component>.config`
