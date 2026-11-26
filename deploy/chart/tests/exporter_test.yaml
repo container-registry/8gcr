@@ -338,3 +338,48 @@ tests:
           content:
             name: HARBOR_SERVICE_PORT
             value: "8081"
+
+  # Pins: each name renders once with its last extraEnv entry; a chart name
+  # keeps the chart's position (index 3).
+  - it: should replace a chart env entry that exporter.extraEnv repeats
+    template: templates/exporter.deployment.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      exporter.enabled: true
+      exporter.extraEnv:
+        - name: HARBOR_EXPORTER_MAX_REQUESTS
+          value: "1"
+        - name: MY_EXTRA
+          value: a
+        - name: HARBOR_EXPORTER_MAX_REQUESTS
+          value: "5"
+        - name: MY_EXTRA
+          value: b
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HARBOR_EXPORTER_MAX_REQUESTS
+            value: "5"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MY_EXTRA
+            value: b
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MY_EXTRA
+            value: a
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HARBOR_EXPORTER_MAX_REQUESTS
+            value: "30"
+      - equal:
+          path: spec.template.spec.containers[0].env[3]
+          value:
+            name: HARBOR_EXPORTER_MAX_REQUESTS
+            value: "5"

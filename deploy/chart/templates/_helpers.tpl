@@ -147,6 +147,10 @@ Example output (Secret):
 {{- end }}
 {{- else if not (kindIs "invalid" $value) }}
 {{- /* Handle strings and numbers, skip nil/empty */ -}}
+{{- /* YAML numbers arrive as float64, which toString renders as 1e+06. */ -}}
+{{- if and (kindIs "float64" $value) (eq ($value | int64 | float64) $value) }}
+{{- $value = $value | int64 }}
+{{- end }}
 {{- if $.isSecret }}
 {{ $prefix }}{{ $key | upper }}: {{ $value | toString | b64enc | quote }}
 {{- else }}
@@ -196,6 +200,35 @@ Usage: include "harbor.secretEnvMerged" (dict "under" $text "user" .Values.core.
 {{- range $key, $value := $out }}
   {{ $key }}: {{ $value | toString | quote }}
 {{- end }}
+{{- end }}
+
+{{/*
+Container env: the chart's entries, then <component>.extraEnv. Every name
+exists once (server-side apply rejects duplicate names) with its last
+extraEnv entry, as the kubelet would pick; a chart name keeps the chart's
+position so later $(VAR) references still resolve.
+Usage: include "harbor.envWithExtra" (dict "chart" $list "extra" .Values.trivy.extraEnv)
+*/}}
+{{- define "harbor.envWithExtra" -}}
+{{- $byName := dict }}
+{{- range .extra }}{{ $_ := set $byName .name . }}{{ end }}
+{{- $out := list }}
+{{- $used := dict }}
+{{- range .chart }}
+{{- if hasKey $byName .name }}
+{{- $out = append $out (get $byName .name) }}
+{{- $_ := set $used .name true }}
+{{- else }}
+{{- $out = append $out . }}
+{{- end }}
+{{- end }}
+{{- range .extra }}
+{{- if not (hasKey $used .name) }}
+{{- $out = append $out (get $byName .name) }}
+{{- $_ := set $used .name true }}
+{{- end }}
+{{- end }}
+{{- with $out }}{{ toYaml . }}{{ end }}
 {{- end }}
 
 {{/* global.env flattened like <component>.config; shared by core and jobservice. */}}

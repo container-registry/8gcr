@@ -73,6 +73,8 @@ ARTIFACT_PULL_ASYNC_FLUSH_DURATION: {{ .Values.core.artifactPullAsyncFlushDurati
 GDPR_DELETE_USER: {{ .Values.core.gdpr.deleteUser | quote }}
 GDPR_AUDIT_LOGS: {{ .Values.core.gdpr.auditLogsCompliant | quote }}
 {{- end }}
+{{- /* The trace helpers indent for a data block; chart env is unindented. */}}
+{{- regexReplaceAll "(?m)^  " (include "harbor.trace.envs.core" .) "" | nindent 0 }}
 {{- end }}
 apiVersion: v1
 kind: ConfigMap

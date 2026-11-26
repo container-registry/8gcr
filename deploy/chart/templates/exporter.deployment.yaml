@@ -76,15 +76,14 @@ spec:
                 for $(VAR) expansion. */}}
           env:
             {{- $ovr := include "harbor.exporter.envOverrides" . | fromYaml }}
+            {{- $chart := list }}
             {{- range (include "harbor.exporter.chartEnv" . | fromYamlArray) }}
             {{- if not (hasKey $ovr .name) }}
-{{ toYaml (list .) | indent 12 }}
+            {{- $chart = append $chart . }}
             {{- end }}
             {{- end }}
-            {{- include "harbor.extraCA.env" . | nindent 12 }}
-            {{- with .Values.exporter.extraEnv }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
+            {{- $chart = concat $chart (include "harbor.extraCA.env" . | fromYamlArray) }}
+            {{- include "harbor.envWithExtra" (dict "chart" $chart "extra" .Values.exporter.extraEnv) | nindent 12 }}
           {{- include "harbor.probes" .Values.exporter.probes | nindent 10 }}
           resources:
             {{- toYaml .Values.exporter.resources | nindent 12 }}
