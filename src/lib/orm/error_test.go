@@ -91,6 +91,7 @@ func TestIsViolatingForeignKeyConstraintError_Classification(t *testing.T) {
 		want bool
 	}{
 		{"FK violation 23503", &pgconn.PgError{Code: "23503"}, true},
+		{"RESTRICT FK violation 23001 (PostgreSQL 18+)", &pgconn.PgError{Code: "23001"}, true},
 		{"unique violation 23505 is not FK", &pgconn.PgError{Code: "23505"}, false},
 		{"generic error", errors.New("generic"), false},
 		{"nil error", nil, false},
