@@ -34,7 +34,7 @@
   },
   "packageRules": [
     {
-      "description": "Renovate's gomod artifact update runs `go get -t` before it tidies, and any package that imports the swagger code `task build:gen-apis` generates (gitignored) makes that `go get` exit 1 and the update is abandoned without a go.sum. That rules out src/core, src/server, src/testing and src/pkg (pkg/auditext/event/config decodes into server/v2.0/models), so scope `go get` to the trees that stay clear of it and let `go mod tidy -e` finish the job. Matches every update type, digests included.",
+      "description": "Renovate's gomod artifact update runs `go get -t` before it tidies, and any package that imports the swagger code `task build:gen-apis` generates (gitignored) makes that `go get` exit 1 and the update is abandoned without a go.sum. That rules out src/core, src/server, src/testing and src/pkg (pkg/auditext/event/config decodes into server/v2.0/models), so scope `go get` to the trees that stay clear of it and let `go mod tidy -e` get the branch through the artifact step. postUpgradeTasks then generates the swagger code and runs a plain `go mod tidy` over the whole module, so go.mod and go.sum end up exactly as the CI tidy check expects. The commands must match allowedCommands in .github/workflows/renovate.yml. Matches every update type, digests included.",
       "matchManagers": [
         "gomod"
       ],
@@ -49,7 +49,21 @@
         "./lib/...",
         "./migration/...",
         "./registryctl/..."
-      ]
+      ],
+      "postUpgradeTasks": {
+        "commands": [
+          "go run github.com/go-task/task/v3/cmd/task@v3.49.1 build:gen-apis",
+          "go -C src mod tidy"
+        ],
+        "fileFilters": [
+          "src/go.mod",
+          "src/go.sum"
+        ],
+        "executionMode": "branch",
+        "installTools": {
+          "golang": {}
+        }
+      }
     },
     {
       "description": "Update Go dependencies daily for non-major releases",

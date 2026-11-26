@@ -66,4 +66,6 @@ jobs:
           renovate-version: ${{ steps.versions.outputs.renovate }}
         env:
           RENOVATE_REPOSITORIES: container-registry/8gcr
+          # Only the gomod postUpgradeTasks in .github/renovate.json.
+          RENOVATE_ALLOWED_COMMANDS: '["^go run github\\.com/go-task/task/v3/cmd/task@v[0-9.]+ build:gen-apis$", "^go -C src mod tidy$"]'
           LOG_LEVEL: info
