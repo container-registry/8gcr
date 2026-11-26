@@ -320,6 +320,10 @@ function commercialNotes(tag, tmp, token) {
 function render(ctx) {
   const { tag, chartMode, registry, repo, branch } = ctx;
   const parts = [];
+  const appVersion = chartMode ? chartField(ctx.chartYaml, 'appVersion') : '';
+  if (appVersion) {
+    parts.push(lines(`Installs Harbor [${appVersion}](https://github.com/${repo}/releases/tag/${appVersion}) by default (chart \`appVersion\`).`, ''));
+  }
   if (ctx.declared) {
     // The branch inventory once listed here carried commit subjects, which
     // is how sync merges reached the notes.
@@ -349,13 +353,11 @@ function render(ctx) {
         '',
       ));
     }
-    parts.push(lines('---', ''));
+    if (!chartMode) {
+      parts.push(lines('---', ''));
+    }
   }
   if (chartMode) {
-    const appVersion = chartField(ctx.chartYaml, 'appVersion');
-    if (appVersion) {
-      parts.push(lines(`Default Harbor image tags follow the chart appVersion: \`${appVersion}\`.`));
-    }
     return parts.join('');
   }
   parts.push(lines(
