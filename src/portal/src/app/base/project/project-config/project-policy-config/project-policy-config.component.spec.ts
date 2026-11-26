@@ -299,6 +299,28 @@ describe('ProjectPolicyConfigComponent', () => {
         expect(endpoint.disabled).toBeTrue();
         expect(bandwidth.disabled).toBeFalse();
     });
+    it('should render read-only controls without configuration:update', async () => {
+        spyOn(userPermissionService, 'getPermission').and.returnValue(
+            of(false)
+        );
+        fixture = TestBed.createComponent(TestHostComponent);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const config = fixture.componentInstance.projectPolicyConfigComponent;
+        config.systemAllowlistOrProjectAllowlist = 'false';
+        config.projectAllowlist.items = [{ cve_id: 'CVE-2024-0001' }];
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const el: HTMLElement = fixture.nativeElement;
+        const severity: HTMLSelectElement = el.querySelector('#severity');
+
+        expect(config.hasChangeConfigRole).toBeFalse();
+        expect(severity.disabled).toBeTrue();
+        expect(el.textContent).toContain('CVE-2024-0001');
+        expect(el.querySelector('clr-icon[shape="times-circle"]')).toBeNull();
+        config.deleteItem(0);
+        expect(config.projectAllowlist.items.length).toBe(1);
+    });
     it('should get hasChangeConfigRole', () => {
         expect(
             component.projectPolicyConfigComponent.hasChangeConfigRole

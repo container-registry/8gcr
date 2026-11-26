@@ -62,8 +62,8 @@ SELECT rp.role_id, pp.resource, pp.action, COALESCE(NULLIF(pp.effect, ''), 'allo
 // request in flight keeps answering from the policy it started with and no
 // reader ever sees a half-applied change.
 type Store struct {
-	enf atomic.Pointer[casbin.SyncedCachedEnforcer]
-	db  *sql.DB
+	snap atomic.Pointer[snapshot]
+	db   *sql.DB
 
 	origin  string
 	watcher *Watcher
@@ -73,6 +73,13 @@ type Store struct {
 	// applied is the policy_version this replica last loaded. Resync compares
 	// it against the database so a lost notification cannot strand us.
 	applied atomic.Int64
+}
+
+// snapshot is one loaded policy: the enforcer and the grants it was built
+// from, published together so a reader never mixes two generations.
+type snapshot struct {
+	enf    *casbin.SyncedCachedEnforcer
+	grants []Grant
 }
 
 // Grant is one row of the policy: a role, and one thing it may do.
@@ -103,7 +110,7 @@ func NewInMemory(grants []Grant) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.enf.Store(enf)
+	s.snap.Store(&snapshot{enf: enf, grants: grants})
 	s.generation.Add(1)
 	return s, nil
 }
@@ -125,11 +132,20 @@ func Subject(roleID int64) string { return "role:" + strconv.FormatInt(roleID, 1
 // into it, because only the caller knows the membership is in project 57 and
 // not in project 58.
 func (s *Store) Enforce(subject string, object string, action string) (bool, error) {
-	enf := s.enf.Load()
-	if enf == nil || subject == "" {
+	snap := s.snap.Load()
+	if snap == nil || subject == "" {
 		return false, nil
 	}
-	return enf.Enforce(subject, object, action)
+	return snap.enf.Enforce(subject, object, action)
+}
+
+// Grants returns every project role's grants as last loaded. Callers must not
+// modify the slice.
+func (s *Store) Grants() []Grant {
+	if snap := s.snap.Load(); snap != nil {
+		return snap.grants
+	}
+	return nil
 }
 
 // Generation counts how many times this replica has loaded the policy.
@@ -196,7 +212,7 @@ func (s *Store) Reload(ctx context.Context, reason string) error {
 		return err
 	}
 
-	s.enf.Store(enf)
+	s.snap.Store(&snapshot{enf: enf, grants: grants})
 	s.applied.Store(version)
 	s.generation.Add(1)
 	log.Debugf("policy reloaded (%s): %d grants, generation %d, version %d",

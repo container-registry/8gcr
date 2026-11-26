@@ -330,7 +330,10 @@
                                     [(ngModel)]="
                                         projectPolicy.PreventVulImgSeverity
                                     "
-                                    [disabled]="!projectPolicy.PreventVulImg">
+                                    [disabled]="
+                                        !hasChangeConfigRole ||
+                                        !projectPolicy.PreventVulImg
+                                    ">
                                     <option
                                         *ngFor="let s of severityOptions"
                                         [ngValue]="s.severity">
@@ -551,6 +554,7 @@
                                     >{{ item.cve_id }}</a
                                 >
                                 <a
+                                    *ngIf="hasChangeConfigRole"
                                     class="float-lg-right"
                                     href="javascript:void(0)"
                                     (click)="deleteItem(i)">
