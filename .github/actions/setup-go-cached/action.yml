@@ -2,9 +2,14 @@ name: 'Setup Go with Smart Caching'
 description: 'Uses persistent host cache on self-hosted, actions/cache on GitHub-hosted.'
 
 inputs:
+  go-version:
+    description: 'Exact Go version; takes precedence over go-version-file'
+    required: false
+    default: ''
   go-version-file:
     description: 'Path to go.mod for version detection'
-    required: true
+    required: false
+    default: ''
   go-sum-path:
     description: 'Path to go.sum for cache key hashing'
     required: true
@@ -15,7 +20,8 @@ runs:
     - name: Setup Go toolchain
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
-        go-version-file: ${{ inputs.go-version-file }}
+        go-version: ${{ inputs.go-version }}
+        go-version-file: ${{ inputs.go-version == '' && inputs.go-version-file || '' }}
         cache: false
 
     - name: Check Go toolchain
@@ -34,7 +40,8 @@ runs:
       if: steps.check-go.outputs.missing == 'true'
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
-        go-version-file: ${{ inputs.go-version-file }}
+        go-version: ${{ inputs.go-version }}
+        go-version-file: ${{ inputs.go-version == '' && inputs.go-version-file || '' }}
         cache: false
 
     - name: Verify Go toolchain
