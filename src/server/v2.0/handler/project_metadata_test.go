@@ -196,6 +196,136 @@ func TestValidate(t *testing.T) {
 				}
 			},
 		},
+		{
+			name:      "refresh duration -1",
+			metas:     map[string]string{proModels.ProMetaProxyCacheRefreshDuration: "-1"},
+			expectErr: false,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "refresh duration 1440",
+			metas:     map[string]string{proModels.ProMetaProxyCacheRefreshDuration: "1440"},
+			expectErr: false,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "refresh duration 0 rejected",
+			metas:     map[string]string{proModels.ProMetaProxyCacheRefreshDuration: "0"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "refresh duration -2 rejected",
+			metas:     map[string]string{proModels.ProMetaProxyCacheRefreshDuration: "-2"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "refresh duration not a number",
+			metas:     map[string]string{proModels.ProMetaProxyCacheRefreshDuration: "1d"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "refresh duration on normal project",
+			metas:     map[string]string{proModels.ProMetaProxyCacheRefreshDuration: "60"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 0}, nil
+				}
+			},
+		},
+		{
+			name:      "miss duration -1",
+			metas:     map[string]string{proModels.ProMetaProxyCacheMissDuration: "-1"},
+			expectErr: false,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "miss duration 5",
+			metas:     map[string]string{proModels.ProMetaProxyCacheMissDuration: "5"},
+			expectErr: false,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "miss duration 30",
+			metas:     map[string]string{proModels.ProMetaProxyCacheMissDuration: "30"},
+			expectErr: false,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "miss duration 0 rejected",
+			metas:     map[string]string{proModels.ProMetaProxyCacheMissDuration: "0"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "miss duration 4 rejected",
+			metas:     map[string]string{proModels.ProMetaProxyCacheMissDuration: "4"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "miss duration 31 rejected",
+			metas:     map[string]string{proModels.ProMetaProxyCacheMissDuration: "31"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 1}, nil
+				}
+			},
+		},
+		{
+			name:      "miss duration on normal project",
+			metas:     map[string]string{proModels.ProMetaProxyCacheMissDuration: "10"},
+			expectErr: true,
+			setup: func() {
+				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
+					return &proModels.Project{RegistryID: 0}, nil
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {

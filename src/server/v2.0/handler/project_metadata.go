@@ -183,6 +183,15 @@ func (p *projectMetadataAPI) validate(ctx context.Context, projectID int64, meta
 				WithMessagef("invalid value for %s: %d", key, v)
 		}
 		metas[proModels.ProMetaMaxUpstreamConn] = strconv.FormatInt(v, 10)
+	case proModels.ProMetaProxyCacheRefreshDuration, proModels.ProMetaProxyCacheMissDuration:
+		if err := p.requireProxyProject(ctx, projectID); err != nil {
+			return nil, err
+		}
+		v, err := proModels.ParseProxyCacheDuration(key, value)
+		if err != nil {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error())
+		}
+		metas[key] = strconv.FormatInt(v, 10)
 	case proModels.ProMetaProxyCacheFilterPattern:
 		if err := p.requireProxyProject(ctx, projectID); err != nil {
 			return nil, err

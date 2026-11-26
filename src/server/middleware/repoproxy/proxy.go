@@ -329,10 +329,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
-	if err != nil {
-		return err
-	}
+	remote := proxy.NewLazyRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote, p)
 	if err != nil {
 		return err

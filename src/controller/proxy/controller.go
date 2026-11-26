@@ -163,49 +163,93 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	if a != nil && len(art.Digest) > 0 {
 		return true, nil, nil
 	}
+	// digest pulls never refresh, so a cached original index needs no upstream call
+	if len(art.Digest) > 0 {
+		if ok, man := c.servable(ctx, nil, art, art.Digest); ok {
+			return true, man, nil
+		}
+	}
 
-	remoteRepo := GetRemoteRepo(art)
-	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
-	if err != nil {
-		if errors.IsRateLimitError(err) && a != nil { // if rate limit, use local if it exists, otherwise return error
+	ref := getReference(art)
+	if c.recentMiss(ctx, p, art.Repository, ref) {
+		log.Debugf("upstream answered 404 for %v:%v inside the miss window, not asking again", art.Repository, ref)
+		return c.upstreamNotFound(a, p, art)
+	}
+
+	var lastDigest string
+	if len(art.Digest) == 0 {
+		dig, fresh := c.lastTagCheck(ctx, p, art.Repository, art.Tag)
+		if fresh {
+			if ok, man := c.servable(ctx, a, art, dig); ok {
+				log.Debugf("tag %v:%v checked inside the refresh window, digest %v", art.Repository, art.Tag, dig)
+				return true, man, nil
+			}
+			// the cache no longer holds what the record names, so ask upstream
+		}
+		lastDigest = dig
+	}
+
+	exist, desc, err := remote.ManifestExist(GetRemoteRepo(art), ref) // HEAD
+	switch {
+	case err != nil:
+		// upstream unavailable or rate limited: serve the last recorded digest, else the local copy
+		if lastDigest != "" {
+			if ok, man := c.servable(ctx, a, art, lastDigest); ok {
+				log.Warningf("failed to check %v:%v upstream, serving the cached digest %v: %v", art.Repository, ref, lastDigest, err)
+				return true, man, nil
+			}
+		}
+		if a != nil {
+			log.Warningf("failed to check %v:%v upstream, serving the cached copy: %v", art.Repository, ref, err)
 			return true, nil, nil
 		}
 		return false, nil, err
-	}
-	if !exist || desc == nil {
-		// if not found in remote and local artifact exists, check if we should serve from local cache
-		if a != nil && p != nil && p.ProxyCacheLocalOnNotFound() {
-			log.Infof("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
-			return true, nil, nil
+	case !exist || desc == nil:
+		c.saveMiss(ctx, p, art.Repository, ref)
+		if len(art.Digest) == 0 {
+			c.clearTagCheck(ctx, p, art.Repository, art.Tag)
 		}
-		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
+		return c.upstreamNotFound(a, p, art)
 	}
-
-	var content []byte
-	var contentType string
-	if c.cache == nil {
-		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
-	}
-	// Pass digest to the cache key, digest is more stable than tag, because tag could be updated
+	c.clearMiss(ctx, p, art.Repository, ref)
 	if len(art.Digest) == 0 {
-		art.Digest = string(desc.Digest)
+		c.saveTagCheck(ctx, p, art.Repository, art.Tag, string(desc.Digest))
 	}
-	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, art), &content)
-	if err != nil {
-		if errors.Is(err, cache.ErrNotFound) {
+	ok, man := c.servable(ctx, a, art, string(desc.Digest))
+	return ok, man, nil
+}
+
+// servable reports whether the cache holds dig: the original manifest list, or the local artifact itself
+func (c *controller) servable(ctx context.Context, a *artifact.Artifact, art lib.ArtifactInfo, dig string) (bool, *ManifestList) {
+	if c.cache != nil {
+		art.Digest = dig
+		var content []byte
+		err := c.cache.Fetch(ctx, manifestListKey(art.Repository, art), &content)
+		switch {
+		case err == nil:
+			var contentType string
+			if err := c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, art), &contentType); err != nil {
+				log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
+				return false, nil
+			}
+			log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, art))
+			return true, &ManifestList{content, dig, contentType}
+		case errors.Is(err, cache.ErrNotFound):
 			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, art))
-		} else {
+		default:
 			log.Errorf("Failed to get manifest list from cache, error: %v", err)
 		}
-		return a != nil && string(desc.Digest) == a.Digest, nil, nil
 	}
-	err = c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, art), &contentType)
-	if err != nil {
-		log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
-		return false, nil, nil
+	return a != nil && a.Digest == dig, nil
+}
+
+// upstreamNotFound serves the local copy when the project keeps removed images, otherwise 404
+func (c *controller) upstreamNotFound(a *artifact.Artifact, p *proModels.Project, art lib.ArtifactInfo) (bool, *ManifestList, error) {
+	if a != nil && p != nil && p.ProxyCacheLocalOnNotFound() {
+		log.Infof("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
+		return true, nil, nil
 	}
-	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, art))
-	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
+	return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 }
 
 func manifestListKey(repo string, art lib.ArtifactInfo) string {

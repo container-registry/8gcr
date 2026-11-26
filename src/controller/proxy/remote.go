@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/docker/distribution"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -114,4 +115,64 @@ func (r *remoteHelper) ListTags(repo string) ([]string, error) {
 
 func (r *remoteHelper) ListReferrers(repo string, digest string, rawQuery string) (*ocispec.Index, map[string][]string, error) {
 	return r.registry.ListReferrers(repo, digest, rawQuery)
+}
+
+// NewLazyRemoteHelper builds the remote on its first call, so a pull served from the cache makes no
+// upstream request (the Docker Hub adapter logs in when it is created)
+func NewLazyRemoteHelper(ctx context.Context, regID int64, opts ...Option) RemoteInterface {
+	return &lazyRemote{build: func() (RemoteInterface, error) { return NewRemoteHelper(ctx, regID, opts...) }}
+}
+
+type lazyRemote struct {
+	build  func() (RemoteInterface, error)
+	once   sync.Once
+	remote RemoteInterface
+	err    error
+}
+
+func (l *lazyRemote) get() (RemoteInterface, error) {
+	l.once.Do(func() {
+		l.remote, l.err = l.build()
+	})
+	return l.remote, l.err
+}
+
+func (l *lazyRemote) BlobReader(repo, dig string) (int64, io.ReadCloser, error) {
+	r, err := l.get()
+	if err != nil {
+		return 0, nil, err
+	}
+	return r.BlobReader(repo, dig)
+}
+
+func (l *lazyRemote) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
+	r, err := l.get()
+	if err != nil {
+		return nil, "", err
+	}
+	return r.Manifest(repo, ref)
+}
+
+func (l *lazyRemote) ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error) {
+	r, err := l.get()
+	if err != nil {
+		return false, nil, err
+	}
+	return r.ManifestExist(repo, ref)
+}
+
+func (l *lazyRemote) ListTags(repo string) ([]string, error) {
+	r, err := l.get()
+	if err != nil {
+		return nil, err
+	}
+	return r.ListTags(repo)
+}
+
+func (l *lazyRemote) ListReferrers(repo string, digest string, rawQuery string) (*ocispec.Index, map[string][]string, error) {
+	r, err := l.get()
+	if err != nil {
+		return nil, nil, err
+	}
+	return r.ListReferrers(repo, digest, rawQuery)
 }
