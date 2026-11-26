@@ -30,6 +30,12 @@ type Resolver interface {
 	PreCheck(ctx context.Context, url string, method string) (bool, string)
 }
 
+// Snapshotter is implemented by resolvers that need state from before the
+// request is handled, such as the values an update overwrites.
+type Snapshotter interface {
+	Snapshot(ctx context.Context, payload string) any
+}
+
 var urlResolvers = map[string]Resolver{}
 
 var mu = &sync.Mutex{}
@@ -87,6 +93,8 @@ type Metadata struct {
 	ResourceName string
 	// Payload request payload
 	Payload string
+	// Before is what the resolver's Snapshot captured before the request ran
+	Before any
 }
 
 // Resolve parse the audit information from CommonEventMetadata
@@ -114,6 +122,17 @@ func (c *Metadata) PreCheckMetadata() (bool, string) {
 		return resolver.PreCheck(metadata.Ctx, metadata.RequestURL, metadata.RequestMethod)
 	}
 	return false, ""
+}
+
+// Snapshot lets the matched resolver capture state before the request is handled.
+func (c *Metadata) Snapshot(payload string) {
+	resolver, metadata, ok := c.resolver()
+	if !ok {
+		return
+	}
+	if s, ok := resolver.(Snapshotter); ok {
+		c.Before = s.Snapshot(metadata.Ctx, payload)
+	}
 }
 
 func (c *Metadata) resolver() (Resolver, *Metadata, bool) {
