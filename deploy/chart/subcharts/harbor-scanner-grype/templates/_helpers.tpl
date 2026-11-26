@@ -36,7 +36,7 @@ app.kubernetes.io/component: scanner
 
 {{- define "harbor-scanner-grype.image" -}}
 {{- $registry := (.Values.global).imageRegistry | default .Values.image.registry -}}
-{{- $ref := ternary (printf "%s/%s" $registry .Values.image.repository) .Values.image.repository (ne $registry "") -}}
+{{- $ref := ternary (printf "%s/%s" $registry .Values.image.repository) .Values.image.repository (not (empty $registry)) -}}
 {{- if .Values.image.digest -}}
 {{- printf "%s@%s" $ref .Values.image.digest -}}
 {{- else -}}

@@ -40,8 +40,8 @@ should match the registration Job snapshot:
                   field() { tr -d '\n' < /tmp/body | sed -n "s/.*\"$1\": *\"\([^\"]*\)\".*/\1/p"; }
                   reach() { # method path body; sets code, retrying while Harbor cannot reach the adapter yet
                     n=0
-                    while code=$(call "$@"); do
-                      case "$code" in 5??) ;; *) break ;; esac
+                    while code=$(call "$@" || true); do
+                      case "$code" in 000|5??) ;; *) break ;; esac
                       n=$((n + 1))
                       [ "$n" -lt 24 ] || break
                       echo "adapter not reachable yet (HTTP $code), retrying"

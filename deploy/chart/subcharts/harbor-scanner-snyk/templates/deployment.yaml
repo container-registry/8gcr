@@ -63,6 +63,9 @@ spec:
               value: {{ . | quote }}
             {{- end }}
             {{- range $key, $value := .Values.config }}
+            {{- if has $key (list "SCANNER_API_SERVER_ADDR" "SCANNER_SNYK_CACHE_DIR" "HOME" "SNYK_TOKEN" "SNYK_ORG") }}
+            {{- fail (printf "harbor-scanner-snyk.config.%s is set by the chart and cannot be overridden. Set the token through snyk.existingSecret and the organization through snyk.org." $key) }}
+            {{- end }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}

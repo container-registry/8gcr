@@ -156,6 +156,44 @@ tests:
           pattern: unregister 'Grype' 'http://harbor-harbor-scanner-grype:8080'
         template: templates/scanner-registration.job.yaml
 
+  - it: should refuse a Snyk token in plain config
+    set:
+      harbor-scanner-snyk.enabled: true
+      harbor-scanner-snyk.snyk.existingSecret: snyk-token
+      harbor-scanner-snyk.config.SNYK_TOKEN: plain
+    asserts:
+      - failedTemplate:
+          errorPattern: harbor-scanner-snyk.config.SNYK_TOKEN is set by the chart
+        template: charts/harbor-scanner-snyk/templates/deployment.yaml
+
+  - it: should refuse a config key the Grype chart sets itself
+    set:
+      harbor-scanner-grype.enabled: true
+      harbor-scanner-grype.config.HOME: /tmp
+    asserts:
+      - failedTemplate:
+          errorPattern: harbor-scanner-grype.config.HOME is set by the chart
+        template: charts/harbor-scanner-grype/templates/deployment.yaml
+
+  - it: should leave the image unprefixed when the registry is null
+    set:
+      harbor-scanner-grype.enabled: true
+      harbor-scanner-grype.image.registry: null
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: '^8gcr/harbor-grype-adapter@sha256:'
+        template: charts/harbor-scanner-grype/templates/deployment.yaml
+
+  - it: should retry adapter calls that fail to connect
+    set:
+      harbor-scanner-grype.enabled: true
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].args[0]
+          pattern: while code=\$\(call "\$@" \|\| true\); do\n\s*case "\$code" in 000\|5\?\?\)
+        template: templates/scanner-registration.job.yaml
+
   - it: should fail when Snyk is enabled without a token Secret
     set:
       harbor-scanner-snyk.enabled: true

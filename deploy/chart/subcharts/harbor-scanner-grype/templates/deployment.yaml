@@ -56,6 +56,9 @@ spec:
             - name: HOME
               value: /home/scanner/cache
             {{- range $key, $value := .Values.config }}
+            {{- if has $key (list "SCANNER_API_SERVER_ADDR" "SCANNER_GRYPE_CACHE_DIR" "SCANNER_GRYPE_DB_CACHE_DIR" "HOME") }}
+            {{- fail (printf "harbor-scanner-grype.config.%s is set by the chart and cannot be overridden." $key) }}
+            {{- end }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
