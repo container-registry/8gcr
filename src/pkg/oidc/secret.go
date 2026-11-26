@@ -18,8 +18,11 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
+
+	"golang.org/x/oauth2"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -37,8 +40,20 @@ func (se *SecretVerifyError) Error() string {
 	return fmt.Sprintf("failed to verify the secret: %v", se.cause)
 }
 
+func (se *SecretVerifyError) Unwrap() error {
+	return se.cause
+}
+
 func verifyError(err error) error {
 	return &SecretVerifyError{err}
+}
+
+var errRefreshFailed = errors.New("failed to refresh token")
+
+// IsRefreshFailure reports whether the secret was rejected because its token could not be refreshed, that
+// failure is already logged once per user by VerifySecret.
+func IsRefreshFailure(err error) bool {
+	return errors.Is(err, errRefreshFailed)
 }
 
 // SecretManager is the interface for store and verify the secret
@@ -115,28 +130,78 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	}
 	if !token.Valid() {
 		log.Debug("Refreshing token")
-		token, err = refreshToken(ctx, token)
+		refreshed, err := refreshTokenFn(ctx, token)
 		if err != nil {
-			return nil, fmt.Errorf("failed to refresh token, username: %s, error: %v", username, err)
+			warnRefreshFailure(username, err)
+			// a concurrent request may have rotated the refresh token already, use the token it stored
+			rotated := dm.rotatedToken(ctx, username, oidcUser.Token, key, err)
+			if rotated == nil {
+				return nil, verifyError(fmt.Errorf("%w, username: %s, error: %v", errRefreshFailed, username, err))
+			}
+			refreshed = rotated
+		} else {
+			refreshFailures.Delete(username)
+			// a refresh response may omit the ID token, keep the previous one
+			if refreshed.RawIDToken == "" {
+				refreshed.RawIDToken, refreshed.IDTokenRetained = token.RawIDToken, true
+			}
+			tb, err := json.Marshal(refreshed)
+			if err != nil {
+				return nil, fmt.Errorf("failed to encode the refreshed token, error: %v", err)
+			}
+			encToken, _ := utils.ReversibleEncrypt(string(tb), key)
+			oidcUser.Token = encToken
+			// only updates the token column of the record
+			if err := dm.metaDao.Update(ctx, oidcUser, "token"); err != nil {
+				log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
+			}
+			log.Debug("Token refreshed and persisted")
 		}
-		tb, err := json.Marshal(token)
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode the refreshed token, error: %v", err)
-		}
-		encToken, _ := utils.ReversibleEncrypt(string(tb), key)
-		oidcUser.Token = encToken
-		// only updates the token column of the record
-		err = dm.metaDao.Update(ctx, oidcUser, "token")
-		if err != nil {
-			log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
-		}
-		log.Debug("Token refreshed and persisted")
+		token = refreshed
 	}
-	info, err := UserInfoFromToken(ctx, token)
+	info, err := userInfoFromTokenFn(ctx, token)
 	if err != nil {
 		return nil, verifyError(err)
 	}
 	return info, nil
+}
+
+// rotatedToken re-reads the stored token after an invalid_grant refresh error and returns it when another
+// request has stored a newer, valid token meanwhile.
+func (dm *defaultManager) rotatedToken(ctx context.Context, username, oldToken, key string, refreshErr error) *Token {
+	var re *oauth2.RetrieveError
+	if !errors.As(refreshErr, &re) || re.ErrorCode != "invalid_grant" {
+		return nil
+	}
+	u, err := dm.metaDao.GetByUsername(ctx, username)
+	if err != nil || u == nil || u.Token == oldToken {
+		return nil
+	}
+	tokenStr, err := utils.ReversibleDecrypt(u.Token, key)
+	if err != nil {
+		return nil
+	}
+	t := &Token{}
+	if err := json.Unmarshal([]byte(tokenStr), t); err != nil || !t.Valid() {
+		return nil
+	}
+	return t
+}
+
+var (
+	refreshTokenFn      = refreshToken
+	userInfoFromTokenFn = UserInfoFromToken
+	// refreshFailures records the users whose token refresh failed, so the failure is logged once per user
+	// instead of once per request.  An entry is removed when a refresh for that user succeeds.
+	refreshFailures sync.Map
+)
+
+func warnRefreshFailure(username string, err error) {
+	if _, logged := refreshFailures.LoadOrStore(username, struct{}{}); logged {
+		log.Debugf("Failed to refresh the OIDC token, username: %s, error: %v", username, err)
+		return
+	}
+	log.Warningf("Failed to refresh the OIDC token, the CLI secret is rejected until a refresh succeeds, username: %s, error: %v", username, err)
 }
 
 // VerifySecret calls the manager to verify the secret.

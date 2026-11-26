@@ -77,7 +77,9 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 
 	info, err := oidc.VerifySecret(ctx, username, secret)
 	if err != nil {
-		if u.UserID != 1 { // skip the admin user
+		if oidc.IsRefreshFailure(err) {
+			logger.Debugf("failed to verify secret, username: %s, error: %v", username, err)
+		} else if u.UserID != 1 { // skip the admin user
 			logger.Errorf("failed to verify secret, username: %s, error: %v", username, err)
 		}
 		return nil
