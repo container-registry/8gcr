@@ -20,6 +20,14 @@
 {{- if .default }}{{ $defaults = add1 $defaults }}{{ end }}
 {{- end }}
 {{- end }}
+{{- /* Default candidates after a removal: core's Trivy first, then the chart's own scanners. */}}
+{{- $fallback := list }}
+{{- range $items }}
+{{- if and .stale $reg.prune (not (hasKey $names .name)) (not $fallback) }}
+{{- if eq (include "harbor.trivy.enabled" $) "true" }}{{ $fallback = append $fallback "Trivy" }}{{ end }}
+{{- range $items }}{{ if and .present (not (has .name $fallback)) }}{{ $fallback = append $fallback .name }}{{ end }}{{ end }}
+{{- end }}
+{{- end }}
 {{- if gt (int $defaults) 1 }}
 {{- fail "more than one scanner asks to be the default: set registration.default on a single scanner" }}
 {{- end }}
@@ -177,7 +185,6 @@ spec:
                   code=$(call DELETE "/scanners/$id")
                   [ "$code" = 200 ] || die "removing scanner $1 failed with HTTP $code"
                   echo "scanner $1 removed"
-                  [ "$default" != true ] || echo "warning: scanner $1 was the default; choose a new default scanner in Harbor" >&2
                 fi
               }
               defid=
@@ -187,6 +194,14 @@ spec:
                 [ "$n" -lt 60 ] || die "Harbor core did not answer at ${HARBOR_API}"
                 sleep 5
               done
+              # Rotated credentials must not block the upgrade; registration waits for working ones.
+              code=$(call GET /scanners)
+              case "$code" in
+                401|403)
+                  echo "warning: Harbor rejected user ${HARBOR_USERNAME} (HTTP $code), so no scanner was registered or removed." >&2
+                  echo "warning: set scannerRegistration.existingSecret (and scannerRegistration.username) to credentials that may manage scanners." >&2
+                  exit 0 ;;
+              esac
               {{- range $items }}
               {{- if .present }}
               {{- $body := dict "name" .name "description" .description "url" .url "use_internal_addr" .useInternalAddr "skip_certVerify" .skipCertVerify }}
@@ -206,6 +221,21 @@ spec:
               {{- if and .stale $reg.prune (not (hasKey $names .name)) }}
               unregister {{ .name | squote }} {{ .url | squote }}
               {{- end }}
+              {{- end }}
+              {{- if $fallback }}
+              # Harbor picks no new default when the removed scanner was the default, so hand it to a remaining one.
+              code=$(call GET /scanners)
+              [ "$code" = 200 ] || die "listing scanners failed with HTTP $code"
+              if [ "$(flag is_default)" != true ]; then
+                for cand in{{ range $fallback }} {{ . | squote }}{{ end }}; do
+                  find "$cand"
+                  [ -n "$id" ] && [ "$disabled" != true ] || continue
+                  code=$(call PATCH "/scanners/$id" '{"is_default":true}')
+                  [ "$code" = 200 ] || die "setting scanner $cand as default failed with HTTP $code"
+                  echo "scanner $cand set as default"
+                  break
+                done
+              fi
               {{- end }}
           resources:
             {{- toYaml $reg.resources | nindent 12 }}

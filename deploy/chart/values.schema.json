@@ -943,7 +943,7 @@
             "digest": { "type": "string" }
           }
         },
-        "prune": { "type": "boolean", "default": true },
+        "prune": { "type": "boolean", "default": false },
         "backoffLimit": { "type": "integer", "minimum": 0 },
         "activeDeadlineSeconds": { "type": "integer", "minimum": 1 },
         "podAnnotations": { "type": "object", "additionalProperties": { "type": "string" } },

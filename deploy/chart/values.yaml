@@ -1936,9 +1936,9 @@ harbor-scanner-snyk:
 
 # -- Post-install/post-upgrade Job that registers scanner adapters through
 # `POST /api/v2.0/scanners`. It renders only when a scanner subchart is enabled
-# or `extra` lists an adapter, updates registrations it finds by name, and
-# removes the registration of a scanner subchart that was switched off while
-# another scanner stays registered. Remove the last one by hand.
+# or `extra` lists an adapter, and updates registrations it finds by name. With
+# `prune` it also removes the registration of a scanner subchart that was
+# switched off while another scanner stays registered.
 # @default -- See [values.yaml](values.yaml)
 scannerRegistration:
   # -- Run the registration Job when there is a scanner to register
@@ -1947,7 +1947,8 @@ scannerRegistration:
   username: admin
   # -- Existing Secret with that user's password. Empty uses the chart's admin
   # password (`existingSecretAdminPassword` or `harborAdminPassword`), so set it
-  # once the admin password is rotated in the UI
+  # once the admin password is rotated in the UI. While Harbor rejects the
+  # credentials, the Job logs a warning and skips registration
   existingSecret: ""
   # -- Key of the password inside `existingSecret`
   existingSecretPasswordKey: password
@@ -1969,8 +1970,9 @@ scannerRegistration:
   # -- Retries before the Job, and with it the release, is marked failed
   backoffLimit: 6
   # -- Remove the registration of a disabled scanner subchart. Harbor drops
-  # that scanner's stored vulnerability records with it
-  prune: true
+  # that scanner's stored vulnerability records with it. When the removed
+  # scanner was the default, Trivy or another chart scanner becomes the default
+  prune: false
   # -- Deadline for the whole Job in seconds. Keep it below the Helm
   # `--timeout` (5m by default), or Helm gives up while the Job still runs
   activeDeadlineSeconds: 270

@@ -70,6 +70,7 @@ tests:
   - it: should register Grype and remove a disabled Snyk
     set:
       harbor-scanner-grype.enabled: true
+      scannerRegistration.prune: true
     asserts:
       - isKind:
           of: Job
@@ -129,6 +130,7 @@ tests:
       harbor-scanner-snyk.enabled: true
       harbor-scanner-snyk.snyk.existingSecret: snyk-token
       harbor-scanner-snyk.snyk.org: acme
+      scannerRegistration.prune: true
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
@@ -277,14 +279,67 @@ tests:
           pattern: harbor-exporter,harbor-harbor-scanner-grype,harbor-harbor-scanner-grype.NAMESPACE,harbor-harbor-scanner-grype.NAMESPACE.svc,harbor-harbor-scanner-snyk,
         template: templates/core.configmap.yaml
 
-  - it: should keep a disabled scanner registered when pruning is off
+  - it: should keep a disabled scanner registered by default
     set:
       harbor-scanner-grype.enabled: true
-      scannerRegistration.prune: false
     asserts:
       - notMatchRegex:
           path: spec.template.spec.containers[0].args[0]
-          pattern: unregister 'Snyk'
+          pattern: unregister '
+        template: templates/scanner-registration.job.yaml
+      - notMatchRegex:
+          path: spec.template.spec.containers[0].args[0]
+          pattern: for cand in
+        template: templates/scanner-registration.job.yaml
+
+  - it: should hand the default to Trivy first after pruning a scanner
+    set:
+      trivy.enabled: true
+      harbor-scanner-grype.enabled: true
+      scannerRegistration.prune: true
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].args[0]
+          pattern: unregister 'Snyk' [^\n]*\n[^\n]*\n\s*code=\$\(call GET /scanners\)\n[^\n]*\n\s*if \[ "\$\(flag is_default\)" != true \]; then\n\s*for cand in 'Trivy' 'Grype'; do\n
+        template: templates/scanner-registration.job.yaml
+      - matchRegex:
+          path: spec.template.spec.containers[0].args[0]
+          pattern: code=\$\(call PATCH "/scanners/\$id" '\{"is_default":true\}'\)\n[^\n]*\n\s*echo "scanner \$cand set as default"\n\s*break
+        template: templates/scanner-registration.job.yaml
+
+  - it: should hand the default to a chart scanner when Trivy is off
+    set:
+      trivy.enabled: false
+      harbor-scanner-grype.enabled: true
+      scannerRegistration.prune: true
+      scannerRegistration.extra:
+        - name: Clair
+          url: http://clair:8080
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].args[0]
+          pattern: for cand in 'Grype' 'Clair'; do
+        template: templates/scanner-registration.job.yaml
+
+  - it: should skip the default handover when nothing is pruned
+    set:
+      harbor-scanner-grype.enabled: true
+      harbor-scanner-snyk.enabled: true
+      harbor-scanner-snyk.snyk.existingSecret: snyk-token
+      scannerRegistration.prune: true
+    asserts:
+      - notMatchRegex:
+          path: spec.template.spec.containers[0].args[0]
+          pattern: for cand in
+        template: templates/scanner-registration.job.yaml
+
+  - it: should skip registration and succeed when Harbor rejects the credentials
+    set:
+      harbor-scanner-grype.enabled: true
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].args[0]
+          pattern: code=\$\(call GET /scanners\)\n\s*case "\$code" in\n\s*401\|403\)\n[^\n]*\n[^\n]*scannerRegistration\.existingSecret[^\n]*\n\s*exit 0 ;;\n\s*esac\n\s*register 'Grype'
         template: templates/scanner-registration.job.yaml
 
   - it: should not remove the registration of a disabled scanner with its own URL
@@ -598,6 +653,7 @@ tests:
 
   - it: should move the default after every registration and before removals
     set:
+      scannerRegistration.prune: true
       harbor-scanner-grype.enabled: true
       harbor-scanner-grype.registration.default: true
       scannerRegistration.extra:
@@ -611,6 +667,7 @@ tests:
 
   - it: should register before it removes
     set:
+      scannerRegistration.prune: true
       harbor-scanner-snyk.enabled: true
       harbor-scanner-snyk.snyk.existingSecret: snyk-token
     asserts:
