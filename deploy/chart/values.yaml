@@ -471,7 +471,9 @@ core:
     # metrics: []   # raw HPAv2 metric specs (external / object / pods)
     # behavior: {}  # scaleUp / scaleDown stabilization windows
 
-  # -- Core resource requests and limits
+  # -- Core resource requests and limits. Core sets its Go soft memory limit
+  # (GOMEMLIMIT) to 90% of limits.memory at startup; set GOMEMLIMIT in
+  # core.extraEnv to override it.
   resources:
     requests:
       cpu: 100m
@@ -1254,7 +1256,9 @@ jobservice:
     # metrics: []
     # behavior: {}
 
-  # -- Jobservice resource requests and limits
+  # -- Jobservice resource requests and limits. Jobservice sets its Go soft
+  # memory limit (GOMEMLIMIT) to 90% of limits.memory at startup; set
+  # GOMEMLIMIT in jobservice.extraEnv to override it.
   resources:
     requests:
       cpu: 100m
