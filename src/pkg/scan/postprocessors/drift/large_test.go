@@ -117,6 +117,7 @@ func TestDriftLarge(t *testing.T) {
 	}
 	baseline["explain_current_lookup"] = explainLookup(ctx, reg.UUID)
 	baseline["explain_key_lookup"] = explainKeyLookup(ctx, reg.UUID)
+	baseline["cleanup_backlog"] = cleanupBacklog(t, ctx, reg.UUID)
 
 	writeJSON(t, filepath.Join("testdata", "baseline", "s19-"+baselineName()+".json"), baseline)
 	got := encode(t, golden)
@@ -310,6 +311,51 @@ func explainLookup(ctx context.Context, scannerUUID string) any {
 		lines = append(lines, line)
 	}
 	return lines
+}
+
+// cleanupBacklog times a cleanup pass while every preloaded record is still linked, the daily
+// case of a pass that looks at the whole table and deletes nothing, then drops the preloaded
+// report, which leaves its 200k records unlinked, and times the pass over that backlog.
+func cleanupBacklog(t *testing.T, ctx context.Context, scannerUUID string) any {
+	idle := cleanupPass(t, ctx)
+	require.Zero(t, idle["deleted"], "a pass deleted linked records")
+	require.NoError(t, report.Mgr.DeleteByDigests(ctx, preloadDigest))
+	backlog := cleanupPass(t, ctx)
+	o, err := orm.FromContext(ctx)
+	require.NoError(t, err)
+	var left int64
+	require.NoError(t, o.Raw(`SELECT count(*) FROM vulnerability_record v WHERE registration_uuid = ?
+AND NOT EXISTS (SELECT 1 FROM report_vulnerability_record r WHERE r.vuln_record_id = v.id)`, scannerUUID).QueryRow(&left))
+	require.Zero(t, left, "unlinked records left after the cleanup")
+	return map[string]any{"nothing_to_delete": idle, "backlog": backlog}
+}
+
+// cleanupPass runs the cleanup's batches over the whole table, as the job does.
+func cleanupPass(t *testing.T, ctx context.Context) map[string]any {
+	dao := scan.NewVulnerabilityRecordDao()
+	const batch = 5000
+	var cursor, total int64
+	var batches int
+	var slowest time.Duration
+	start := time.Now()
+	for {
+		t0 := time.Now()
+		deleted, last, err := dao.DeleteUnlinked(ctx, cursor, batch)
+		require.NoError(t, err)
+		slowest = max(slowest, time.Since(t0))
+		batches++
+		total += deleted
+		if last == 0 {
+			break
+		}
+		cursor = last
+	}
+	return map[string]any{
+		"deleted":          total,
+		"batches":          batches,
+		"slowest_batch_ms": slowest.Milliseconds(),
+		"total_ms":         time.Since(start).Milliseconds(),
+	}
 }
 
 // explainKeyLookup plans one chunk of the lookup by full key that ListByKeys sends.

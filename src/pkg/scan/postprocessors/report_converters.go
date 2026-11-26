@@ -127,6 +127,9 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 
 	// One transaction: a failed conversion leaves the records and the report's links as they were.
 	convert := func(ctx context.Context) error {
+		if err := c.dao.LockForConversion(ctx); err != nil {
+			return err
+		}
 		// Only the records this report needs, matched on the full key. Looking them up by CVE id
 		// alone returned every package and version ever stored for those CVEs (#478).
 		existing, err := c.dao.ListByKeys(ctx, registrationUUID, keys)

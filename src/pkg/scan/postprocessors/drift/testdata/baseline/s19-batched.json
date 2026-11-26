@@ -1,75 +1,82 @@
 {
+  "cleanup_backlog": {
+    "backlog": {
+      "batches": 43,
+      "deleted": 200000,
+      "slowest_batch_ms": 221,
+      "total_ms": 5323
+    },
+    "nothing_to_delete": {
+      "batches": 43,
+      "deleted": 0,
+      "slowest_batch_ms": 197,
+      "total_ms": 4246
+    }
+  },
   "explain_current_lookup": [
-    "Seq Scan on vulnerability_record  (cost=20.00..17779.40 rows=133388 width=664) (actual time=3.817..188.371 rows=208000.00 loops=1)",
-    "  Filter: ((registration_uuid = '9997649c-b97f-4d0e-8146-693ca8e02aef'::text) AND (cve_id = ANY ('{CVE-2026-000000,CVE-2026-000001,CVE-2026-000002,CVE-2026-000003,CVE-2026-000004,CVE-2026-000005,CVE-2...",
-    "  Buffers: shared hit=10482 read=3585",
+    "Seq Scan on vulnerability_record  (cost=20.00..17788.55 rows=133607 width=664) (actual time=6.891..128.034 rows=208000.00 loops=1)",
+    "  Filter: ((registration_uuid = '8c39a346-c34d-40a0-bec6-834dfc9f11dc'::text) AND (cve_id = ANY ('{CVE-2026-000000,CVE-2026-000001,CVE-2026-000002,CVE-2026-000003,CVE-2026-000004,CVE-2026-000005,CVE-2...",
+    "  Buffers: shared hit=10504 read=3572",
     "Planning:",
-    "  Buffers: shared hit=3",
-    "Planning Time: 25.927 ms",
-    "Execution Time: 214.720 ms"
+    "  Buffers: shared hit=2 read=1",
+    "Planning Time: 5.704 ms",
+    "Execution Time: 149.544 ms"
   ],
   "explain_key_lookup": [
-    "Nested Loop  (cost=0.42..8021.50 rows=1 width=73) (actual time=2.291..8.202 rows=1000.00 loops=1)",
+    "Nested Loop  (cost=0.42..8021.50 rows=1 width=73) (actual time=0.034..6.135 rows=1000.00 loops=1)",
     "  Buffers: shared hit=3384",
-    "  ->  Values Scan on \"*VALUES*\"  (cost=0.00..12.50 rows=1000 width=96) (actual time=0.004..0.378 rows=1000.00 loops=1)",
-    "  ->  Index Scan using vulnerability_record_cve_id_registration_uuid_package_packa_key on vulnerability_record v  (cost=0.42..8.01 rows=1 width=73) (actual time=0.007..0.007 rows=1.00 loops=1000)",
-    "        Index Cond: ((cve_id = \"*VALUES*\".column1) AND (registration_uuid = '9997649c-b97f-4d0e-8146-693ca8e02aef'::text) AND (package = \"*VALUES*\".column2) AND (package_version = \"*VALUES*\".column3))",
+    "  ->  Values Scan on \"*VALUES*\"  (cost=0.00..12.50 rows=1000 width=96) (actual time=0.002..0.204 rows=1000.00 loops=1)",
+    "  ->  Index Scan using vulnerability_record_cve_id_registration_uuid_package_packa_key on vulnerability_record v  (cost=0.42..8.01 rows=1 width=73) (actual time=0.006..0.006 rows=1.00 loops=1000)",
+    "        Index Cond: ((cve_id = \"*VALUES*\".column1) AND (registration_uuid = '8c39a346-c34d-40a0-bec6-834dfc9f11dc'::text) AND (package = \"*VALUES*\".column2) AND (package_version = \"*VALUES*\".column3))",
     "        Index Searches: 1000",
     "        Buffers: shared hit=3284",
-    "Planning Time: 1.740 ms",
-    "Execution Time: 8.740 ms"
+    "Planning Time: 0.569 ms",
+    "Execution Time: 6.265 ms"
   ],
   "first-scan": {
-    "peak_heap_bytes": 11023456,
+    "peak_heap_bytes": 6177176,
     "raw_report_size": 6174332,
     "statements": {
       "top": [
         {
-          "blocks": "225915",
-          "calls": "8",
-          "exec_ms": "389.6",
-          "query": "INSERT INTO vulnerability_record (cve_id, registration_uuid, package, package_version, package_type, severity, status, fixed_version, urls, cvss_score_v3, cvss_",
+          "blocks": "152938",
+          "calls": "80",
+          "exec_ms": "595.0",
+          "query": "INSERT INTO \"report_vulnerability_record\" (\"report_uuid\", \"vuln_record_id\") VALUES ( $1 , $2 ), ( $3 , $4 ), ( $5 , $6 ), ( $7 , $8 ), ( $9 , $10 ), ( $11 , $12",
           "rows": "8000"
         },
         {
-          "blocks": "160581",
-          "calls": "80",
-          "exec_ms": "281.8",
-          "query": "INSERT INTO \"report_vulnerability_record\" (\"report_uuid\", \"vuln_record_id\") VALUES ( $1 , $2 ), ( $3 , $4 ), ( $5 , $6 ), ( $7 , $8 ), ( $9 , $10 ), ( $11 , $12",
+          "blocks": "209888",
+          "calls": "8",
+          "exec_ms": "486.0",
+          "query": "INSERT INTO vulnerability_record (cve_id, registration_uuid, package, package_version, package_type, severity, status, fixed_version, urls, cvss_score_v3, cvss_",
           "rows": "8000"
         },
         {
           "blocks": "24000",
           "calls": "8",
-          "exec_ms": "134.5",
+          "exec_ms": "163.1",
           "query": "SELECT v.id, v.cve_id, v.package, v.package_version, v.severity, COALESCE(v.status, $1) AS status FROM vulnerability_record v JOIN (VALUES ( $2 , $3 , $4 ), ( $",
           "rows": "0"
         },
         {
-          "blocks": "4",
+          "blocks": "2",
           "calls": "1",
-          "exec_ms": "0.6",
+          "exec_ms": "4.7",
           "query": "SELECT T0.\"id\", T0.\"uuid\", T0.\"digest\", T0.\"registration_uuid\", T0.\"mime_type\", T0.\"report\", T0.\"critical_cnt\", T0.\"high_cnt\", T0.\"medium_cnt\", T0.\"low_cnt\", T0",
-          "rows": "1"
-        },
-        {
-          "blocks": "13",
-          "calls": "1",
-          "exec_ms": "0.1",
-          "query": "UPDATE \"scan_report\" SET \"report\" = $1 WHERE \"id\" IN ( SELECT T0.\"id\" FROM \"scan_report\" T0 WHERE T0.\"uuid\" = $2 )",
           "rows": "1"
         },
         {
           "blocks": "7",
           "calls": "1",
           "exec_ms": "0.1",
-          "query": "UPDATE \"scan_report\" SET \"critical_cnt\" = $1 , \"high_cnt\" = $2 , \"medium_cnt\" = $3 , \"low_cnt\" = $4 , \"none_cnt\" = $5 , \"unknown_cnt\" = $6 , \"fixable_cnt\" = $7 ",
+          "query": "UPDATE \"scan_report\" SET \"report\" = $1 WHERE \"id\" IN ( SELECT T0.\"id\" FROM \"scan_report\" T0 WHERE T0.\"uuid\" = $2 )",
           "rows": "1"
         },
         {
           "blocks": "3",
           "calls": "1",
-          "exec_ms": "0.0",
+          "exec_ms": "0.1",
           "query": "SELECT vuln_record_id FROM report_vulnerability_record WHERE report_uuid = $1",
           "rows": "0"
         },
@@ -77,166 +84,173 @@
           "blocks": "0",
           "calls": "1",
           "exec_ms": "0.0",
-          "query": "SELECT pg_advisory_xact_lock(hashtextextended( $1 , $2))",
+          "query": "SELECT pg_advisory_xact_lock_shared(hashtextextended( $1 , $2))",
+          "rows": "1"
+        },
+        {
+          "blocks": "5",
+          "calls": "1",
+          "exec_ms": "0.0",
+          "query": "UPDATE \"scan_report\" SET \"critical_cnt\" = $1 , \"high_cnt\" = $2 , \"medium_cnt\" = $3 , \"low_cnt\" = $4 , \"none_cnt\" = $5 , \"unknown_cnt\" = $6 , \"fixable_cnt\" = $7 ",
           "rows": "1"
         }
       ],
       "total": [
         {
-          "calls": "105",
-          "exec_ms": "806.7",
-          "rows": "16004"
+          "calls": "106",
+          "exec_ms": "1249.0",
+          "rows": "16005"
         }
       ]
     },
-    "wall_ms": 2155
+    "wall_ms": 4079
   },
   "go": "go1.27.4",
   "identical-rescan": {
-    "peak_heap_bytes": 7284136,
+    "peak_heap_bytes": 6694880,
     "raw_report_size": 6174332,
     "statements": {
       "top": [
         {
-          "blocks": "18209",
+          "blocks": "18225",
           "calls": "1",
-          "exec_ms": "288.6",
+          "exec_ms": "165.8",
           "query": "SELECT count(*) FROM vulnerability_record v WHERE registration_uuid = $1 AND NOT EXISTS (SELECT $2 FROM report_vulnerability_record r WHERE r.vuln_record_id = v",
           "rows": "1"
         },
         {
-          "blocks": "173",
+          "blocks": "172",
           "calls": "1",
-          "exec_ms": "175.4",
+          "exec_ms": "132.4",
           "query": "SELECT count(*) FROM vulnerability_record WHERE registration_uuid = $1",
           "rows": "1"
         },
         {
-          "blocks": "24675",
+          "blocks": "24672",
           "calls": "8",
-          "exec_ms": "135.9",
+          "exec_ms": "84.7",
           "query": "SELECT v.id, v.cve_id, v.package, v.package_version, v.severity, COALESCE(v.status, $1) AS status FROM vulnerability_record v JOIN (VALUES ( $2 , $3 , $4 ), ( $",
           "rows": "8000"
         },
         {
-          "blocks": "25652",
+          "blocks": "25667",
           "calls": "1",
-          "exec_ms": "17.3",
+          "exec_ms": "19.0",
           "query": "select vulnerability_record.* from vulnerability_record inner join report_vulnerability_record on vulnerability_record.id = report_vulnerability_record.vuln_rec",
           "rows": "8000"
         },
         {
-          "blocks": "149",
+          "blocks": "164",
           "calls": "1",
-          "exec_ms": "8.2",
+          "exec_ms": "1.8",
           "query": "SELECT vuln_record_id FROM report_vulnerability_record WHERE report_uuid = $1",
           "rows": "8000"
+        },
+        {
+          "blocks": "4",
+          "calls": "2",
+          "exec_ms": "0.0",
+          "query": "SELECT T0.\"id\", T0.\"uuid\", T0.\"digest\", T0.\"registration_uuid\", T0.\"mime_type\", T0.\"report\", T0.\"critical_cnt\", T0.\"high_cnt\", T0.\"medium_cnt\", T0.\"low_cnt\", T0",
+          "rows": "2"
         },
         {
           "blocks": "7",
           "calls": "1",
-          "exec_ms": "0.1",
-          "query": "UPDATE \"scan_report\" SET \"critical_cnt\" = $1 , \"high_cnt\" = $2 , \"medium_cnt\" = $3 , \"low_cnt\" = $4 , \"none_cnt\" = $5 , \"unknown_cnt\" = $6 , \"fixable_cnt\" = $7 ",
-          "rows": "1"
-        },
-        {
-          "blocks": "0",
-          "calls": "1",
-          "exec_ms": "0.1",
-          "query": "SELECT pg_advisory_xact_lock(hashtextextended( $1 , $2))",
-          "rows": "1"
-        },
-        {
-          "blocks": "8",
-          "calls": "2",
-          "exec_ms": "0.1",
-          "query": "SELECT T0.\"id\", T0.\"uuid\", T0.\"digest\", T0.\"registration_uuid\", T0.\"mime_type\", T0.\"report\", T0.\"critical_cnt\", T0.\"high_cnt\", T0.\"medium_cnt\", T0.\"low_cnt\", T0",
-          "rows": "2"
-        }
-      ],
-      "total": [
-        {
-          "calls": "21",
-          "exec_ms": "625.9",
-          "rows": "24007"
-        }
-      ]
-    },
-    "wall_ms": 479
-  },
-  "preloaded_records": 200000,
-  "recorded_at": "2026-11-25T22:23:08Z",
-  "report_vulnerabilities": 8000,
-  "rescan-10pct-severity-change": {
-    "peak_heap_bytes": 6704640,
-    "raw_report_size": 6177532,
-    "statements": {
-      "top": [
-        {
-          "blocks": "16146",
-          "calls": "1",
-          "exec_ms": "167.7",
-          "query": "SELECT count(*) FROM vulnerability_record v WHERE registration_uuid = $1 AND NOT EXISTS (SELECT $2 FROM report_vulnerability_record r WHERE r.vuln_record_id = v",
-          "rows": "1"
-        },
-        {
-          "blocks": "24675",
-          "calls": "8",
-          "exec_ms": "68.7",
-          "query": "SELECT v.id, v.cve_id, v.package, v.package_version, v.severity, COALESCE(v.status, $1) AS status FROM vulnerability_record v JOIN (VALUES ( $2 , $3 , $4 ), ( $",
-          "rows": "8000"
-        },
-        {
-          "blocks": "23092",
-          "calls": "1",
-          "exec_ms": "49.2",
-          "query": "UPDATE vulnerability_record v SET severity = x.severity, status = x.status, fixed_version = x.fixed_version, cvss_score_v3 = x.cvss_score_v3 FROM (VALUES ( $1 :",
-          "rows": "800"
-        },
-        {
-          "blocks": "24817",
-          "calls": "1",
-          "exec_ms": "20.6",
-          "query": "select vulnerability_record.* from vulnerability_record inner join report_vulnerability_record on vulnerability_record.id = report_vulnerability_record.vuln_rec",
-          "rows": "8000"
-        },
-        {
-          "blocks": "174",
-          "calls": "1",
-          "exec_ms": "14.0",
-          "query": "SELECT count(*) FROM vulnerability_record WHERE registration_uuid = $1",
-          "rows": "1"
-        },
-        {
-          "blocks": "149",
-          "calls": "1",
-          "exec_ms": "3.5",
-          "query": "SELECT vuln_record_id FROM report_vulnerability_record WHERE report_uuid = $1",
-          "rows": "8000"
-        },
-        {
-          "blocks": "8",
-          "calls": "2",
-          "exec_ms": "0.2",
-          "query": "SELECT T0.\"id\", T0.\"uuid\", T0.\"digest\", T0.\"registration_uuid\", T0.\"mime_type\", T0.\"report\", T0.\"critical_cnt\", T0.\"high_cnt\", T0.\"medium_cnt\", T0.\"low_cnt\", T0",
-          "rows": "2"
-        },
-        {
-          "blocks": "13",
-          "calls": "1",
-          "exec_ms": "0.1",
+          "exec_ms": "0.0",
           "query": "UPDATE \"scan_report\" SET \"report\" = $1 WHERE \"id\" IN ( SELECT T0.\"id\" FROM \"scan_report\" T0 WHERE T0.\"uuid\" = $2 )",
+          "rows": "1"
+        },
+        {
+          "blocks": "5",
+          "calls": "1",
+          "exec_ms": "0.0",
+          "query": "UPDATE \"scan_report\" SET \"critical_cnt\" = $1 , \"high_cnt\" = $2 , \"medium_cnt\" = $3 , \"low_cnt\" = $4 , \"none_cnt\" = $5 , \"unknown_cnt\" = $6 , \"fixable_cnt\" = $7 ",
           "rows": "1"
         }
       ],
       "total": [
         {
           "calls": "22",
-          "exec_ms": "324.1",
-          "rows": "24807"
+          "exec_ms": "403.9",
+          "rows": "24008"
         }
       ]
     },
-    "wall_ms": 629
+    "wall_ms": 573
+  },
+  "preloaded_records": 200000,
+  "recorded_at": "2026-11-26T17:09:48Z",
+  "report_vulnerabilities": 8000,
+  "rescan-10pct-severity-change": {
+    "peak_heap_bytes": 8719280,
+    "raw_report_size": 6177532,
+    "statements": {
+      "top": [
+        {
+          "blocks": "16162",
+          "calls": "1",
+          "exec_ms": "120.2",
+          "query": "SELECT count(*) FROM vulnerability_record v WHERE registration_uuid = $1 AND NOT EXISTS (SELECT $2 FROM report_vulnerability_record r WHERE r.vuln_record_id = v",
+          "rows": "1"
+        },
+        {
+          "blocks": "24672",
+          "calls": "8",
+          "exec_ms": "53.1",
+          "query": "SELECT v.id, v.cve_id, v.package, v.package_version, v.severity, COALESCE(v.status, $1) AS status FROM vulnerability_record v JOIN (VALUES ( $2 , $3 , $4 ), ( $",
+          "rows": "8000"
+        },
+        {
+          "blocks": "175",
+          "calls": "1",
+          "exec_ms": "49.7",
+          "query": "SELECT count(*) FROM vulnerability_record WHERE registration_uuid = $1",
+          "rows": "1"
+        },
+        {
+          "blocks": "23099",
+          "calls": "1",
+          "exec_ms": "24.6",
+          "query": "UPDATE vulnerability_record v SET severity = x.severity, status = x.status, fixed_version = x.fixed_version, cvss_score_v3 = x.cvss_score_v3 FROM (VALUES ( $1 :",
+          "rows": "800"
+        },
+        {
+          "blocks": "24831",
+          "calls": "1",
+          "exec_ms": "21.3",
+          "query": "select vulnerability_record.* from vulnerability_record inner join report_vulnerability_record on vulnerability_record.id = report_vulnerability_record.vuln_rec",
+          "rows": "8000"
+        },
+        {
+          "blocks": "164",
+          "calls": "1",
+          "exec_ms": "6.1",
+          "query": "SELECT vuln_record_id FROM report_vulnerability_record WHERE report_uuid = $1",
+          "rows": "8000"
+        },
+        {
+          "blocks": "2295",
+          "calls": "1",
+          "exec_ms": "1.0",
+          "query": "SELECT id FROM vulnerability_record WHERE id IN ($1 /*, ... */) ORDER BY id FOR UPDATE",
+          "rows": "800"
+        },
+        {
+          "blocks": "4",
+          "calls": "2",
+          "exec_ms": "0.2",
+          "query": "SELECT T0.\"id\", T0.\"uuid\", T0.\"digest\", T0.\"registration_uuid\", T0.\"mime_type\", T0.\"report\", T0.\"critical_cnt\", T0.\"high_cnt\", T0.\"medium_cnt\", T0.\"low_cnt\", T0",
+          "rows": "2"
+        }
+      ],
+      "total": [
+        {
+          "calls": "24",
+          "exec_ms": "276.6",
+          "rows": "25608"
+        }
+      ]
+    },
+    "wall_ms": 859
   }
 }

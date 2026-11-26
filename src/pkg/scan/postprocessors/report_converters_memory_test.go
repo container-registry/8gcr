@@ -62,6 +62,8 @@ func (d *fakeVulnRecordDao) InsertBatch(_ context.Context, records []*scan.Vulne
 
 func (d *fakeVulnRecordDao) UpdateBatch(_ context.Context, _ []*scan.RecordUpdate) error { return nil }
 
+func (d *fakeVulnRecordDao) LockForConversion(_ context.Context) error { return nil }
+
 func (d *fakeVulnRecordDao) SyncForReport(_ context.Context, _ string, _ ...int64) error { return nil }
 
 type fakeReportMgr struct {
