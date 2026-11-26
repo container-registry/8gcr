@@ -2147,6 +2147,11 @@
       REGISTRY_URL: http://harbor-registry:5000
       REPLICATION_ADAPTER_WHITELIST: ali-acr,aws-ecr,azure-acr,docker-hub,docker-registry,github-ghcr,google-gcr,harbor,huawei-SWR,huggingface,jfrog-artifactory,tencent-tcr,volcengine-cr,sftp,harbor-satellite
       TOKEN_SERVICE_URL: http://harbor-core:80/service/token
+      TRACE_ENABLED: "true"
+      TRACE_JAEGER_ENDPOINT: http://jaeger-collector.observability:14268/api/traces
+      TRACE_NAMESPACE: harbor-traces
+      TRACE_SAMPLE_RATE: "0.5"
+      TRACE_SERVICE_NAME: harbor-core
       TRIVY_ADAPTER_URL: http://harbor-trivy:8080
       WITH_TRIVY: "false"
       app.conf: |

@@ -47,6 +47,32 @@
   value: {{ .Values.trivy.insecure | default false | quote }}
 {{- end }}
 
+{{- define "harbor.trivy.pinnedEnv" -}}
+- name: SCANNER_API_SERVER_ADDR
+  value: ":8080"
+{{- /* REDIS_PASSWORD must precede the URL envs: Kubernetes
+      expands $(REDIS_PASSWORD) only in env values defined
+      later in the list — and never inside Secret values,
+      which is why these are NOT secretKeyRefs. The URL
+      itself is not sensitive; the password stays in a
+      Secret. */}}
+{{- $extAuth := and (not .Values.valkey.enabled) (or .Values.externalRedis.existingSecret .Values.externalRedis.password) -}}
+{{- if or .Values.valkey.auth.enabled $extAuth }}
+- name: REDIS_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "harbor.redis.secretName" . }}
+      key: {{ include "harbor.redis.secretKey" . }}
+{{- end }}
+- name: "SCANNER_REDIS_URL"
+  value: {{ include "harbor.redis.url.trivy" . | quote }}
+- name: "SCANNER_STORE_REDIS_URL"
+  value: {{ include "harbor.redis.url.trivy" . | quote }}
+- name: "SCANNER_JOB_QUEUE_REDIS_URL"
+  value: {{ include "harbor.redis.url.trivy" . | quote }}
+{{- include "harbor.extraCA.env" . | nindent 0 }}
+{{- end }}
+
 {{- if eq (include "harbor.trivy.builtin" .) "true" }}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -119,37 +145,14 @@ spec:
             {{- /* A token in trivy.config never displaced the Secret-backed one; keep it that way. */}}
             {{- $_ := unset $cfgEnv "SCANNER_TRIVY_GITHUB_TOKEN" }}
             {{- $ovr := merge $cfgEnv (include "harbor.toEnvVars" (dict "values" (.Values.trivy.secret | default dict) "prefix" "" "isSecret" false) | fromYaml) }}
+            {{- $chart := list }}
             {{- range (include "harbor.trivy.chartEnv" . | fromYamlArray) }}
             {{- if not (hasKey $ovr .name) }}
-{{ toYaml (list .) | indent 12 }}
+            {{- $chart = append $chart . }}
             {{- end }}
             {{- end }}
-            - name: SCANNER_API_SERVER_ADDR
-              value: ":8080"
-            {{- /* REDIS_PASSWORD must precede the URL envs: Kubernetes
-                  expands $(REDIS_PASSWORD) only in env values defined
-                  later in the list — and never inside Secret values,
-                  which is why these are NOT secretKeyRefs. The URL
-                  itself is not sensitive; the password stays in a
-                  Secret. */}}
-            {{- $extAuth := and (not .Values.valkey.enabled) (or .Values.externalRedis.existingSecret .Values.externalRedis.password) -}}
-            {{- if or .Values.valkey.auth.enabled $extAuth }}
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "harbor.redis.secretName" . }}
-                  key: {{ include "harbor.redis.secretKey" . }}
-            {{- end }}
-            - name: "SCANNER_REDIS_URL"
-              value: {{ include "harbor.redis.url.trivy" . | quote }}
-            - name: "SCANNER_STORE_REDIS_URL"
-              value: {{ include "harbor.redis.url.trivy" . | quote }}
-            - name: "SCANNER_JOB_QUEUE_REDIS_URL"
-              value: {{ include "harbor.redis.url.trivy" . | quote }}
-            {{- include "harbor.extraCA.env" . | nindent 12 }}
-            {{- with .Values.trivy.extraEnv }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
+            {{- $chart = concat $chart (include "harbor.trivy.pinnedEnv" . | fromYamlArray) }}
+            {{- include "harbor.envWithExtra" (dict "chart" $chart "extra" .Values.trivy.extraEnv) | nindent 12 }}
           ports:
             - name: api-server
               containerPort: 8080

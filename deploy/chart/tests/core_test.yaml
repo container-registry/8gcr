@@ -90,6 +90,23 @@ tests:
           value: other
 
   # Pins: core.config overrides a chart-managed default for the same env key.
+  # Pins: values files load numbers as float64, which toString renders as 1e+06.
+  - it: should render a large integer from core.config without an exponent
+    template: templates/core.configmap.yaml
+    values:
+      - values/large-number.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+    asserts:
+      - equal:
+          path: data.MAX_ITEMS
+          value: "1000000"
+      - equal:
+          path: data.RATIO
+          value: "0.5"
+
   - it: should let core.config override a chart-managed core env key
     template: templates/core.configmap.yaml
     set:

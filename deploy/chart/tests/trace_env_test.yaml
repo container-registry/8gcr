@@ -1,0 +1,51 @@
+suite: trace env for core and jobservice
+templates:
+  - templates/core.configmap.yaml
+  - templates/jobservice.configmap-env.yaml
+tests:
+  # Pins: core reads TRACE_* from env too (src/lib/config/trace.go), so
+  # trace.enabled must reach core, not only jobservice and registryctl.
+  - it: should render trace env into the core ConfigMap
+    template: templates/core.configmap.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      trace.enabled: true
+      trace.provider: otel
+      trace.otel.endpoint: otel.example.com:4318
+    asserts:
+      - equal:
+          path: data.TRACE_SERVICE_NAME
+          value: harbor-core
+      - equal:
+          path: data.TRACE_ENABLED
+          value: "true"
+      - equal:
+          path: data.TRACE_OTEL_ENDPOINT
+          value: otel.example.com:4318
+
+  - it: should keep trace env out of the core ConfigMap when trace is off
+    template: templates/core.configmap.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+    asserts:
+      - notExists:
+          path: data.TRACE_ENABLED
+
+  # Pins: a single quote in an attribute used to end the squoted JSON early.
+  - it: should render trace.attributes containing a single quote
+    template: templates/jobservice.configmap-env.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      trace.enabled: true
+      trace.attributes:
+        team: o'neil
+    asserts:
+      - equal:
+          path: data.TRACE_ATTRIBUTES
+          value: '{"team":"o''neil"}'

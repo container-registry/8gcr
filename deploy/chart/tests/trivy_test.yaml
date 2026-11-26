@@ -495,3 +495,39 @@ tests:
           value: backend
       - notExists:
           path: spec.selector.matchLabels.tier
+
+  # Pins: a name in trivy.extraEnv replaces the chart's entry in place, so
+  # the name exists once (server-side apply rejects duplicates).
+  - it: should replace a chart env entry that trivy.extraEnv repeats
+    template: templates/trivy.statefulset.yaml
+    set:
+      externalURL: https://harbor.example.com
+      database.host: postgres.example.com
+      harborAdminPassword: Harbor12345
+      trivy.enabled: true
+      trivy.extraEnv:
+        - name: SCANNER_TRIVY_SEVERITY
+          value: CRITICAL
+        - name: SCANNER_API_SERVER_ADDR
+          value: ":9090"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SCANNER_TRIVY_SEVERITY
+            value: CRITICAL
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SCANNER_API_SERVER_ADDR
+            value: ":9090"
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SCANNER_API_SERVER_ADDR
+            value: ":8080"
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SCANNER_TRIVY_SEVERITY
+            value: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL

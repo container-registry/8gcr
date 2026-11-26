@@ -16,7 +16,7 @@ Trace helpers
   TRACE_NAMESPACE: "{{ . }}"
   {{- end }}
   {{- if .Values.trace.attributes }}
-  TRACE_ATTRIBUTES: {{ .Values.trace.attributes | toJson | squote }}
+  TRACE_ATTRIBUTES: {{ .Values.trace.attributes | toJson | quote }}
   {{- end }}
   {{- if eq .Values.trace.provider "jaeger" }}
   {{- with .Values.trace.jaeger.endpoint }}
