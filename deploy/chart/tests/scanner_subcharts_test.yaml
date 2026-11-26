@@ -565,6 +565,17 @@ tests:
           errorPattern: share the name "scanner"
         template: templates/scanner-registration.job.yaml
 
+  - it: should fail when a scanner takes the name of the Trivy subchart
+    set:
+      harbor-scanner-trivy.enabled: true
+      harbor-scanner-grype.enabled: true
+      harbor-scanner-grype.nameOverride: scanner-trivy
+      harbor-scanner-grype.fullnameOverride: grype
+    asserts:
+      - failedTemplate:
+          errorPattern: harbor-scanner-grype and harbor-scanner-trivy share the name "scanner-trivy"
+        template: templates/scanner-registration.job.yaml
+
   - it: should fail when a scanner takes the name of the harbor chart
     set:
       harbor-scanner-grype.enabled: true

@@ -249,9 +249,17 @@ the subcharts' fullname helpers.
 {{- range $key := keys .Values | sortAlpha -}}
 {{- $sub := index $root.Values $key -}}
 {{- if and (hasPrefix "harbor-scanner-" $key) (kindIs "map" $sub) -}}
+{{- $name := default $key $sub.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- $deployed := eq (toString $sub.enabled) "true" -}}
+{{- /* Every deployed scanner subchart counts, also one core registers (harbor-scanner-trivy). */ -}}
+{{- if $deployed -}}
+{{- if hasKey $selectors $name -}}
+{{- fail (printf "%s and %s share the name %q, so their Services would select each other's pods: give the scanner a different nameOverride" (get $selectors $name) $key $name) -}}
+{{- end -}}
+{{- $_ := set $selectors $name $key -}}
+{{- end -}}
 {{- $reg := $sub.registration -}}
 {{- if kindIs "map" $reg -}}
-{{- $name := default $key $sub.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- $room := int (sub 62 (len $name)) -}}
 {{- $release := $root.Release.Name -}}
 {{- if gt (len $release) $room -}}
@@ -261,13 +269,6 @@ the subcharts' fullname helpers.
 {{- $fullname = default $fullname $sub.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- $url := default (printf "http://%s:%v" $fullname (($sub.service).port | default 8080)) $reg.url -}}
 {{- $managed := ne (toString $reg.enabled) "false" -}}
-{{- $deployed := eq (toString $sub.enabled) "true" -}}
-{{- if $deployed -}}
-{{- if hasKey $selectors $name -}}
-{{- fail (printf "%s and %s share the name %q, so their Services would select each other's pods: give the scanner a different nameOverride" (get $selectors $name) $key $name) -}}
-{{- end -}}
-{{- $_ := set $selectors $name $key -}}
-{{- end -}}
 {{- $items = append $items (dict "name" ($reg.name | default "" | toString) "description" ($reg.description | default "") "url" $url "default" (eq (toString $reg.default) "true") "useInternalAddr" (ne (toString $reg.useInternalAddr) "false") "skipCertVerify" (eq (toString $reg.skipCertVerify) "true") "present" (and $deployed $managed) "stale" (and (not $deployed) $managed (empty $reg.url) (not (empty $reg.name))) "deployed" $deployed "adopt" (empty $reg.url) "host" $fullname) -}}
 {{- end -}}
 {{- end -}}
