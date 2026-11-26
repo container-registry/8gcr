@@ -86,6 +86,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
 
     @Input()
     effectivePermissions: Permission[] = [];
+    userProvidedSecret: string = '';
+    isProvidedSecretAcceptable: boolean = true;
 
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
@@ -176,6 +178,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         this.robot = clone(NEW_EMPTY_ROBOT);
         this.robotBasicForm.reset();
         this.expirationType = ExpirationType.DAYS;
+        this.userProvidedSecret = '';
+        this.isProvidedSecretAcceptable = true;
     }
     resetForEdit(robot: Robot) {
         this.open(true);
@@ -279,7 +283,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     canAdd(): boolean {
         return (
             this.robot?.permissions[0]?.access?.length > 0 &&
-            !this.robotBasicForm.invalid
+            !this.robotBasicForm.invalid &&
+            (this.isEditMode || this.isProvidedSecretAcceptable)
         );
     }
     canEdit() {
@@ -312,6 +317,9 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         robot.duration = +this.robot.duration;
         robot.permissions[0].kind = PermissionsKinds.PROJECT;
         robot.permissions[0].namespace = this.projectName;
+        if (!this.isEditMode && this.userProvidedSecret) {
+            robot.secret = this.userProvidedSecret;
+        }
         // Push permission must work with pull permission
         if (onlyHasPushPermission(robot.permissions[0].access)) {
             this.inlineAlertComponent.showInlineError(

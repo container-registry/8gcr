@@ -94,6 +94,7 @@ import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 import { BookmarkToggleComponent } from './components/bookmark-toggle/bookmark-toggle.component';
 import { RobotPermissionsPanelComponent } from './components/robot-permissions-panel/robot-permissions-panel.component';
+import { RobotSecretInputComponent } from './components/robot-secret-input/robot-secret-input.component';
 import { PreferenceSettingsComponent } from '../base/preference-settings/preference-settings.component';
 
 // register necessary components
@@ -200,6 +201,7 @@ ClarityIcons.add({
         AppLevelAlertsComponent,
         RobotPermissionsPanelComponent,
         BookmarkToggleComponent,
+        RobotSecretInputComponent,
     ],
     exports: [
         TranslateModule,
@@ -246,6 +248,7 @@ ClarityIcons.add({
         AppLevelAlertsComponent,
         RobotPermissionsPanelComponent,
         BookmarkToggleComponent,
+        RobotSecretInputComponent,
     ],
     providers: [
         { provide: EndpointService, useClass: EndpointDefaultService },
