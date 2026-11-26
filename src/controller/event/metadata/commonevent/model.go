@@ -123,10 +123,22 @@ func (c *Metadata) resolver() (Resolver, *Metadata, bool) {
 	}
 
 	for urlPattern, resolver := range Resolvers() {
-		match := regexp.MustCompile(urlPattern).FindStringIndex(metadata.RequestURL)
+		match := patternRegexp(urlPattern).FindStringIndex(metadata.RequestURL)
 		if match != nil && match[0] == 0 && match[1] == len(metadata.RequestURL) {
 			return resolver, &metadata, true
 		}
 	}
 	return nil, &metadata, false
+}
+
+// compiledPatterns caches resolver URL patterns; the log middleware matches
+// every request against all of them.
+var compiledPatterns sync.Map
+
+func patternRegexp(urlPattern string) *regexp.Regexp {
+	if re, ok := compiledPatterns.Load(urlPattern); ok {
+		return re.(*regexp.Regexp)
+	}
+	re, _ := compiledPatterns.LoadOrStore(urlPattern, regexp.MustCompile(urlPattern))
+	return re.(*regexp.Regexp)
 }
