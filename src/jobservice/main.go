@@ -46,6 +46,7 @@ import (
 )
 
 func main() {
+	lib.SetMemoryLimitFromCgroup()
 	// Start pprof server
 	lib.StartPprof()
 
