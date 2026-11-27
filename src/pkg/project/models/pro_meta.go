@@ -30,4 +30,6 @@ const (
 	ProMetaProxyCacheFilterKind      = "proxy_cache_filter_kind"    // "doublestar" (default) or "regex"
 	ProMetaProxyReferrerAPI          = "proxy_referrer_api"
 	ProMetaProxyCacheLocalOnNotFound = "proxy_cache_local_on_not_found"
+	ProMetaProxyCacheRefreshDuration = "proxy_cache_refresh_duration" // minutes, -1 never re-checks
+	ProMetaProxyCacheMissDuration    = "proxy_cache_miss_duration"    // minutes, -1 never re-checks
 )

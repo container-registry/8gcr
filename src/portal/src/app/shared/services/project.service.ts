@@ -178,6 +178,22 @@ export class ProjectDefaultService extends ProjectService {
                 ? 'true'
                 : 'false',
         };
+        if (projectPolicy.ProxyCacheEnabled) {
+            if (
+                projectPolicy.ProxyCacheRefreshDuration !== undefined &&
+                projectPolicy.ProxyCacheRefreshDuration !== null
+            ) {
+                metadata.proxy_cache_refresh_duration =
+                    projectPolicy.ProxyCacheRefreshDuration.toString();
+            }
+            if (
+                projectPolicy.ProxyCacheMissDuration !== undefined &&
+                projectPolicy.ProxyCacheMissDuration !== null
+            ) {
+                metadata.proxy_cache_miss_duration =
+                    projectPolicy.ProxyCacheMissDuration.toString();
+            }
+        }
         if (
             projectPolicy.ProxyCacheFilterPattern !== undefined &&
             projectPolicy.ProxyCacheFilterPattern !== null

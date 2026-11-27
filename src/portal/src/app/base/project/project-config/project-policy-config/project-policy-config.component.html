@@ -123,6 +123,99 @@
                 </div>
             </div>
             <div class="row-inline ml-2" clrInline>
+                <label
+                    class="clr-control-label"
+                    for="proxy_cache_refresh_duration">
+                    {{ 'PROJECT.PROXY_CACHE_REFRESH_DURATION' | translate }}
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="top-right"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.PROXY_CACHE_REFRESH_DURATION_TOOLTIP'
+                                    | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <div
+                    class="clr-control-container ml-1"
+                    [class.clr-error]="refreshDurationError">
+                    <input
+                        type="number"
+                        id="proxy_cache_refresh_duration"
+                        [(ngModel)]="projectPolicy.ProxyCacheRefreshDuration"
+                        name="proxy_cache_refresh_duration"
+                        [disabled]="!allowUpdateProxyCacheConfiguration"
+                        class="clr-input width-164 mr-10 clr-input-underline"
+                        autocomplete="off"
+                        (ngModelChange)="validateRefreshDuration()" />
+                    <clr-icon
+                        *ngIf="refreshDurationError"
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <clr-control-error
+                        *ngIf="refreshDurationError"
+                        class="tooltip-content">
+                        {{
+                            'PROJECT.PROXY_CACHE_REFRESH_DURATION_TIP'
+                                | translate
+                        }}
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="row-inline ml-2" clrInline>
+                <label
+                    class="clr-control-label"
+                    for="proxy_cache_miss_duration">
+                    {{ 'PROJECT.PROXY_CACHE_MISS_DURATION' | translate }}
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="top-right"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.PROXY_CACHE_MISS_DURATION_TOOLTIP'
+                                    | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <div
+                    class="clr-control-container ml-1"
+                    [class.clr-error]="missDurationError">
+                    <input
+                        type="number"
+                        id="proxy_cache_miss_duration"
+                        [(ngModel)]="projectPolicy.ProxyCacheMissDuration"
+                        name="proxy_cache_miss_duration"
+                        [disabled]="!allowUpdateProxyCacheConfiguration"
+                        class="clr-input width-164 mr-10 clr-input-underline"
+                        autocomplete="off"
+                        (ngModelChange)="validateMissDuration()" />
+                    <clr-icon
+                        *ngIf="missDurationError"
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <clr-control-error
+                        *ngIf="missDurationError"
+                        class="tooltip-content">
+                        {{
+                            'PROJECT.PROXY_CACHE_MISS_DURATION_TIP' | translate
+                        }}
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="row-inline ml-2" clrInline>
                 <label class="clr-control-label">
                     {{ 'PROJECT.REPOSITORY_FILTER' | translate }}
                     <clr-tooltip>

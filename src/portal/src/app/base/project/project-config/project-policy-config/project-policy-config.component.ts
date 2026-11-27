@@ -60,6 +60,8 @@ export class ProjectPolicy {
     RegistryId?: number | null;
     ProxySpeedKb?: number | null;
     MaxUpstreamConn?: number | null;
+    ProxyCacheRefreshDuration?: number | null;
+    ProxyCacheMissDuration?: number | null;
     ProxyCacheLocalOnNotFound?: boolean;
     ProxyReferrerAPI?: boolean;
     ProxyCacheFilterPattern?: string | null;
@@ -77,6 +79,8 @@ export class ProjectPolicy {
         this.RegistryId = null;
         this.ProxySpeedKb = -1;
         this.MaxUpstreamConn = -1;
+        this.ProxyCacheRefreshDuration = DEFAULT_PROXY_CACHE_REFRESH_MINUTES;
+        this.ProxyCacheMissDuration = DEFAULT_PROXY_CACHE_MISS_MINUTES;
         this.ProxyCacheLocalOnNotFound = false;
         this.ProxyReferrerAPI = false;
         this.ProxyCacheFilterPattern = null;
@@ -102,6 +106,13 @@ export class ProjectPolicy {
         this.MaxUpstreamConn = pro.metadata.max_upstream_conn
             ? pro.metadata.max_upstream_conn
             : -1;
+        this.ProxyCacheRefreshDuration = pro.metadata
+            .proxy_cache_refresh_duration
+            ? Number(pro.metadata.proxy_cache_refresh_duration)
+            : DEFAULT_PROXY_CACHE_REFRESH_MINUTES;
+        this.ProxyCacheMissDuration = pro.metadata.proxy_cache_miss_duration
+            ? Number(pro.metadata.proxy_cache_miss_duration)
+            : DEFAULT_PROXY_CACHE_MISS_MINUTES;
         this.ProxyCacheLocalOnNotFound =
             pro.metadata.proxy_cache_local_on_not_found === 'true';
         this.ProxyReferrerAPI =
@@ -113,6 +124,30 @@ export class ProjectPolicy {
     }
 }
 const PAGE_SIZE: number = 100;
+export const DEFAULT_PROXY_CACHE_REFRESH_MINUTES = 1440;
+export const DEFAULT_PROXY_CACHE_MISS_MINUTES = 10;
+const MIN_PROXY_CACHE_MISS_MINUTES = 5;
+const MAX_PROXY_CACHE_MISS_MINUTES = 30;
+const MAX_PROXY_CACHE_REFRESH_MINUTES = 525600;
+
+// -1 never re-checks; 0 and fractions are invalid
+export function validProxyCacheDuration(
+    value: number | string | null | undefined,
+    min: number,
+    max?: number
+): boolean {
+    const v = Number(value);
+    if (value === null || value === undefined || value === '' || isNaN(v)) {
+        return false;
+    }
+    if (!Number.isInteger(v)) {
+        return false;
+    }
+    if (v === -1) {
+        return true;
+    }
+    return v >= min && (max === undefined || v <= max);
+}
 
 @Component({
     selector: 'hbr-project-policy-config',
@@ -172,6 +207,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
     maxUpstreamConnError: string | null = null;
+    refreshDurationError: string | null = null;
+    missDurationError: string | null = null;
     repositoryFilterError: string | null = null;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
@@ -246,6 +283,42 @@ export class ProjectPolicyConfigComponent implements OnInit {
         } else {
             this.maxUpstreamConnError = null;
         }
+    }
+
+    validateRefreshDuration(): void {
+        if (
+            validProxyCacheDuration(
+                this.projectPolicy.ProxyCacheRefreshDuration,
+                1,
+                MAX_PROXY_CACHE_REFRESH_MINUTES
+            )
+        ) {
+            this.refreshDurationError = null;
+            return;
+        }
+        this.translate
+            .get('PROJECT.PROXY_CACHE_REFRESH_DURATION_TIP')
+            .subscribe((res: string) => {
+                this.refreshDurationError = res;
+            });
+    }
+
+    validateMissDuration(): void {
+        if (
+            validProxyCacheDuration(
+                this.projectPolicy.ProxyCacheMissDuration,
+                MIN_PROXY_CACHE_MISS_MINUTES,
+                MAX_PROXY_CACHE_MISS_MINUTES
+            )
+        ) {
+            this.missDurationError = null;
+            return;
+        }
+        this.translate
+            .get('PROJECT.PROXY_CACHE_MISS_DURATION_TIP')
+            .subscribe((res: string) => {
+                this.missDurationError = res;
+            });
     }
 
     validateRepositoryFilter(): void {
@@ -410,6 +483,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
                 )) &&
             !this.bandwidthError &&
             !this.maxUpstreamConnError &&
+            !this.refreshDurationError &&
+            !this.missDurationError &&
             !this.repositoryFilterError
         ) {
             flag = true;
@@ -465,6 +540,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.projectPolicy = clone(this.orgProjectPolicy);
         this.bandwidthError = null;
         this.maxUpstreamConnError = null;
+        this.refreshDurationError = null;
+        this.missDurationError = null;
         this.repositoryFilterError = null;
     }
 

@@ -180,6 +180,8 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.MaxUpstreamConn = nil
 		req.Metadata.ProxyCacheFilterPattern = nil
 		req.Metadata.ProxyCacheFilterKind = nil
+		req.Metadata.ProxyCacheRefreshDuration = nil
+		req.Metadata.ProxyCacheMissDuration = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -603,6 +605,13 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		params.Project.Metadata.MaxUpstreamConn = nil
 		params.Project.Metadata.ProxyCacheFilterPattern = nil
 		params.Project.Metadata.ProxyCacheFilterKind = nil
+		params.Project.Metadata.ProxyCacheRefreshDuration = nil
+		params.Project.Metadata.ProxyCacheMissDuration = nil
+	}
+	if params.Project.Metadata != nil {
+		if err := validateProxyCacheDurations(params.Project.Metadata); err != nil {
+			return a.SendError(ctx, err)
+		}
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -917,6 +926,10 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if err := validateProxyCacheRepositoryFilter(req.Metadata); err != nil {
 			return err
 		}
+
+		if err := validateProxyCacheDurations(req.Metadata); err != nil {
+			return err
+		}
 	}
 
 	if req.StorageLimit != nil {
@@ -926,6 +939,27 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		}
 	}
 
+	return nil
+}
+
+// validateProxyCacheDurations normalizes the refresh and miss durations, rejecting 0 and out-of-range values
+func validateProxyCacheDurations(metadata *models.ProjectMetadata) error {
+	if metadata == nil {
+		return nil
+	}
+	for key, val := range map[string]*string{
+		pkgModels.ProMetaProxyCacheRefreshDuration: metadata.ProxyCacheRefreshDuration,
+		pkgModels.ProMetaProxyCacheMissDuration:    metadata.ProxyCacheMissDuration,
+	} {
+		if val == nil {
+			continue
+		}
+		v, err := pkgModels.ParseProxyCacheDuration(key, *val)
+		if err != nil {
+			return errors.BadRequestError(nil).WithMessagef("metadata.%v", err)
+		}
+		*val = strconv.FormatInt(v, 10)
+	}
 	return nil
 }
 

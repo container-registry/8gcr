@@ -195,6 +195,37 @@ func (suite *ProjectTestSuite) TestUpdateProjectProxyCacheFilter() {
 	suite.projectCtl.AssertExpectations(suite.T())
 }
 
+func (suite *ProjectTestSuite) TestUpdateProjectProxyCacheDurations() {
+	proxy := &models.Project{ProjectID: 2, Name: "proxy", RegistryID: 1, Metadata: map[string]string{}}
+	suite.Security.On("IsAuthenticated").Return(true)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+
+	for _, req := range []*apiModels.ProjectMetadata{
+		{ProxyCacheRefreshDuration: stringPtr("0")},
+		{ProxyCacheRefreshDuration: stringPtr("abc")},
+		{ProxyCacheMissDuration: stringPtr("0")},
+		{ProxyCacheMissDuration: stringPtr("60")},
+	} {
+		mock.OnAnything(suite.projectCtl, "Get").Return(proxy, nil).Once()
+		res, err := suite.PutJSON("/projects/2", &apiModels.ProjectReq{Metadata: req})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	mock.OnAnything(suite.projectCtl, "Get").Return(proxy, nil).Once()
+	suite.projectCtl.On("Update", mock.Anything, mock.MatchedBy(func(p *models.Project) bool {
+		return p.Metadata[models.ProMetaProxyCacheRefreshDuration] == "-1" &&
+			p.Metadata[models.ProMetaProxyCacheMissDuration] == "15"
+	})).Return(nil).Once()
+	res, err := suite.PutJSON("/projects/2", &apiModels.ProjectReq{Metadata: &apiModels.ProjectMetadata{
+		ProxyCacheRefreshDuration: stringPtr("-1"),
+		ProxyCacheMissDuration:    stringPtr("15"),
+	}})
+	suite.NoError(err)
+	suite.Equal(200, res.StatusCode)
+	suite.projectCtl.AssertExpectations(suite.T())
+}
+
 func stringPtr(value string) *string {
 	return &value
 }

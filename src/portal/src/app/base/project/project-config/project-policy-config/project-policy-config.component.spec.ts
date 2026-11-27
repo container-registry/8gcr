@@ -14,7 +14,13 @@
 import { SystemInfoService } from '../../../../shared/services';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
-import { ProjectPolicyConfigComponent } from './project-policy-config.component';
+import {
+    DEFAULT_PROXY_CACHE_MISS_MINUTES,
+    DEFAULT_PROXY_CACHE_REFRESH_MINUTES,
+    ProjectPolicy,
+    ProjectPolicyConfigComponent,
+    validProxyCacheDuration,
+} from './project-policy-config.component';
 import { ProjectService } from '../../../../shared/services';
 import { SystemCVEAllowlist, SystemInfo } from '../../../../shared/services';
 import { Project } from './project';
@@ -325,6 +331,44 @@ describe('ProjectPolicyConfigComponent', () => {
         expect(
             component.projectPolicyConfigComponent.hasChangeConfigRole
         ).toBeTruthy();
+    });
+});
+
+describe('proxy cache durations', () => {
+    it('accepts -1 and positive minutes, rejects 0', () => {
+        expect(validProxyCacheDuration(-1, 1)).toBeTrue();
+        expect(validProxyCacheDuration(1440, 1, 525600)).toBeTrue();
+        expect(validProxyCacheDuration(525601, 1, 525600)).toBeFalse();
+        expect(validProxyCacheDuration(0, 1)).toBeFalse();
+        expect(validProxyCacheDuration(-2, 1)).toBeFalse();
+        expect(validProxyCacheDuration(1.5, 1)).toBeFalse();
+        expect(validProxyCacheDuration(null, 1)).toBeFalse();
+    });
+    it('bounds the miss duration to 5..30', () => {
+        expect(validProxyCacheDuration(-1, 5, 30)).toBeTrue();
+        expect(validProxyCacheDuration(5, 5, 30)).toBeTrue();
+        expect(validProxyCacheDuration(30, 5, 30)).toBeTrue();
+        expect(validProxyCacheDuration(4, 5, 30)).toBeFalse();
+        expect(validProxyCacheDuration(31, 5, 30)).toBeFalse();
+        expect(validProxyCacheDuration(0, 5, 30)).toBeFalse();
+    });
+    it('defaults unset durations and reads stored ones', () => {
+        const policy = new ProjectPolicy();
+        policy.initByProject({ metadata: {} } as Project);
+        expect(policy.ProxyCacheRefreshDuration).toBe(
+            DEFAULT_PROXY_CACHE_REFRESH_MINUTES
+        );
+        expect(policy.ProxyCacheMissDuration).toBe(
+            DEFAULT_PROXY_CACHE_MISS_MINUTES
+        );
+        policy.initByProject({
+            metadata: {
+                proxy_cache_refresh_duration: '-1',
+                proxy_cache_miss_duration: '30',
+            },
+        } as Project);
+        expect(policy.ProxyCacheRefreshDuration).toBe(-1);
+        expect(policy.ProxyCacheMissDuration).toBe(30);
     });
 });
 
