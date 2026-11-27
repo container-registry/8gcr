@@ -15,7 +15,7 @@ Every incoming report needs exactly one advisory lead. If you accept a report, y
 
 ## 1. Receiving a report
 
-Reports arrive at **Security → Advisories** as `Proposed` advisories: <https://github.com/container-registry/8gcr/security/advisories?state=triage>
+Reports arrive at **Security → Advisories** as `Proposed` advisories: <https://github.com/container-registry/container-registry/security/advisories?state=triage>
 
 Notifications for new private reports go to repo admins and org security managers only. **Check the queue at least weekly** even if you saw no notification.
 
@@ -94,7 +94,7 @@ Note: Dependabot alerts only reach consumers of the `github.com/goharbor/harbor/
 
 ## 7. After disclosure
 
-- Verify the advisory appears under [published advisories](https://github.com/container-registry/8gcr/security/advisories) and the CVE record is live.
+- Verify the advisory appears under [published advisories](https://github.com/container-registry/container-registry/security/advisories) and the CVE record is live.
 - Post-mortem (optional but encouraged for High/Critical): what allowed the bug, whether a test/linter/scanner could catch the class, and file follow-up issues.
 - If the issue also affects upstream `goharbor/harbor`, make sure upstream's security team was informed **before** our disclosure, not after.
 

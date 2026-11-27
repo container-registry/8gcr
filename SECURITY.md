@@ -20,15 +20,15 @@ If you are unsure whether a version is supported, report the issue anyway and in
 
 Report vulnerabilities privately through GitHub private vulnerability reporting:
 
-- Open a private vulnerability report directly at [Report a vulnerability](https://github.com/container-registry/8gcr/security/advisories/new).
+- Open a private vulnerability report directly at [Report a vulnerability](https://github.com/container-registry/container-registry/security/advisories/new).
 - Or go to the repository **Security** tab and click **Report a vulnerability**.
-- Or go to [New Issue](https://github.com/container-registry/8gcr/issues/new/choose) and select **Security Vulnerability**, which routes to the same private form.
+- Or go to [New Issue](https://github.com/container-registry/container-registry/issues/new/choose) and select **Security Vulnerability**, which routes to the same private form.
 
 Reporting requires a GitHub account. If you cannot use GitHub, email the security contact at [infosec@container-registry.com](mailto:infosec@container-registry.com), or contact a maintainer listed in [OWNERS.md](OWNERS.md) through any private channel and ask them to open the report on your behalf.
 
 Private vulnerability reports are visible only to project maintainers, who will coordinate with the reporter during investigation and remediation. The maintainer-side handling process is documented in [docs/security-process.md](docs/security-process.md).
 
-**If the vulnerability already has a public CVE or is already publicly disclosed** (for example, a scanner finding in one of our dependencies), open a normal [public issue](https://github.com/container-registry/8gcr/issues/new/choose) instead — there is nothing left to keep private.
+**If the vulnerability already has a public CVE or is already publicly disclosed** (for example, a scanner finding in one of our dependencies), open a normal [public issue](https://github.com/container-registry/container-registry/issues/new/choose) instead — there is nothing left to keep private.
 
 ## What to Include
 
@@ -53,7 +53,7 @@ Report privately when:
 - You suspect a vulnerability but are unsure whether it impacts 8gcr.
 - You know of a not-yet-public vulnerability in a dependency that may affect 8gcr.
 
-For non-security bugs, feature requests, and proposals, use the public [GitHub issue templates](https://github.com/container-registry/8gcr/issues/new/choose).
+For non-security bugs, feature requests, and proposals, use the public [GitHub issue templates](https://github.com/container-registry/container-registry/issues/new/choose).
 
 ## Response Targets
 
@@ -77,7 +77,7 @@ These are targets, not guarantees. Complex issues can take longer; if a vulnerab
 
 ## Disclosure Policy
 
-Maintainers coordinate public disclosure with the reporter after a mitigation or patch is available. Public disclosure happens through [GitHub Security Advisories](https://github.com/container-registry/8gcr/security/advisories), the release notes of the fixed release, and the CVE record. Fixes for embargoed issues are developed in a temporary private fork and are not visible in the public repository until the advisory is published.
+Maintainers coordinate public disclosure with the reporter after a mitigation or patch is available. Public disclosure happens through [GitHub Security Advisories](https://github.com/container-registry/container-registry/security/advisories), the release notes of the fixed release, and the CVE record. Fixes for embargoed issues are developed in a temporary private fork and are not visible in the public repository until the advisory is published.
 
 ## Security Priorities
 
