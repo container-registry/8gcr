@@ -1,12 +1,12 @@
 dependencies:
 - name: valkey
   repository: oci://ghcr.io/valkey-io/valkey-helm
-  version: 0.12.1
+  version: 1.0.0
 - name: postgres
   repository: oci://registry-1.docker.io/cloudpirates
   version: 0.21.2
 - name: harbor-scanner-trivy
   repository: oci://8gears.container-registry.com/8gcr/charts
   version: 1.0.1
-digest: sha256:f16b227aab37ea87a3584799704ccafbbf6f32b290e51c0e174f09f87972730b
-generated: "2026-11-10T18:08:16.35336334+05:30"
+digest: sha256:cf348a7b25d4fe164e288a15c5a960442ffeab418805b6d44498a3f477ff4ba5
+generated: "2026-11-27T09:42:22.668453179Z"
