@@ -147,7 +147,7 @@ Return the Redis URL for Harbor core
 Whether the user supplied a custom CA bundle for external Redis (and,
 incidentally, any other private-CA endpoint Harbor talks to over TLS —
 S3, OIDC, LDAP). When true the chart mounts that Secret at
-/etc/harbor/extra-ca/ on every component that opens a TLS connection
+/etc/harbor/ca/ on every component that opens a TLS connection
 and sets SSL_CERT_DIR so Go's crypto/x509 also reads from that dir on
 top of the default system bundle.
 */}}
@@ -178,26 +178,26 @@ overridable via `externalRedis.tlsOptions.existingCaSecretKey`.
 {{- end }}
 
 {{/*
-VolumeMount block — mounted read-only at /etc/harbor/extra-ca.
+VolumeMount block — mounted read-only at /etc/harbor/ca, which the
+Harbor images already list in SSL_CERT_DIR.
 */}}
 {{- define "harbor.extraCA.volumeMount" -}}
 {{- if eq (include "harbor.redis.caBundleEnabled" .) "true" }}
 - name: extra-ca
-  mountPath: /etc/harbor/extra-ca
+  mountPath: /etc/harbor/ca
   readOnly: true
 {{- end }}
 {{- end }}
 
 {{/*
-SSL_CERT_DIR env — Go's crypto/x509 reads CAs from ALL paths in this
-colon-separated list, supplementing (not replacing) the default system
-bundle (`/etc/ssl/certs/ca-certificates.crt`) that the scratch-based
-Harbor image already copies in. Order does not affect trust; any cert
-in any listed dir is trusted.
+SSL_CERT_DIR env, the same value the Harbor images set themselves. It
+stays here for images that do not set it, such as the Trivy adapter or
+older Harbor tags. Go adds every certificate in these directories to the
+image CA bundle; setting SSL_CERT_DIR does not drop that bundle.
 */}}
 {{- define "harbor.extraCA.env" -}}
 {{- if eq (include "harbor.redis.caBundleEnabled" .) "true" }}
 - name: SSL_CERT_DIR
-  value: "/etc/ssl/certs:/etc/harbor/extra-ca"
+  value: "/etc/harbor/ca:/harbor_cust_cert"
 {{- end }}
 {{- end }}
