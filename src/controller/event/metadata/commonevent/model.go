@@ -30,6 +30,7 @@ type Resolver interface {
 	PreCheck(ctx context.Context, url string, method string) (bool, string)
 }
 
+<<<<<<< HEAD
 // Snapshotter is implemented by resolvers that need state from before the
 // request is handled, such as the values an update overwrites.
 type Snapshotter interface {
@@ -37,16 +38,26 @@ type Snapshotter interface {
 }
 
 var urlResolvers = map[string]Resolver{}
+=======
+type registration struct {
+	pattern  *regexp.Regexp
+	resolver Resolver
+}
+
+var registrations = map[string]registration{}
+>>>>>>> 3cc8b5c16 (Compile audit resolver patterns once (#24476))
 
 var mu = &sync.Mutex{}
 
 // RegisterResolver register a resolver for a specific URL pattern
 func RegisterResolver(urlPattern string, resolver Resolver) {
+	p := regexp.MustCompile(urlPattern)
 	mu.Lock()
-	urlResolvers[urlPattern] = resolver
-	mu.Unlock()
+	defer mu.Unlock()
+	registrations[urlPattern] = registration{pattern: p, resolver: resolver}
 }
 
+<<<<<<< HEAD
 // UnregisterResolver removes the resolver registered for a URL pattern
 func UnregisterResolver(urlPattern string) {
 	mu.Lock()
@@ -64,6 +75,17 @@ func Resolvers() map[string]Resolver {
 		snapshot[urlPattern] = resolver
 	}
 	return snapshot
+=======
+// Resolvers returns a copy of the registered resolvers keyed by URL pattern
+func Resolvers() map[string]Resolver {
+	mu.Lock()
+	defer mu.Unlock()
+	resolvers := make(map[string]Resolver, len(registrations))
+	for urlPattern, reg := range registrations {
+		resolvers[urlPattern] = reg.resolver
+	}
+	return resolvers
+>>>>>>> 3cc8b5c16 (Compile audit resolver patterns once (#24476))
 }
 
 // Metadata the raw data of event
@@ -99,6 +121,7 @@ type Metadata struct {
 
 // Resolve parse the audit information from CommonEventMetadata
 func (c *Metadata) Resolve(event *event.Event) error {
+<<<<<<< HEAD
 	resolver, metadata, ok := c.resolver()
 	if !ok {
 		return nil
@@ -111,15 +134,28 @@ func (c *Metadata) Resolve(event *event.Event) error {
 	if common, ok := event.Data.(*eventmodel.CommonEvent); ok {
 		common.SourceIP = c.IPAddress
 		common.UserAgent = c.UserAgent
+=======
+	for _, reg := range registrations {
+		if reg.pattern.MatchString(c.RequestURL) {
+			return reg.resolver.Resolve(c, event)
+		}
+>>>>>>> 3cc8b5c16 (Compile audit resolver patterns once (#24476))
 	}
 	return nil
 }
 
 // PreCheck check if current event is matched and return the prefetched resource name when it is delete operation
 func (c *Metadata) PreCheckMetadata() (bool, string) {
+<<<<<<< HEAD
 	resolver, metadata, ok := c.resolver()
 	if ok {
 		return resolver.PreCheck(metadata.Ctx, metadata.RequestURL, metadata.RequestMethod)
+=======
+	for _, reg := range registrations {
+		if reg.pattern.MatchString(c.RequestURL) {
+			return reg.resolver.PreCheck(c.Ctx, c.RequestURL, c.RequestMethod)
+		}
+>>>>>>> 3cc8b5c16 (Compile audit resolver patterns once (#24476))
 	}
 	return false, ""
 }
