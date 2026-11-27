@@ -12,10 +12,10 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/aws/aws-sdk-go v1.55.8
 	github.com/aws/aws-sdk-go-v2 v1.48.0
-	github.com/aws/aws-sdk-go-v2/config v1.33.18
-	github.com/aws/aws-sdk-go-v2/credentials v1.21.0
+	github.com/aws/aws-sdk-go-v2/config v1.33.19
+	github.com/aws/aws-sdk-go-v2/credentials v1.21.1
 	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.7.12
-	github.com/aws/aws-sdk-go-v2/service/ecr v1.67.6
+	github.com/aws/aws-sdk-go-v2/service/ecr v1.69.0
 	github.com/aws/smithy-go v1.28.9
 	github.com/beego/beego/v2 v2.3.10
 	github.com/beego/i18n v0.0.0-20161101132742-e9308947f407
@@ -32,12 +32,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.8
 	github.com/go-ldap/ldap/v3 v3.4.15
 	github.com/go-openapi/errors v0.22.9
-	github.com/go-openapi/loads v0.25.3
-	github.com/go-openapi/runtime v0.33.4
+	github.com/go-openapi/loads v0.25.4
+	github.com/go-openapi/runtime v0.33.5
 	github.com/go-openapi/spec v1.0.1
 	github.com/go-openapi/strfmt v0.27.4
 	github.com/go-openapi/swag v0.29.2
-	github.com/go-openapi/validate v1.0.1
+	github.com/go-openapi/validate v1.0.2
 	github.com/gocarina/gocsv v0.0.0-20261101205459-d0dd027dcbfa
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gocraft/work v0.5.1
@@ -86,7 +86,7 @@ require (
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/crypto v0.59.0
 	golang.org/x/mod v0.43.0
-	golang.org/x/net v0.62.0
+	golang.org/x/net v0.63.0
 	golang.org/x/oauth2 v0.38.0
 	golang.org/x/sync v0.25.0
 	golang.org/x/text v0.44.0
@@ -149,10 +149,10 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.9 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-openapi/analysis v1.0.1 // indirect
+	github.com/go-openapi/analysis v1.0.2 // indirect
 	github.com/go-openapi/jsonpointer v1.0.2 // indirect
 	github.com/go-openapi/jsonreference v1.0.3 // indirect
-	github.com/go-openapi/runtime/server-middleware v0.33.4 // indirect
+	github.com/go-openapi/runtime/server-middleware v0.33.5 // indirect
 	github.com/go-openapi/swag/cmdutils v0.29.2 // indirect
 	github.com/go-openapi/swag/conv v0.29.2 // indirect
 	github.com/go-openapi/swag/fileutils v0.29.2 // indirect
@@ -233,7 +233,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.5 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/term v0.48.0 // indirect
 	google.golang.org/api v0.304.0 // indirect
@@ -263,7 +263,7 @@ replace (
 	github.com/gocraft/work => github.com/goharbor/work v0.5.1-patch
 	github.com/goharbor/harbor => ../
 	github.com/gomodule/redigo => github.com/gomodule/redigo v1.9.3
-	google.golang.org/api => google.golang.org/api v0.315.0
+	google.golang.org/api => google.golang.org/api v0.316.0
 )
 
 ignore portal
