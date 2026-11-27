@@ -1,6 +1,6 @@
 # 8gcr
 
-<p align="center"><img alt="8gcr" width="256px" src="https://raw.githubusercontent.com/container-registry/8gcr/refs/heads/main/docs/img/8gcr-logo.svg"></p>
+<p align="center"><img alt="8gcr" width="256px" src="https://raw.githubusercontent.com/container-registry/container-registry/refs/heads/main/docs/img/8gcr-logo.svg"></p>
 
 Harbor is a CNCF graduated open-source container registry to store and manage container images and other OCI artifacts securely with policies, role-based access control, vulnerability scans and signing.
 
@@ -33,7 +33,7 @@ We're developing 8gcr as a [community proposal](https://github.com/goharbor/comm
 - Versatile Helm Chart
 - Open Compose (install.sh less) supporting Docker & Podman Compose
 - Support for OpenShift, Rancher, k3s, Nutanix (NKP)
-- Prepending vetted features not yet upstream — see the [release notes](https://github.com/container-registry/8gcr/releases)
+- Prepending vetted features not yet upstream — see the [release notes](https://github.com/container-registry/container-registry/releases)
 - See [ROADMAP.md](/ROADMAP.md) for more...
 
 ## Harbor Features
@@ -58,7 +58,7 @@ For the architecture design of 8gcr, see [Architecture Overview](docs/architectu
 
 ## API
 
-8gcr exposes a RESTful API for administrative operations and integration. Explore it in the [Swagger editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/container-registry/8gcr/main/api/v2.0/swagger.yaml) or from the source spec [`api/v2.0/swagger.yaml`](api/v2.0/swagger.yaml).
+8gcr exposes a RESTful API for administrative operations and integration. Explore it in the [Swagger editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/container-registry/container-registry/main/api/v2.0/swagger.yaml) or from the source spec [`api/v2.0/swagger.yaml`](api/v2.0/swagger.yaml).
 
 ## Install & Run
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/container-registry/8gcr/deploy/chart/values.schema.json",
+  "$id": "https://github.com/container-registry/container-registry/deploy/chart/values.schema.json",
   "title": "8gcr Helm Chart Values",
   "description": "Schema for 8gcr Helm chart values.yaml validation",
   "type": "object",
