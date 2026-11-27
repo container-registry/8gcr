@@ -42,6 +42,12 @@ func TestSendError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`+"\n", rw.Body.String())
 
+	// service unavailable keeps its own code, the detail stays in the log
+	rw = httptest.NewRecorder()
+	SendError(rw, errors.ServiceUnavailableError(std_errors.New("dial tcp: connection refused")))
+	assert.Equal(t, http.StatusServiceUnavailable, rw.Code)
+	assert.Equal(t, `{"errors":[{"code":"SERVICE_UNAVAILABLE","message":"service unavailable"}]}`+"\n", rw.Body.String())
+
 	// not internal server error
 	rw = httptest.NewRecorder()
 	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("object not found")

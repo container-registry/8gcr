@@ -15,6 +15,11 @@
 package orm
 
 import (
+	"database/sql/driver"
+	"io"
+	"net"
+	"strings"
+
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/jackc/pgx/v5/pgconn"
 
@@ -109,5 +114,28 @@ func isViolatingForeignKeyConstraintError(err error) bool {
 		return true
 	}
 
+	return false
+}
+
+// IsConnectionError reports whether err means the database could not be reached,
+// as opposed to a failed query.
+func IsConnectionError(err error) bool {
+	if errors.Is(err, driver.ErrBadConn) || errors.Is(err, pgconn.ErrConnClosed) ||
+		errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		return true
+	}
+	var connErr *pgconn.ConnectError
+	if errors.As(err, &connErr) {
+		return true
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) {
+		return true
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		// class 08 connection exception, 57P01-57P03 server shutting down or not yet up
+		return strings.HasPrefix(pgErr.Code, "08") || pgErr.Code == "57P01" || pgErr.Code == "57P02" || pgErr.Code == "57P03"
+	}
 	return false
 }
