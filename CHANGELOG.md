@@ -6,6 +6,21 @@ This changelog mirrors [GitHub Releases](https://github.com/container-registry/h
 
 ---
 
+## [2.16.1](https://github.com/container-registry/container-registry/compare/v2.16.0...v2.16.1) (2026-11-28)
+
+
+### Features
+
+* Group Commercial Features Under Their Own Heading (backport [#1547](https://github.com/container-registry/container-registry/issues/1547)) ([#1581](https://github.com/container-registry/container-registry/issues/1581)) ([7527087](https://github.com/container-registry/container-registry/commit/7527087cd5adadffd3fdb92d7e6158458db46fd4))
+
+
+### Bug Fixes
+
+* **portal:** Guide First Push From The Empty Repository List (backport [#1492](https://github.com/container-registry/container-registry/issues/1492)) ([#1503](https://github.com/container-registry/container-registry/issues/1503)) ([7366c00](https://github.com/container-registry/container-registry/commit/7366c00420f6f89702440c7221230a2407ccce13))
+* **portal:** Show Proxy Cache Settings Only To System Admins (backport [#1501](https://github.com/container-registry/container-registry/issues/1501)) ([#1505](https://github.com/container-registry/container-registry/issues/1505)) ([6b06daf](https://github.com/container-registry/container-registry/commit/6b06daf90808a6dda127f7e154b826ca4c3bbdd7))
+* **portal:** Show Push Commands In A Dialog With Format Tabs (backport [#1491](https://github.com/container-registry/container-registry/issues/1491)) ([#1495](https://github.com/container-registry/container-registry/issues/1495)) ([b270b08](https://github.com/container-registry/container-registry/commit/b270b083b79c503feeb3da58e400aa0773c299d0))
+* **portal:** Stop Listing Registries For Project Admins On Project Configuration (backport [#1489](https://github.com/container-registry/container-registry/issues/1489)) ([#1494](https://github.com/container-registry/container-registry/issues/1494)) ([1c7ecb1](https://github.com/container-registry/container-registry/commit/1c7ecb17522b1ea94c3df1a25808a343fb4549ee))
+
 ## [2.16.0](https://github.com/container-registry/harbor-next/compare/v2.15.0...v2.16.0) (2026-11-17)
 
 
