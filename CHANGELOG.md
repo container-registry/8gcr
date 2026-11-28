@@ -6,6 +6,57 @@ This changelog mirrors [GitHub Releases](https://github.com/container-registry/8
 
 ---
 
+## [2.17.0](https://github.com/container-registry/container-registry/compare/v2.16.0...v2.17.0) (2026-11-28)
+
+
+### Features
+
+* Allow Editing And Deleting Built-In Roles Except Project Admin ([#1563](https://github.com/container-registry/container-registry/issues/1563)) ([152552d](https://github.com/container-registry/container-registry/commit/152552d662c90938db018b64f77f111b330384f5))
+* **chart:** Add Harbor Security Hub Grafana Dashboards ([#1483](https://github.com/container-registry/container-registry/issues/1483)) ([fee0cf4](https://github.com/container-registry/container-registry/commit/fee0cf428a5af4710bac4274d34a61e7f32c0a2a))
+* **chart:** Add Opt-In harbor-scanner-trivy Subchart Mode For The Trivy Adapter ([#1565](https://github.com/container-registry/container-registry/issues/1565)) ([b91b87f](https://github.com/container-registry/container-registry/commit/b91b87f07fef1395317a683556b6c5aa79779e96))
+* Group Commercial Features Under Their Own Heading ([#1547](https://github.com/container-registry/container-registry/issues/1547)) ([7265ebe](https://github.com/container-registry/container-registry/commit/7265ebef2b9471392dd228fbfa5b746eb9db0fe1))
+* Upgrade PostgreSQL 18 Data To 19 On Start ([#1548](https://github.com/container-registry/container-registry/issues/1548)) ([43a4a67](https://github.com/container-registry/container-registry/commit/43a4a67e62d545f63910bdd1a10eaf3a74d49fb7))
+* Use PostgreSQL 19 ([#1534](https://github.com/container-registry/container-registry/issues/1534)) ([d8118e1](https://github.com/container-registry/container-registry/commit/d8118e1a245c6e617d7239e37f760a1c58280ee4))
+
+
+### Bug Fixes
+
+* Audit A Multi-Arch Pull Once And Keep Its Tag ([#1553](https://github.com/container-registry/container-registry/issues/1553)) ([4fdcd92](https://github.com/container-registry/container-registry/commit/4fdcd92bdf1330e088fa1fa582b66ea6cb94020d))
+* Audit Each Scan As One Row ([#1556](https://github.com/container-registry/container-registry/issues/1556)) ([03d2cef](https://github.com/container-registry/container-registry/commit/03d2cefdf281cf31db1b7174449ec8368633a8c7))
+* **blob:** Bound The Touch Skip To A Short Staleness Window ([#1569](https://github.com/container-registry/container-registry/issues/1569)) ([008ff69](https://github.com/container-registry/container-registry/commit/008ff698505e7c904bbb925822514e39a9b8d08f))
+* Compile Audit Resolver Patterns Once ([#1558](https://github.com/container-registry/container-registry/issues/1558)) ([2678b2e](https://github.com/container-registry/container-registry/commit/2678b2e7afddd8e29f1346d4bcf03a8221356e41))
+* Describe Each Audit Log Entry In One Sentence ([#1550](https://github.com/container-registry/container-registry/issues/1550)) ([1869b7b](https://github.com/container-registry/container-registry/commit/1869b7bca33ec8a70b0decbcf0c53630386d583d))
+* Harden Migrator DSN Parsing And Bound Authoritative Schema Locking ([#1559](https://github.com/container-registry/container-registry/issues/1559)) ([76724d4](https://github.com/container-registry/container-registry/commit/76724d4f847e47aafe30971499124b71350aa3bd)), closes [#743](https://github.com/container-registry/container-registry/issues/743) [#745](https://github.com/container-registry/container-registry/issues/745)
+* Let Tag Events Be Switched Off And Purged In The Audit Log ([#1557](https://github.com/container-registry/container-registry/issues/1557)) ([95a3d65](https://github.com/container-registry/container-registry/commit/95a3d650f7981b99d2deb96024e163ab16616d4d))
+* Mark Webhook Executions As Error When The Job Cannot Be Submitted ([#1458](https://github.com/container-registry/container-registry/issues/1458)) ([d2aa8db](https://github.com/container-registry/container-registry/commit/d2aa8db986655560d03d47cd0c856f01b3a89fc8))
+* **network:** Remove HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS ([#1537](https://github.com/container-registry/container-registry/issues/1537)) ([56b1023](https://github.com/container-registry/container-registry/commit/56b102314398064f11679b02a61f679bc164fb41))
+* **oidc:** Follow The OAuth And OIDC Refresh Rules For CLI Secrets ([#1562](https://github.com/container-registry/container-registry/issues/1562)) ([6ca672d](https://github.com/container-registry/container-registry/commit/6ca672dfb7150c3f09583578480b7060b4da8f0c))
+* **portal:** Guide First Push From The Empty Repository List ([#1492](https://github.com/container-registry/container-registry/issues/1492)) ([2b8f98e](https://github.com/container-registry/container-registry/commit/2b8f98ea10b7981520ca0502374cadc01687542d))
+* **portal:** Show Proxy Cache Settings Only To System Admins ([#1501](https://github.com/container-registry/container-registry/issues/1501)) ([6b06dc9](https://github.com/container-registry/container-registry/commit/6b06dc92235df3e556e76aa5fc33f7380bdc76f5))
+* **portal:** Show Push Commands In A Dialog With Format Tabs ([#1491](https://github.com/container-registry/container-registry/issues/1491)) ([fc07c36](https://github.com/container-registry/container-registry/commit/fc07c36b4192f8ad6af44df1d6295742916a2ab9))
+* **portal:** Stop Listing Registries For Project Admins On Project Configuration ([#1489](https://github.com/container-registry/container-registry/issues/1489)) ([a7b5ebc](https://github.com/container-registry/container-registry/commit/a7b5ebcc405382666af47caebc505f1782592e20))
+* **quota:** Let The Database Enforce The Detached Rollback Deadline ([#1570](https://github.com/container-registry/container-registry/issues/1570)) ([dff4557](https://github.com/container-registry/container-registry/commit/dff4557e351d49e32395ced3df7fbee899a73e3b))
+* Raise Postgres max_connections In The Compose Deployment ([#1561](https://github.com/container-registry/container-registry/issues/1561)) ([a2f14be](https://github.com/container-registry/container-registry/commit/a2f14bea2beef153919f4b9950ed99dcf63cf7dd)), closes [#1461](https://github.com/container-registry/container-registry/issues/1461)
+* Run One Proxy-Cache Manifest Fill Per Manifest ([#1468](https://github.com/container-registry/container-registry/issues/1468)) ([42c8881](https://github.com/container-registry/container-registry/commit/42c88819a4a703d066276168cc24cc400ab4ca7d))
+* **scan:** Parse The Vulnerability Report Once During Conversion ([#1568](https://github.com/container-registry/container-registry/issues/1568)) ([6057024](https://github.com/container-registry/container-registry/commit/605702444883507ffb4f12464863912f65240564))
+* Serve Cached Referrers When The Proxy Upstream Is Unhealthy ([#1456](https://github.com/container-registry/container-registry/issues/1456)) ([e3959a2](https://github.com/container-registry/container-registry/commit/e3959a2058b626bef14e65bcff7812d614685bdf))
+* Set The Go Memory Limit From The Container Memory Limit ([#1587](https://github.com/container-registry/container-registry/issues/1587)) ([3c74aef](https://github.com/container-registry/container-registry/commit/3c74aef0baea5d1d15ae4cd6f035dd768cb83311))
+* Show Old And New Values In Configuration Audit Entries ([#1551](https://github.com/container-registry/container-registry/issues/1551)) ([3cad5ac](https://github.com/container-registry/container-registry/commit/3cad5ac9cf06bd926b32ffb67541febec629eb25))
+* Skip A Locked Repository Row When Bumping Its update_time ([#1466](https://github.com/container-registry/container-registry/issues/1466)) ([a066acc](https://github.com/container-registry/container-registry/commit/a066acc3aec6a6f5ed142812f3c0235464a31d05))
+* Stabilize Security Hub Vulnerability Paging And Skip Redundant Counts ([#1535](https://github.com/container-registry/container-registry/issues/1535)) ([cdda590](https://github.com/container-registry/container-registry/commit/cdda59065e69e724b88440200ac194f60cbb0a0c))
+* Store The Audit Client Address Without Its Port ([#1552](https://github.com/container-registry/container-registry/issues/1552)) ([d036a71](https://github.com/container-registry/container-registry/commit/d036a713bb8426c18dd26d55459e5f6b6f9d1eb0))
+
+
+### Upstream
+
+* fix(i18n): correct wrong Korean labels (goharbor/harbor[#24483](https://github.com/container-registry/container-registry/issues/24483)) ([#1597](https://github.com/container-registry/container-registry/issues/1597)) ([deb790a](https://github.com/container-registry/container-registry/commit/deb790a7ca83a41a69eb798135f8dc01aa1bd498))
+* fix(i18n): fix broken placeholders in Korean translation (goharbor/harbor[#24482](https://github.com/container-registry/container-registry/issues/24482)) ([#1596](https://github.com/container-registry/container-registry/issues/1596)) ([af28587](https://github.com/container-registry/container-registry/commit/af28587e45ed3590109baead42a99487d8e258f2))
+
+
+### Documentation
+
+* Rename harbor-next To 8gcr ([#1549](https://github.com/container-registry/container-registry/issues/1549)) ([84a3e8e](https://github.com/container-registry/container-registry/commit/84a3e8e05d34c54373944424488b42f717218d51))
+
 ## [2.16.0](https://github.com/container-registry/8gcr/compare/v2.15.0...v2.16.0) (2026-11-17)
 
 
