@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2](https://github.com/container-registry/container-registry/compare/chart-v2.2.1...chart-v2.2.2) (2026-11-28)
+
+
+### Harbor Releases
+
+* Rename Repository To container-registry/container-registry (release-2.16) ([#1624](https://github.com/container-registry/container-registry/issues/1624)) ([974fa42](https://github.com/container-registry/container-registry/commit/974fa42c59502b11add35581c7b34e493226a04b))
+
 ## [2.2.1](https://github.com/container-registry/8gcr/compare/chart-v2.2.0...chart-v2.2.1) (2026-11-21)
 
 
