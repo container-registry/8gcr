@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.3](https://github.com/container-registry/container-registry/compare/chart-v2.1.2...chart-v2.1.3) (2026-11-28)
+
+
+### Bug Fixes
+
+* **chart:** Add Webhook Egress Policy Levels And Allowlist (backport [#1185](https://github.com/container-registry/container-registry/issues/1185)) ([#1474](https://github.com/container-registry/container-registry/issues/1474)) ([5271363](https://github.com/container-registry/container-registry/commit/5271363ea21eeae164658a9516bd6c5c85bd131e))
+
+
+### Harbor Releases
+
+* **chart:** keep chart package name harbor (release-2.15) ([#1540](https://github.com/container-registry/container-registry/issues/1540)) ([b251800](https://github.com/container-registry/container-registry/commit/b25180028e1e53570ff72269ee39fb453cf61f81))
+* Rename Repository To container-registry/8gcr ([666ed3e](https://github.com/container-registry/container-registry/commit/666ed3ecd4db610b97da6d4f17b252b21c952072))
+* Rename Repository To container-registry/container-registry (release-2.15) ([#1625](https://github.com/container-registry/container-registry/issues/1625)) ([4a65904](https://github.com/container-registry/container-registry/commit/4a65904534b8f7fcc409cc41b40aad866e73587b))
+
 ## [2.1.2](https://github.com/container-registry/harbor-next/compare/chart-v2.1.1...chart-v2.1.2) (2026-11-02)
 
 
