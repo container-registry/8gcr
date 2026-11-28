@@ -70,8 +70,11 @@ var EventTypes = []string{
 	"create_role",
 	"delete_role",
 	"update_role",
+<<<<<<< HEAD
 	"update_feature",
 	"scan_artifact",
+=======
+>>>>>>> e864be678 (fix: allow tag events to be disabled and purged in audit log (#24478))
 	"create_tag",
 	"delete_tag",
 }
