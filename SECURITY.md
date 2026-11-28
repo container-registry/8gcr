@@ -14,8 +14,8 @@ Security fixes are provided for actively maintained 8gcr releases. If you are un
 
 Report vulnerabilities privately through either of these GitHub flows:
 
-- Open a private vulnerability report directly at [New GitHub Security Advisory](https://github.com/container-registry/8gcr/security/advisories/new).
-- Go to [New Issue](https://github.com/container-registry/8gcr/issues/new/choose) and select **Security Vulnerability**. The option is labeled **Report Security Vulnerabilities privately** and routes to the private GitHub Security Advisory flow.
+- Open a private vulnerability report directly at [New GitHub Security Advisory](https://github.com/container-registry/container-registry/security/advisories/new).
+- Go to [New Issue](https://github.com/container-registry/container-registry/issues/new/choose) and select **Security Vulnerability**. The option is labeled **Report Security Vulnerabilities privately** and routes to the private GitHub Security Advisory flow.
 
 Private vulnerability reports are visible to project maintainers, who will coordinate with the reporter during investigation and remediation.
 
@@ -42,13 +42,13 @@ Report privately when:
 - You suspect a vulnerability but are unsure whether it impacts 8gcr.
 - You know of a publicly disclosed vulnerability that may affect 8gcr or one of its dependencies.
 
-For non-security bugs, feature requests, and proposals, use the public [GitHub issue templates](https://github.com/container-registry/8gcr/issues/new/choose).
+For non-security bugs, feature requests, and proposals, use the public [GitHub issue templates](https://github.com/container-registry/container-registry/issues/new/choose).
 
 ## Response and Disclosure
 
 Maintainers aim to acknowledge private vulnerability reports within 3 business days. The project will investigate the report, determine impact and severity, identify mitigations or workarounds when available, and coordinate a fix.
 
-If the issue is confirmed, maintainers will coordinate public disclosure with the reporter after a mitigation or patch is available, unless the vulnerability is already public or active exploitation requires faster disclosure. Public disclosure is normally published through [GitHub Security Advisories](https://github.com/container-registry/8gcr/security/advisories).
+If the issue is confirmed, maintainers will coordinate public disclosure with the reporter after a mitigation or patch is available, unless the vulnerability is already public or active exploitation requires faster disclosure. Public disclosure is normally published through [GitHub Security Advisories](https://github.com/container-registry/container-registry/security/advisories).
 
 If the report is not considered a security vulnerability, maintainers will explain the reason and may ask that it be re-filed as a public issue if appropriate.
 

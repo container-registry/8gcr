@@ -1,7 +1,7 @@
 apiVersion: v2
 name: harbor
 description: A modern, production-ready Helm chart for
-  [8gcr](https://github.com/container-registry/8gcr) - the cloud-native
+  [8gcr](https://github.com/container-registry/container-registry) - the cloud-native
   container registry for Kubernetes.
 type: application
 version: 2.1.2
@@ -10,10 +10,10 @@ version: 2.1.2
 appVersion: "v2.15.15"  # x-release-please-version
 kubeVersion: ">=1.28.0-0"
 
-home: https://github.com/container-registry/8gcr
-icon: https://raw.githubusercontent.com/container-registry/8gcr/refs/heads/main/docs/img/8gcr-logo.svg
+home: https://github.com/container-registry/container-registry
+icon: https://raw.githubusercontent.com/container-registry/container-registry/refs/heads/main/docs/img/8gcr-logo.svg
 sources:
-  - https://github.com/container-registry/8gcr
+  - https://github.com/container-registry/container-registry
 
 keywords:
   - harbor
@@ -30,7 +30,7 @@ keywords:
 
 maintainers:
   - name: 8gcr Authors
-    url: https://github.com/container-registry/8gcr
+    url: https://github.com/container-registry/container-registry
 
 dependencies:
   - name: valkey
@@ -48,10 +48,10 @@ annotations:
   artifacthub.io/operator: "false"
   artifacthub.io/links: |
     - name: Documentation
-      url: https://github.com/container-registry/8gcr
+      url: https://github.com/container-registry/container-registry
     - name: Source Helm Chart
-      url: https://github.com/container-registry/8gcr/tree/main/deploy/chart
+      url: https://github.com/container-registry/container-registry/tree/main/deploy/chart
     - name: Migration from goharbor/harbor-helm
-      url: https://github.com/container-registry/8gcr/blob/main/deploy/chart/docs/MIGRATION.md
+      url: https://github.com/container-registry/container-registry/blob/main/deploy/chart/docs/MIGRATION.md
     - name: Upstream Harbor
       url: https://goharbor.io

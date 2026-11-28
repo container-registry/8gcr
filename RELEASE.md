@@ -17,9 +17,9 @@ Release state is defined by:
 ```mermaid
 flowchart LR
   upstream["goharbor/harbor\nupstream/main"]
-  harborMain["container-registry/8gcr\n8gcr/main"]
-  harborRelease["container-registry/8gcr\n8gcr/release-X.Y"]
-  harborTag["container-registry/8gcr\nvX.Y.Z tag + GitHub Release"]
+  harborMain["container-registry/container-registry\n8gcr/main"]
+  harborRelease["container-registry/container-registry\n8gcr/release-X.Y"]
+  harborTag["container-registry/container-registry\nvX.Y.Z tag + GitHub Release"]
   patchManifest["8gcr branch\ntaskfile/commercial-patches"]
   gcrPatches["container-registry/8gcr-ee\ndeclared patch branches"]
   images["8gears.container-registry.com/8gcr\nrelease images"]
