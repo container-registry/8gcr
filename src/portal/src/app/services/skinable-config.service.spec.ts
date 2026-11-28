@@ -64,4 +64,31 @@ describe('SkinableConfig', () => {
         expect(service.getSkinConfig()).toEqual(mockCustomSkinData);
         expect(service.getSkinConfig().product).toEqual(product);
     });
+    it('setTitleIcon() should replace every tab icon with the custom logo', () => {
+        const added: HTMLLinkElement[] = [];
+        ['icon', 'icon', 'apple-touch-icon'].forEach(rel => {
+            const link = document.createElement('link');
+            link.rel = rel;
+            link.href = 'favicon.ico';
+            document.head.appendChild(link);
+            added.push(link);
+        });
+        service.getCustomFile().subscribe();
+        httpMock
+            .expectOne('setting.json?buildTimeStamp=0')
+            .flush({ product: { ...product, logo: 'custom.png' } });
+
+        service.setTitleIcon();
+
+        const icons = Array.from(
+            document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')
+        );
+        expect(icons.length).toBe(1);
+        expect(icons[0].getAttribute('href')).toBe('images/custom.png');
+        expect(document.querySelector('link[rel="apple-touch-icon"]')).toBe(
+            added[2]
+        );
+        icons.forEach(link => link.remove());
+        added[2].remove();
+    });
 });
