@@ -1,6 +1,6 @@
 # harbor
 
-A modern, production-ready Helm chart for [Harbor distribution 8gcr](https://github.com/container-registry/8gcr) - the cloud-native container registry for Kubernetes.
+A modern, production-ready Helm chart for [Harbor distribution 8gcr](https://github.com/container-registry/container-registry) - the cloud-native container registry for Kubernetes.
 
 ## TL;DR
 
@@ -22,7 +22,7 @@ helm install my-harbor oci://8gears.container-registry.com/8gcr/charts/harbor \
 
 ## Why This Chart?
 
-This chart is a ground-up redesign of the Harbor Helm chart with modern Kubernetes best practices, built for [8gcr](https://github.com/container-registry/8gcr):
+This chart is a ground-up redesign of the Harbor Helm chart with modern Kubernetes best practices, built for [8gcr](https://github.com/container-registry/container-registry):
 
 | Feature | Legacy harbor-helm | This Chart |
 |---------|-------------------|------------|

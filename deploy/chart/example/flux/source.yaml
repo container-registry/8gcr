@@ -11,7 +11,7 @@ metadata:
   namespace: harbor
 spec:
   interval: 5m
-  url: https://github.com/container-registry/8gcr
+  url: https://github.com/container-registry/container-registry
   ref:
     branch: main
   ignore: |
