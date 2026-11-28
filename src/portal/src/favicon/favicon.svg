@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45">
+  <style>
+    .ring { fill: #707073; }
+    @media (prefers-color-scheme: dark) {
+      .ring { fill: #d2d2d6; }
+    }
+  </style>
+  <defs>
+    <linearGradient id="beam" x1="22.5" y1="0" x2="43.1" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1f8fd0"/>
+      <stop offset="1" stop-color="#8cc2ec"/>
+    </linearGradient>
+  </defs>
+  <path class="ring" d="M23.28,45A22.5,22.5,0,1,1,45,21.73,22.52,22.52,0,0,1,23.28,45ZM21.86,4A18.56,18.56,0,1,0,41.12,21.86,18.56,18.56,0,0,0,21.86,4Z"/>
+  <g fill="url(#beam)">
+    <polygon points="33.2 5.58 22.5 17.32 38.29 9.58"/>
+    <polygon points="40.89 13.11 23.04 18.99 42.5 18.32"/>
+    <polygon points="43.1 21.8 23.64 20.52 42.5 27.2"/>
+  </g>
+  <g fill="#60b932">
+    <polygon points="17.24 11.67 12.55 16.96 21.79 16.96"/>
+    <rect x="13.09" y="16.96" width="1.52" height="4.76"/>
+    <rect x="19.74" y="16.96" width="1.52" height="4.76"/>
+    <rect x="16.32" y="18.7" width="1.71" height="3.02"/>
+    <rect x="12.65" y="21.72" width="9.05" height="1.65"/>
+    <polygon points="21.16 28.68 13.29 25.85 13.44 22.88 20.9 22.88"/>
+    <polygon points="21.3 31.58 13.14 28.65 13.23 27.12 21.24 30.22"/>
+    <polygon points="21.42 34.16 13.01 31.14 13.09 29.6 21.36 32.81"/>
+    <polygon points="21.55 36.73 12.88 33.63 12.97 32.09 21.49 35.39"/>
+    <polygon points="21.79 44.15 12.47 41.18 12.81 34.88 21.62 38.3"/>
+  </g>
+</svg>
