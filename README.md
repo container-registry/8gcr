@@ -1,12 +1,12 @@
 # 8gcr
 
-<p align="center"><img alt="8gcr" width="256px" src="https://raw.githubusercontent.com/container-registry/8gcr/refs/heads/main/docs/img/8gcr-logo.svg"></p>
+<p align="center"><img alt="8gcr" width="256px" src="https://raw.githubusercontent.com/container-registry/container-registry/refs/heads/main/docs/img/8gcr-logo.svg"></p>
 
 <!-- The stable badge filters on v2.15.*; change the filter when the maintained line moves. -->
-[![Nightly](https://github.com/container-registry/8gcr/actions/workflows/nightly.yml/badge.svg)](https://github.com/container-registry/8gcr/actions/workflows/nightly.yml)
-[![stable](https://img.shields.io/github/v/release/container-registry/8gcr?filter=v2.15.*&label=stable)](https://github.com/container-registry/8gcr/releases?q=v2.15)
-[![beta](https://img.shields.io/github/v/release/container-registry/8gcr?include_prereleases&filter=*-beta&label=beta&color=orange)](https://github.com/container-registry/8gcr/releases?q=prerelease%3Atrue)
-[![helm](https://img.shields.io/github/v/release/container-registry/8gcr?filter=chart-v*&label=helm&logo=helm&logoColor=white)](https://github.com/container-registry/8gcr/releases?q=chart)
+[![Nightly](https://github.com/container-registry/container-registry/actions/workflows/nightly.yml/badge.svg)](https://github.com/container-registry/container-registry/actions/workflows/nightly.yml)
+[![stable](https://img.shields.io/github/v/release/container-registry/container-registry?filter=v2.15.*&label=stable)](https://github.com/container-registry/container-registry/releases?q=v2.15)
+[![beta](https://img.shields.io/github/v/release/container-registry/container-registry?include_prereleases&filter=*-beta&label=beta&color=orange)](https://github.com/container-registry/container-registry/releases?q=prerelease%3Atrue)
+[![helm](https://img.shields.io/github/v/release/container-registry/container-registry?filter=chart-v*&label=helm&logo=helm&logoColor=white)](https://github.com/container-registry/container-registry/releases?q=chart)
 
 Harbor is a CNCF graduated open-source container registry to store and manage container images and other OCI artifacts securely with policies, role-based access control, vulnerability scans and signing.
 
@@ -39,7 +39,7 @@ We're developing 8gcr as a [community proposal](https://github.com/goharbor/comm
 - Versatile Helm Chart
 - Open Compose (install.sh less) supporting Docker & Podman Compose
 - Support for OpenShift, Rancher, k3s, Nutanix (NKP)
-- Prepending vetted features not yet upstream — see the [release notes](https://github.com/container-registry/8gcr/releases)
+- Prepending vetted features not yet upstream — see the [release notes](https://github.com/container-registry/container-registry/releases)
 - See [ROADMAP.md](/ROADMAP.md) for more...
 
 ## Harbor Features
@@ -64,7 +64,7 @@ For the architecture design of 8gcr, see [Architecture Overview](docs/architectu
 
 ## API
 
-8gcr exposes a RESTful API for administrative operations and integration. Explore it in the [Swagger editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/container-registry/8gcr/main/api/v2.0/swagger.yaml) or from the source spec [`api/v2.0/swagger.yaml`](api/v2.0/swagger.yaml).
+8gcr exposes a RESTful API for administrative operations and integration. Explore it in the [Swagger editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/container-registry/container-registry/main/api/v2.0/swagger.yaml) or from the source spec [`api/v2.0/swagger.yaml`](api/v2.0/swagger.yaml).
 
 ## Install & Run
 
@@ -79,7 +79,7 @@ For the architecture design of 8gcr, see [Architecture Overview](docs/architectu
 | Source | `main` | nothing published | Development only, see [Development](#development). |
 
 Both channels are published to `8gears.container-registry.com/8gcr/`, and every tag has its
-notes on the [releases page](https://github.com/container-registry/8gcr/releases).
+notes on the [releases page](https://github.com/container-registry/container-registry/releases).
 
 The beta tag rolls: the nightly build moves it onto that night's commit, so the same tag
 pulled a week apart is a different image. Pin a stable tag for anything you have to keep
