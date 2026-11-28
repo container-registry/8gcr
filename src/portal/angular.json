@@ -30,6 +30,7 @@
               },
               "src/images",
               "src/favicon.ico",
+              "src/favicon",
               "src/setting.json",
               "src/i18n"
             ],
@@ -137,6 +138,7 @@
               },
               "src/images",
               "src/favicon.ico",
+              "src/favicon",
               "src/setting.json",
               "src/i18n"
             ]

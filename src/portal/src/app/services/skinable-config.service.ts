@@ -50,9 +50,15 @@ export class SkinableConfig {
             this.customSkinData.product &&
             this.customSkinData.product.logo
         ) {
+            // Drop every bundled icon so browsers cannot prefer the SVG one
+            this.document
+                .querySelectorAll('link[rel~="icon"]')
+                .forEach(link => link.remove());
             const titleIcon: HTMLLinkElement =
-                this.document.querySelector('link');
+                this.document.createElement('link');
+            titleIcon.rel = 'icon';
             titleIcon.href = `images/${this.customSkinData.product.logo}`;
+            this.document.head.appendChild(titleIcon);
         }
     }
 }
